@@ -71,6 +71,13 @@
         input[type=number]::-webkit-inner-spin-button, 
         input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number] { -moz-appearance: textfield; }
+
+        /* Animación para el botón flotante de WhatsApp */
+        @keyframes bounce-slow {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-bounce-slow { animation: bounce-slow 3s infinite; }
     </style>
 </head>
 <body class="bg-perfume-light text-gray-700 font-sans antialiased">
@@ -79,6 +86,14 @@
     <div id="splash-screen">
         <img id="splash-logo" src="https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png" alt="FamlyFragrancerd Cargando">
     </div>
+
+    <!-- BOTÓN FLOTANTE DE WHATSAPP -->
+    <a href="https://wa.me/18495161973" id="whatsapp-float" target="_blank" class="fixed bottom-6 right-6 z-[90] bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 flex items-center justify-center group animate-bounce-slow">
+        <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.648.835 5.125 2.378 7.218L.063 24l4.909-1.286A11.97 11.97 0 0012.031 24c6.645 0 12.031-5.385 12.031-12.031S18.676 0 12.031 0zm0 21.992c-2.22 0-4.382-.593-6.281-1.716l-.45-.266-3.64.954.969-3.548-.293-.466A9.975 9.975 0 012.039 12.03c0-5.517 4.49-10.007 10.007-10.007s10.007 4.49 10.007 10.007-4.49 10.007-10.007 10.007zm5.494-7.514c-.302-.15-1.785-.882-2.062-.983-.277-.101-.48-.15-.683.15s-.782.982-.958 1.183c-.176.202-.352.227-.654.076-2.144-.943-3.705-2.618-4.316-3.666-.126-.201.066-.188.358-.769.101-.202.05-.378-.025-.53-.076-.15-.683-1.646-.935-2.253-.246-.593-.496-.513-.683-.523-.176-.008-.378-.01-.58-.01-.202 0-.53.076-.807.378-.277.302-1.058 1.034-1.058 2.52s1.083 2.923 1.234 3.125c.15.202 2.13 3.253 5.158 4.558 2.019.869 2.809.948 3.842.793 1.144-.171 2.593-1.049 2.956-2.066.363-1.017.363-1.89.254-2.066-.109-.176-.411-.277-.713-.428z"/>
+        </svg>
+        <span class="absolute right-full mr-3 bg-white text-gray-800 text-xs font-bold px-3 py-1.5 rounded-lg shadow-md opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none border border-gray-100">¿Tienes dudas? ¡Escríbenos!</span>
+    </a>
 
     <!-- BARRA DE NAVEGACIÓN -->
     <header id="main-header" class="bg-white/90 backdrop-blur-md fixed w-full z-40 top-0 border-b border-gray-200 py-3">
@@ -953,6 +968,12 @@
                 let cleanPhone = rawPhone.replace(/\D/g, ''); // Deja solo los números
                 if(cleanPhone.length === 10 && cleanPhone.startsWith('8')) cleanPhone = '1' + cleanPhone; // Agrega el 1 si es dominicano sin código de país
                 window.phone = cleanPhone; // Actualiza la variable global
+
+                // Sincronizar el botón flotante de WhatsApp
+                const whatsappFloat = document.getElementById('whatsapp-float');
+                if (whatsappFloat) {
+                    whatsappFloat.href = data.sWa || `https://wa.me/${window.phone}`;
+                }
 
                 const mediaUrl = data.heroImg || "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
                 const mediaType = data.mediaType || "image";
