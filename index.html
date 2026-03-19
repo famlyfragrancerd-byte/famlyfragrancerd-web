@@ -2424,6 +2424,18 @@
                     await setDoc(doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'info'), { phone: customerPhone }, { merge: true }).catch(e=>{});
                 }
 
+                // --- NUEVA INTEGRACIÓN: CALLMEBOT (Notificación automática al Admin) ---
+                try {
+                    const adminPhone = "+18495161973"; // Tu número de teléfono con el + y código de país
+                    const apiKey = "TU_API_KEY_AQUI"; // <-- REEMPLAZA ESTO CON LA API KEY QUE TE DIO EL BOT
+                    const adminMsg = `🚨 NUEVO PEDIDO WEB 🚨\nID: ${orderId}\nCliente: ${firstName}\nTotal: RD$ ${total.toLocaleString('en-US')}\nWhatsApp Cliente: ${customerPhone}`;
+                    const botUrl = `https://api.callmebot.com/whatsapp.php?phone=${adminPhone}&text=${encodeURIComponent(adminMsg)}&apikey=${apiKey}`;
+                    
+                    // Disparamos la alerta de fondo sin interrumpir la experiencia del cliente
+                    fetch(botUrl, { mode: 'no-cors' }).catch(e => console.log('Aviso bot oculto'));
+                } catch(e) {}
+                // ----------------------------------------------------------------------
+
                 window.cart=[]; window.updateCartUI(); window.toggleCart();
                 document.getElementById('checkout-phone').value = ''; 
                 window.showToast("¡Pedido registrado exitosamente!");
