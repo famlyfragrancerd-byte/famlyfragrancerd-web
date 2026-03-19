@@ -92,6 +92,14 @@
         }
         .animate-bounce-slow { animation: bounce-slow 3s infinite; }
 
+        /* Animación para cuando se agrega un producto al carrito */
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.4); }
+            100% { transform: scale(1); }
+        }
+        .animate-pop { animation: pop 0.3s ease-out; }
+
         /* Estilo para los Swatches (Círculos de variantes) */
         .swatch-circle {
             width: 44px;
@@ -144,7 +152,7 @@
             </nav>
             
             <div class="flex items-center space-x-3 md:space-x-6">
-                <button onclick="toggleCart()" class="relative text-gray-800 hover:text-perfume-magenta transition cursor-pointer p-2 hover:scale-110 transform duration-200">
+                <button id="nav-cart-btn" onclick="toggleCart()" class="relative text-gray-800 hover:text-perfume-magenta transition cursor-pointer p-2 hover:scale-110 transform duration-200">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-7 md:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                     </svg>
@@ -1278,11 +1286,8 @@
                 document.getElementById('display-footer-phone').innerText = data.fPhone || "+1 (849) 516-1973";
                 document.getElementById('display-footer-address').innerText = data.fAddress || "Santiago, RD";
                 
-                // Formateo número teléfono
-                const rawPhone = data.fPhone || "18495161973";
-                let cleanPhone = rawPhone.replace(/\D/g, ''); 
-                if(cleanPhone.length === 10 && cleanPhone.startsWith('8')) cleanPhone = '1' + cleanPhone; 
-                window.phone = cleanPhone; 
+                // OMITIMOS REEMPLAZAR window.phone PARA MANTENER EL NÚMERO FIJO FUERTE
+                // window.phone = ... (ELIMINADO, SE USA SIEMPRE 18495161973 EN EL CHECKOUT)
 
                 // Redes Sociales
                 const ig = document.getElementById('display-social-ig');
@@ -1301,7 +1306,7 @@
                 
                 if (data.showWaBtn !== false) { // Default es true
                     waContainer.classList.remove('hidden');
-                    waFloat.href = data.sWa || `https://wa.me/${window.phone}`;
+                    waFloat.href = data.sWa || `https://wa.me/18495161973`;
                     
                     waContainer.classList.remove('right-6', 'left-6');
                     waTooltip.classList.remove('right-full', 'mr-3', 'left-full', 'ml-3');
@@ -1614,9 +1619,16 @@
             const catQty = document.getElementById('qty-'+id);
             if(catQty) catQty.innerText = 1;
             
-            window.updateCartUI(); window.showToast("¡Agregado!"); window.closeProductModal();
-            const cartModal = document.getElementById('cart-modal'); cartModal.classList.remove('translate-x-full');
-            setTimeout(() => { if(!cartModal.classList.contains('cart-opened-by-user')) cartModal.classList.add('translate-x-full'); }, 2000);
+            window.updateCartUI(); 
+            window.showToast("¡Agregado al carrito! 🛒"); 
+            window.closeProductModal();
+            
+            // Animación del botón del carrito (sin abrir el panel lateral)
+            const cartBtn = document.getElementById('nav-cart-btn');
+            if(cartBtn) {
+                cartBtn.classList.add('animate-pop', 'text-perfume-magenta');
+                setTimeout(() => cartBtn.classList.remove('animate-pop', 'text-perfume-magenta'), 300);
+            }
         }
 
         // --- FUNCIONES DE DECANTS EN ADMIN ---
@@ -2102,6 +2114,7 @@
             catch(e) { window.showToast("❌ Error al actualizar estado."); }
         }
 
+        // MENSAJES DE ESTADO CORTOS
         window.notifyCustomerWhatsApp = function(docId) {
             const order = window.adminOrders.find(o => o.id === docId);
             if(!order || !order.customerPhone) return window.showToast("Número de cliente no disponible.");
@@ -2109,36 +2122,18 @@
             let phone = order.customerPhone.replace(/\D/g,'');
             if(phone.length === 10) phone = '1' + phone; 
             
-            let text = `*¡Hola ${order.customerName.split(' ')[0]}!*\n\n`;
-            text += `Te contactamos de *FamlyFragrancerd* para informarte sobre tu pedido *${order.orderId}*.\n\n`;
-            text += `*ESTADO DE TU PEDIDO:* _${order.status.toUpperCase()}_\n\n`;
+            let text = `*FamlyFragrancerd* 🌸\nHola ${order.customerName.split(' ')[0]}, el estado de tu pedido *${order.orderId}* es: *${order.status.toUpperCase()}*\n\n`;
             
-            if(order.status === 'Recibido') text += `Hemos recibido tu solicitud correctamente. Estamos confirmando la disponibilidad y en breve te contactaremos para seguir con el proceso.\n\n`;
-            else if(order.status === 'Procesando') text += `Tu pedido está en proceso. Estamos preparando tus fragancias con mucho cuidado.\n\n`;
-            else if(order.status === 'Enviado') text += `¡Buenas noticias! Tus fragancias ya están en camino. Pronto llegarán a tus manos.\n\n`;
-            else if(order.status === 'Completado') text += `¡Venta cerrada! Gracias por preferirnos. Esperamos que disfrutes tus fragancias y vuelvas pronto.\n\n`;
-            else if(order.status === 'Cancelado') text += `Lamentablemente este pedido ha sido cancelado. Si tienes dudas o quieres realizar un nuevo pedido, escríbenos.\n\n`;
-            else if(order.status === 'Eliminado') text += `Este pedido ya no está activo en nuestro sistema.\n\n`;
+            if(order.status === 'Recibido') text += `⏳ Lo hemos recibido y estamos confirmando disponibilidad.\n`;
+            else if(order.status === 'Procesando') text += `📦 Lo estamos preparando con mucho cuidado.\n`;
+            else if(order.status === 'Enviado') text += `🚚 ¡Tu paquete ya va en camino a tus manos!\n`;
+            else if(order.status === 'Completado') text += `✅ Entregado. ¡Gracias por preferirnos!\n`;
+            else if(order.status === 'Cancelado') text += `❌ El pedido fue cancelado.\n`;
+            else if(order.status === 'Eliminado') text += `🗑️ El pedido fue eliminado de nuestro sistema.\n`;
             
-            const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-            const discount = subtotal - order.total;
-
-            text += `*Factura Actualizada:*\n`;
-            order.items.forEach(item => {
-                const skuText = item.barcode ? ` [SKU: ${item.barcode}]` : '';
-                text += `- ${item.qty}x ${item.name}${skuText} (RD$ ${(item.price * item.qty).toLocaleString('en-US')})\n`;
-            });
-            
-            if (discount > 0) {
-                text += `\n*Subtotal:* RD$ ${subtotal.toLocaleString('en-US')}\n`;
-                text += `*Descuento:* -RD$ ${discount.toLocaleString('en-US')}\n`;
-            }
-
-            text += `\n*TOTAL:* RD$ ${order.total.toLocaleString('en-US')}\n\n`;
-            text += `Cualquier duda, puedes responder directamente a este mensaje. ¡Estamos a tu orden!\n\n`;
-            
-            const baseUrl = window.location.origin + window.location.pathname;
-            text += `*Ver catálogo:* ${baseUrl}`;
+            text += `\n*Total:* RD$ ${order.total.toLocaleString('en-US')}\n`;
+            text += `*Ver seguimiento:* ${window.location.origin}${window.location.pathname}#pedidos\n\n`;
+            text += `¿Dudas? ¡Solo responde este mensaje!`;
             
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
         }
@@ -2325,6 +2320,7 @@
         
         window.updateQty = (id, delta) => { let v = parseInt(document.getElementById('qty-'+id).innerText)+delta; document.getElementById('qty-'+id).innerText = v<1?1:v; }
         
+        // CORRECCIÓN 1: Agregar al carrito sin abrir el menú lateral
         window.addToCart = (id, name, price, img, variantId, barcode = '') => { 
             const prodData = window.catalogProducts.find(p => p.id === id);
             if (!prodData) return;
@@ -2342,10 +2338,14 @@
             
             document.getElementById('qty-'+id).innerText=1; 
             window.updateCartUI(); 
-            window.showToast("¡Agregado al carrito!"); 
-            const modal = document.getElementById('cart-modal');
-            modal.classList.remove('translate-x-full');
-            setTimeout(() => { if(!modal.classList.contains('cart-opened-by-user')) modal.classList.add('translate-x-full'); }, 2000);
+            window.showToast("¡Agregado al carrito! 🛒"); 
+            
+            // Animación del botón del carrito
+            const cartBtn = document.getElementById('nav-cart-btn');
+            if(cartBtn) {
+                cartBtn.classList.add('animate-pop', 'text-perfume-magenta');
+                setTimeout(() => cartBtn.classList.remove('animate-pop', 'text-perfume-magenta'), 300);
+            }
         }
         
         window.removeFromCart = (i) => { window.cart.splice(i,1); window.updateCartUI(); }
@@ -2365,6 +2365,7 @@
             document.getElementById('cart-total').innerText = `RD$ ${total.toLocaleString('en-US')}`;
         }
         
+        // CORRECCIÓN 2: Check-out en móviles solucionado
         window.checkoutWhatsApp = async () => {
             if(!window.cart.length) return window.showToast("Tu carrito está vacío.");
             if(!window.isLoggedIn) {
@@ -2427,10 +2428,14 @@
                 document.getElementById('checkout-phone').value = ''; 
                 window.showToast("¡Pedido registrado exitosamente!");
                 
+                // Forzar apertura en la misma pestaña para que Safari y Chrome Móvil no lo bloqueen
+                // NOTA: Usamos el NÚMERO FIJO directamente aquí
+                const waUrl = `https://wa.me/18495161973?text=${encodeURIComponent(text)}`;
+                window.location.href = waUrl;
+                
                 setTimeout(() => {
-                    window.open(`https://wa.me/${window.phone}?text=${encodeURIComponent(text)}`, '_blank');
                     btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false;
-                }, 1000);
+                }, 3000);
 
             } catch (error) {
                 console.error(error); window.showToast("Error al procesar el pedido.");
