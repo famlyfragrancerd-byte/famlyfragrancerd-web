@@ -78,6 +78,23 @@
             50% { transform: translateY(-10px); }
         }
         .animate-bounce-slow { animation: bounce-slow 3s infinite; }
+
+        /* Estilo para los Swatches (Círculos de variantes) */
+        .swatch-circle {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 2px solid #e5e7eb;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background-color: white;
+            padding: 2px;
+            flex-shrink: 0;
+        }
+        .swatch-circle:hover { transform: scale(1.1); border-color: #000; }
+        .swatch-circle.active { border-color: #000; box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
+        .swatch-circle img { width: 100%; height: 100%; object-fit: contain; mix-blend-multiply; }
     </style>
 </head>
 <body class="bg-perfume-light text-gray-700 font-sans antialiased">
@@ -229,8 +246,9 @@
     <div id="product-details-modal" class="fixed inset-0 bg-gray-900/80 z-[160] hidden flex justify-center items-center opacity-0 transition-opacity duration-300 backdrop-blur-sm p-4">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative transform scale-95 transition-transform duration-300 flex flex-col md:flex-row overflow-hidden" id="product-details-box">
             <button onclick="closeProductModal()" class="absolute top-3 right-3 bg-black/50 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-black z-10 transition">&times;</button>
-            <div class="md:w-1/2 bg-gray-50 flex items-center justify-center relative">
-                <img id="detail-img" src="" alt="Perfume" class="w-full h-48 md:h-full object-contain p-4">
+            <div class="md:w-1/2 bg-gray-50 flex items-center justify-center relative p-6">
+                <!-- Se agregó mix-blend-multiply aquí también para que las fotos sin fondo transparente se fusionen con el fondo -->
+                <img id="detail-img" src="" alt="Perfume" class="w-full h-64 md:h-full object-contain p-4 mix-blend-multiply transition duration-500">
                 <div id="detail-barcode-badge" class="absolute top-4 left-4 bg-white/90 backdrop-blur text-gray-800 text-[10px] font-mono px-2 py-1 rounded hidden border border-gray-300 shadow-sm">
                     <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span id="detail-barcode-text"></span>
                 </div>
@@ -239,6 +257,14 @@
                 <span id="detail-cat" class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Categoría</span>
                 <h2 id="detail-name" class="text-3xl font-extrabold text-perfume-dark mb-2">Nombre</h2>
                 
+                <!-- SECCIÓN DE VARIANTES (Estilo Hollister) -->
+                <div id="detail-swatches-container" class="mb-5 hidden">
+                    <p class="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Modelos de esta colección:</p>
+                    <div id="detail-swatches-list" class="flex flex-wrap gap-2">
+                        <!-- Círculos de otros perfumes -->
+                    </div>
+                </div>
+
                 <!-- Selector de Variante / Decants -->
                 <div class="mb-4">
                     <select id="detail-variant" onchange="updateDetailPrice()" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm font-bold text-perfume-dark focus:outline-none focus:border-perfume-magenta bg-gray-50 cursor-pointer">
@@ -255,15 +281,8 @@
                 
                 <input type="hidden" id="detail-id">
                 
-                <div class="flex items-center gap-4 mt-auto pt-4 border-t border-gray-100">
-                    <div class="flex items-center justify-between bg-gray-100 rounded-lg p-1 w-32">
-                        <button onclick="updateQty('detail', -1)" class="w-8 h-8 text-gray-600 hover:text-black font-bold text-xl rounded-md hover:bg-white transition">-</button>
-                        <span id="qty-detail" class="font-bold text-gray-800">1</span>
-                        <button onclick="updateQty('detail', 1)" class="w-8 h-8 text-gray-600 hover:text-black font-bold text-xl rounded-md hover:bg-white transition">+</button>
-                    </div>
-                    <button onclick="addDetailToCart()" class="flex-1 bg-perfume-magenta text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-md">
-                        Agregar
-                    </button>
+                <div class="flex items-center gap-4 mt-auto pt-4 border-t border-gray-100" id="detail-actions-container">
+                    <!-- Botones dinámicos de carrito -->
                 </div>
             </div>
         </div>
@@ -387,8 +406,29 @@
                                 <input type="number" id="admin-prod-price" required min="1" placeholder="Precio Botella (RD$)" class="w-1/2 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                             </div>
                             
+                            <!-- CONTROL DE STOCK Y OFERTA -->
+                            <div class="flex items-center gap-4 border border-gray-200 p-3 rounded-lg bg-white shadow-sm mt-2">
+                                <div class="w-1/3 flex flex-col gap-2 justify-center">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="admin-prod-use-inv" onchange="toggleInvInput()" class="w-4 h-4 accent-perfume-magenta cursor-pointer rounded">
+                                        <label for="admin-prod-use-inv" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest cursor-pointer mt-0.5">Controlar Stock</label>
+                                    </div>
+                                    <input type="number" id="admin-prod-stock" min="0" placeholder="Cantidad..." class="hidden w-full border border-gray-300 px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta font-bold">
+                                </div>
+                                <div class="w-2/3 flex items-center gap-4 mt-0 justify-center border-l border-gray-100 pl-4 h-full">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="admin-prod-sale" class="w-5 h-5 accent-perfume-magenta cursor-pointer rounded">
+                                        <label for="admin-prod-sale" class="text-xs font-bold text-red-500 cursor-pointer">🛒 Oferta</label>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="admin-prod-agotado" class="w-5 h-5 accent-gray-800 cursor-pointer rounded">
+                                        <label for="admin-prod-agotado" class="text-xs font-bold text-gray-800 cursor-pointer">🚫 Agotado</label>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <!-- SECCIÓN DE DECANTS -->
-                            <div class="border border-gray-200 rounded-lg p-3 bg-white">
+                            <div class="border border-gray-200 rounded-lg p-3 bg-white mt-2">
                                 <div class="flex justify-between items-center mb-2">
                                     <label class="text-xs font-bold text-gray-600 uppercase">Opciones de Decants (Opcional)</label>
                                     <button type="button" onclick="addDecantField()" class="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-1 rounded hover:bg-gray-200 transition">+ Añadir Decant</button>
@@ -401,9 +441,16 @@
                             <div>
                                 <textarea id="admin-prod-desc" rows="2" placeholder="Notas olfativas / Descripción del perfume..." class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta"></textarea>
                             </div>
+                            <!-- BOTÓN DE SUBIDA MANUAL DE IMAGEN A GITHUB -->
                             <div>
-                                <label class="block text-xs text-gray-500 font-bold mb-1 uppercase">Enlace de la Imagen (URL)</label>
-                                <input type="url" id="admin-prod-img" required placeholder="https://..." class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                <label class="block text-xs text-gray-500 font-bold mb-1 uppercase">Imagen del Perfume</label>
+                                <div class="flex gap-2">
+                                    <input type="url" id="admin-prod-img" required placeholder="URL de la imagen (https://...)" class="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                    <label class="bg-gray-800 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-black transition cursor-pointer flex items-center justify-center shrink-0">
+                                        <span id="upload-img-text">Subir 📁</span>
+                                        <input type="file" id="admin-prod-img-upload" accept="image/*" onchange="uploadToGitHub(event)" class="hidden">
+                                    </label>
+                                </div>
                             </div>
                             <button type="submit" id="admin-submit-btn" class="w-full bg-perfume-magenta text-white font-bold py-2 rounded-lg hover:bg-gray-800 transition shadow-md mt-2">
                                 Guardar Producto
@@ -551,6 +598,20 @@
                         <div>
                             <label class="block text-xs font-bold text-[#25D366] mb-1">Enlace WhatsApp</label>
                             <input type="url" id="cfg-social-wa" class="w-full border border-gray-300 px-3 py-1.5 rounded-lg text-sm" placeholder="https://wa.me/...">
+                        </div>
+                    </div>
+
+                    <!-- NUEVOS CAMPOS: TOKEN GITHUB PARA SUBIR IMÁGENES -->
+                    <h3 class="font-bold text-perfume-dark mb-2 mt-6 border-b border-gray-200 pb-2">☁️ Almacenamiento (GitHub)</h3>
+                    <p class="text-[10px] text-gray-500 mb-3">Para poder subir imágenes directamente desde tu PC/Móvil, debes ingresar tu repositorio de Github y tu Token de Acceso Personal (PAT) con permisos de escritura.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Repositorio (Usuario/Repo)</label>
+                            <input type="text" id="cfg-gh-repo" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm" placeholder="ej: famlyfragrancerd-byte/famlyfragrancerd-web">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Token de GitHub (PAT)</label>
+                            <input type="password" id="cfg-gh-token" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxx">
                         </div>
                     </div>
 
@@ -920,6 +981,8 @@
                     sFb: document.getElementById('cfg-social-fb').value,
                     sTt: document.getElementById('cfg-social-tt').value,
                     sWa: document.getElementById('cfg-social-wa').value,
+                    ghRepo: document.getElementById('cfg-gh-repo').value,
+                    ghToken: document.getElementById('cfg-gh-token').value,
                     categoriesList: window.siteCategories,
                     brandsList: window.siteBrands
                 };
@@ -978,7 +1041,7 @@
                 const mediaUrl = data.heroImg || "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
                 const mediaType = data.mediaType || "image";
                 const mediaContainer = document.getElementById('hero-media-container');
-                const mediaClasses = "rounded-3xl shadow-xl max-w-full h-auto object-cover max-h-[500px] hover:scale-105 transition duration-500";
+                const mediaClasses = "rounded-3xl shadow-xl max-w-full h-auto object-cover max-h-[300px] md:max-h-[500px] hover:scale-105 transition duration-500";
                 
                 if (mediaType === "video") {
                     mediaContainer.innerHTML = `<video src="${mediaUrl}" autoplay loop muted playsinline class="${mediaClasses} w-full"></video>`;
@@ -1010,6 +1073,9 @@
                 document.getElementById('cfg-social-fb').value = data.sFb || "";
                 document.getElementById('cfg-social-tt').value = data.sTt || "";
                 document.getElementById('cfg-social-wa').value = data.sWa || "";
+                
+                document.getElementById('cfg-gh-repo').value = data.ghRepo || "famlyfragrancerd-byte/famlyfragrancerd-web";
+                document.getElementById('cfg-gh-token').value = data.ghToken || "";
 
             } catch(e) { console.log("Cargando config. por defecto", e); }
         }
@@ -1085,11 +1151,25 @@
                 const brandLabel = prod.brand ? `${prod.brand} • ` : '';
                 const skuLabel = prod.barcode ? `<span class="bg-gray-100 text-gray-600 text-[9px] font-mono px-1.5 py-0.5 rounded shadow-sm border border-gray-200">SKU: ${prod.barcode}</span>` : '';
                 
+                // --- Lógica de Stock y Ofertas ---
+                const isOutOfStock = !!prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0);
+                const agotadoOverlay = isOutOfStock ? `<div class="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-xl"><span class="bg-red-600 text-white font-black text-xl px-4 py-2 rounded-xl transform -rotate-12 shadow-lg tracking-widest">AGOTADO</span></div>` : '';
+                const offerBadge = (prod.onSale && !isOutOfStock) ? `<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full z-10 shadow-md animate-pulse tracking-wide">OFERTA</div>` : '';
+                
+                const showStockBadge = !isOutOfStock && (typeof prod.stock === 'number' && prod.stock > 0);
+
+                const btnHtml = isOutOfStock 
+                    ? `<button disabled class="w-full bg-gray-200 text-gray-400 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold cursor-not-allowed uppercase tracking-wider">Agotado</button>`
+                    : `<button onclick="addToCart('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', ${prod.price}, '${prod.img}', 'full', '${prod.barcode || ''}')" class="w-full bg-white border border-perfume-magenta text-perfume-magenta py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold hover:bg-perfume-magenta hover:text-white transition">Agregar al Carrito</button>`;
+
+                // SE MEJORÓ LA CAJA DE LA IMAGEN CON ASPECT RATIO Y MIX BLEND
                 grid.innerHTML += `
                 <div class="bg-white p-3 md:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-lg transition duration-300 group flex flex-col h-full relative">
+                    ${offerBadge}
                     ${prod.decants && prod.decants.length > 0 ? '<div class="absolute top-2 right-2 bg-gray-200 text-gray-800 text-[9px] font-bold px-2 py-1 rounded-full z-10">Con Decants</div>' : ''}
-                    <div class="relative overflow-hidden rounded-xl mb-4 bg-gray-50 flex items-center justify-center min-h-[160px] md:min-h-[220px] cursor-pointer" onclick="openProductModal('${prod.id}')">
-                        <img src="${prod.img}" class="w-full h-32 md:h-56 object-contain p-2 group-hover:scale-105 transition duration-500">
+                    <div class="relative overflow-hidden rounded-xl mb-4 bg-white flex items-center justify-center aspect-[4/5] cursor-pointer" onclick="openProductModal('${prod.id}')">
+                        ${agotadoOverlay}
+                        <img src="${prod.img}" class="w-full h-full object-contain p-2 md:p-4 group-hover:scale-110 transition duration-700 mix-blend-multiply">
                         <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                             <span class="bg-white text-perfume-magenta px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shadow">Ver Detalles</span>
                         </div>
@@ -1100,17 +1180,19 @@
                             ${skuLabel}
                         </div>
                         <h4 class="text-sm md:text-lg font-bold text-perfume-dark mt-1 hover:text-perfume-magenta transition leading-tight">${prod.name}</h4>
-                        <p class="text-perfume-magenta font-bold text-base md:text-lg mt-2">${priceFormatted}</p>
+                        <div class="flex justify-between items-end mt-2">
+                            <p class="text-perfume-magenta font-bold text-base md:text-lg">${priceFormatted}</p>
+                            ${showStockBadge ? `<span class="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full border border-green-100">${prod.stock} disp.</span>` : ''}
+                        </div>
                     </div>
                     <div class="mt-4 md:mt-5 border-t border-gray-100 pt-3 md:pt-4">
+                        ${!isOutOfStock ? `
                         <div class="flex items-center justify-between bg-gray-50 rounded-lg p-1 mb-2 md:mb-3">
                             <button onclick="updateQty('${prod.id}', -1)" class="w-6 h-6 md:w-8 md:h-8 text-gray-500 hover:text-black font-bold text-lg md:text-xl rounded-md hover:bg-white">-</button>
                             <span id="qty-${prod.id}" class="font-bold text-gray-800 text-sm md:text-base">1</span>
                             <button onclick="updateQty('${prod.id}', 1)" class="w-6 h-6 md:w-8 md:h-8 text-gray-500 hover:text-black font-bold text-lg md:text-xl rounded-md hover:bg-white">+</button>
-                        </div>
-                        <button onclick="addToCart('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', ${prod.price}, '${prod.img}', 'full', '${prod.barcode || ''}')" class="w-full bg-white border border-perfume-magenta text-perfume-magenta py-2 md:py-2.5 rounded-lg text-xs md:text-base font-bold hover:bg-perfume-magenta hover:text-white transition">
-                            Agregar al Carrito
-                        </button>
+                        </div>` : ''}
+                        ${btnHtml}
                     </div>
                 </div>`;
             });
@@ -1150,7 +1232,9 @@
             document.getElementById('detail-cat').innerText = brandLabel + prod.category;
             document.getElementById('detail-name').innerText = prod.name;
             document.getElementById('detail-desc').innerText = prod.description || "Una fragancia excepcional perfecta para cualquier ocasión.";
-            document.getElementById('qty-detail').innerText = "1";
+            
+            const qtyDetailEl = document.getElementById('qty-detail');
+            if (qtyDetailEl) qtyDetailEl.innerText = "1";
 
             // Mostrar u ocultar badge de código de barras
             const barcodeBadge = document.getElementById('detail-barcode-badge');
@@ -1159,6 +1243,29 @@
                 barcodeBadge.classList.remove('hidden');
             } else {
                 barcodeBadge.classList.add('hidden');
+            }
+
+            // VARIANTES (ESTILO HOLLISTER)
+            const swatchesContainer = document.getElementById('detail-swatches-container');
+            const swatchesList = document.getElementById('detail-swatches-list');
+            
+            if (prod.brand && prod.brand.trim() !== '') {
+                // Buscar otros perfumes de la misma marca
+                const related = window.catalogProducts.filter(p => p.brand === prod.brand);
+                
+                if(related.length > 1) { 
+                    swatchesContainer.classList.remove('hidden');
+                    let swatchesHtml = '';
+                    related.forEach(r => {
+                        const isActive = r.id === prod.id ? 'active' : '';
+                        swatchesHtml += `<div class="swatch-circle ${isActive}" title="${r.name}" onclick="openProductModal('${r.id}')"><img src="${r.img}"></div>`;
+                    });
+                    swatchesList.innerHTML = swatchesHtml;
+                } else {
+                    swatchesContainer.classList.add('hidden');
+                }
+            } else {
+                swatchesContainer.classList.add('hidden');
             }
 
             // Manejo de variantes (Botella Completa y Decants)
@@ -1174,6 +1281,23 @@
             selectVariant.value = 'full';
             window.updateDetailPrice(); // Actualiza el precio grande mostrado
 
+            // Control de Botón del Modal según Stock
+            const actionsContainer = document.getElementById('detail-actions-container');
+            const isOutOfStock = !!prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0);
+            
+            if(isOutOfStock) {
+                actionsContainer.innerHTML = `<button disabled class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-bold cursor-not-allowed uppercase tracking-widest shadow-inner">Agotado temporalmente</button>`;
+            } else {
+                actionsContainer.innerHTML = `
+                    <div class="flex items-center justify-between bg-gray-100 rounded-lg p-1 w-32">
+                        <button onclick="updateQty('detail', -1)" class="w-8 h-8 text-gray-600 hover:text-black font-bold text-xl rounded-md hover:bg-white transition">-</button>
+                        <span id="qty-detail" class="font-bold text-gray-800">1</span>
+                        <button onclick="updateQty('detail', 1)" class="w-8 h-8 text-gray-600 hover:text-black font-bold text-xl rounded-md hover:bg-white transition">+</button>
+                    </div>
+                    <button onclick="addDetailToCart()" class="flex-1 bg-perfume-magenta text-white py-3 rounded-lg font-bold hover:bg-gray-800 transition shadow-md">Agregar al Carrito</button>
+                `;
+            }
+
             const modal = document.getElementById('product-details-modal');
             const box = document.getElementById('product-details-box');
             modal.classList.remove('hidden');
@@ -1182,8 +1306,10 @@
 
         window.updateDetailPrice = function() {
             const select = document.getElementById('detail-variant');
-            const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price'));
-            document.getElementById('detail-price-display').innerText = `RD$ ${price.toLocaleString('en-US')}`;
+            if(select && select.selectedIndex >= 0) {
+                const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price'));
+                document.getElementById('detail-price-display').innerText = `RD$ ${price.toLocaleString('en-US')}`;
+            }
         }
 
         window.closeProductModal = function() {
@@ -1197,7 +1323,9 @@
         window.addDetailToCart = function() {
             const id = document.getElementById('detail-id').value;
             const prod = window.catalogProducts.find(p => p.id === id);
-            const qty = parseInt(document.getElementById('qty-detail').innerText);
+            const qtyStr = document.getElementById('qty-detail');
+            if(!qtyStr) return; // Si no hay stock no existe el botón
+            const qty = parseInt(qtyStr.innerText);
             
             const select = document.getElementById('detail-variant');
             const val = select.value;
@@ -1216,6 +1344,12 @@
 
             const cartId = `${id}_${variantId}`; // ID único en carrito combinando producto y variante
             
+            // Verificación de stock general (solo verifica límites si usa inventario explícito)
+            const currentQtyInCart = window.cart.find(i=> i.cartId === cartId)?.qty || 0;
+            if (typeof prod.stock === 'number' && (currentQtyInCart + qty) > prod.stock) {
+                return window.showToast(`Solo quedan ${prod.stock} unidades en el inventario.`);
+            }
+
             const ex = window.cart.find(i=> i.cartId === cartId); 
             if(ex) ex.qty += qty; 
             else window.cart.push({ cartId: cartId, id: prod.id, name: name, price: price, qty: qty, img: prod.img, variant: variantId, barcode: barcode }); 
@@ -1223,7 +1357,7 @@
             const catQty = document.getElementById('qty-'+id);
             if(catQty) catQty.innerText = 1;
             
-            window.updateCartUI(); window.showToast("¡Agregado al carrito!"); window.closeProductModal();
+            window.updateCartUI(); window.showToast("¡Agregado!"); window.closeProductModal();
             const cartModal = document.getElementById('cart-modal'); cartModal.classList.remove('translate-x-full');
             setTimeout(() => { if(!cartModal.classList.contains('cart-opened-by-user')) cartModal.classList.add('translate-x-full'); }, 2000);
         }
@@ -1279,6 +1413,18 @@
             document.getElementById('tab-btn-'+tab).classList.add('border-b-2', 'border-perfume-magenta');
         }
 
+        window.toggleInvInput = function() {
+            const isChecked = document.getElementById('admin-prod-use-inv').checked;
+            const input = document.getElementById('admin-prod-stock');
+            if(isChecked) {
+                input.classList.remove('hidden');
+                input.setAttribute('required', 'true');
+            } else {
+                input.classList.add('hidden');
+                input.removeAttribute('required');
+            }
+        }
+
         window.resetAdminForm = function() {
             document.getElementById('admin-add-form').reset();
             document.getElementById('admin-prod-id').value = '';
@@ -1288,6 +1434,11 @@
             document.getElementById('admin-cancel-edit').classList.add('hidden');
             window.currentDecants = [];
             window.renderAdminDecants();
+            
+            if(document.getElementById('admin-prod-use-inv')) {
+                document.getElementById('admin-prod-use-inv').checked = false;
+                window.toggleInvInput();
+            }
         }
 
         window.editProduct = function(id) {
@@ -1312,6 +1463,22 @@
             document.getElementById('admin-prod-desc').value = prod.description || '';
             document.getElementById('admin-prod-img').value = prod.img;
             
+            // Cargar datos de stock, oferta y agotado
+            const useInvCheckbox = document.getElementById('admin-prod-use-inv');
+            const stockInput = document.getElementById('admin-prod-stock');
+            
+            if (typeof prod.stock === 'number') {
+                useInvCheckbox.checked = true;
+                stockInput.value = prod.stock;
+            } else {
+                useInvCheckbox.checked = false;
+                stockInput.value = '';
+            }
+            window.toggleInvInput();
+            
+            document.getElementById('admin-prod-sale').checked = !!prod.onSale;
+            document.getElementById('admin-prod-agotado').checked = !!prod.isAgotado;
+
             // Cargar Decants
             window.currentDecants = prod.decants ? [...prod.decants] : [];
             window.renderAdminDecants();
@@ -1320,6 +1487,69 @@
             document.getElementById('admin-submit-btn').innerText = "Actualizar Cambios";
             document.getElementById('admin-cancel-edit').classList.remove('hidden');
             document.getElementById('admin-box').scrollTo({top: 0, behavior: 'smooth'});
+            document.getElementById('admin-tab-products').scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // --- SISTEMA DE SUBIDA A GITHUB ---
+        window.uploadToGitHub = async function(e) {
+            const file = e.target.files[0];
+            if(!file) return;
+
+            // Consultar datos de configuración para sacar Token y Repo
+            const configRef = doc(db, 'artifacts', appId, 'public', 'config');
+            const snap = await getDoc(configRef);
+            const data = snap.exists() ? snap.data() : {};
+            
+            const repo = data.ghRepo || 'famlyfragrancerd-byte/famlyfragrancerd-web';
+            const token = data.ghToken;
+
+            if(!token) {
+                window.showToast("⚠️ Falta el Token de GitHub. Búscalo en 'Configurar Tienda'.");
+                e.target.value = '';
+                return;
+            }
+
+            const btnText = document.getElementById('upload-img-text');
+            btnText.innerText = "Subiendo... ⏳";
+            
+            try {
+                // Convertir imagen a Base64
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = async function() {
+                    const base64Content = reader.result.split(',')[1];
+                    // Crear un nombre de archivo limpio y único para GitHub
+                    const safeName = file.name.replace(/[^a-zA-Z0-9.]/g, '_');
+                    const fileName = `img_productos/${Date.now()}_${safeName}`;
+                    
+                    const response = await fetch(`https://api.github.com/repos/${repo}/contents/${fileName}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `token ${token}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message: `Subida de imagen: ${file.name}`,
+                            content: base64Content
+                        })
+                    });
+
+                    if(!response.ok) throw new Error("Error en GitHub: " + response.statusText);
+                    
+                    // Extraer enlace raw de GitHub de forma manual (Más rápido para mostrar directo)
+                    const ownerRepo = repo.split('/');
+                    const rawUrl = `https://raw.githubusercontent.com/${ownerRepo[0]}/${ownerRepo[1]}/main/${fileName}`;
+                    
+                    document.getElementById('admin-prod-img').value = rawUrl;
+                    window.showToast("✅ Imagen subida a GitHub.");
+                };
+            } catch(err) {
+                console.error(err);
+                window.showToast("❌ Hubo un error al subir la imagen.");
+            } finally {
+                btnText.innerText = "Subir 📁";
+                e.target.value = ''; // Resetea el input file
+            }
         }
 
         window.addDynamicProduct = async function(e) {
@@ -1336,13 +1566,19 @@
             const price = parseFloat(document.getElementById('admin-prod-price').value);
             const description = document.getElementById('admin-prod-desc').value;
             const imgUrl = document.getElementById('admin-prod-img').value;
+            
+            const useInv = document.getElementById('admin-prod-use-inv').checked;
+            const stock = useInv ? (parseInt(document.getElementById('admin-prod-stock').value) || 0) : null;
+            
+            const onSale = document.getElementById('admin-prod-sale').checked;
+            const isAgotado = document.getElementById('admin-prod-agotado').checked;
 
             // Filtrar decants vacíos
             const validDecants = window.currentDecants.filter(d => d.size.trim() !== '' && d.price > 0);
 
             try {
                 if(!imgUrl) throw new Error("Debes proporcionar una URL de imagen.");
-                const dataObj = { name, brand, barcode, category, price, description, img: imgUrl, decants: validDecants };
+                const dataObj = { name, brand, barcode, category, price, stock, onSale, isAgotado, description, img: imgUrl, decants: validDecants };
 
                 if(editId) {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', editId), dataObj);
@@ -1393,13 +1629,29 @@
             filtered.forEach(prod => {
                 const brandLabel = prod.brand ? `${prod.brand} • ` : '';
                 const decantBadge = prod.decants && prod.decants.length > 0 ? '<span class="bg-gray-200 text-gray-800 text-[9px] px-1.5 py-0.5 rounded font-bold ml-1">D</span>' : '';
+                
+                let stockStatus = '';
+                if (prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0)) {
+                    stockStatus = `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-red-200 tracking-wider">AGOTADO</span>`;
+                } else if (typeof prod.stock === 'number') {
+                    stockStatus = `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-green-200 tracking-wider">Stock: ${prod.stock}</span>`;
+                } else {
+                    stockStatus = `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-blue-200 tracking-wider">Stock: Infinito</span>`;
+                }
+                
+                const saleBadge = prod.onSale ? `<span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-yellow-200 ml-1 tracking-wider">OFERTA</span>` : '';
+
                 listDiv.innerHTML += `
-                <div class="flex items-center justify-between bg-white border border-gray-200 p-3 rounded-lg shadow-sm">
+                <div class="flex items-center justify-between bg-white border border-gray-200 p-3 rounded-lg shadow-sm hover:border-perfume-magenta hover:shadow-md transition">
                     <div class="flex items-center gap-3">
-                        <img src="${prod.img}" class="w-10 h-10 object-cover rounded bg-gray-100">
+                        <img src="${prod.img}" class="w-10 h-10 object-cover rounded bg-gray-100 mix-blend-multiply">
                         <div>
                             <p class="font-bold text-sm text-perfume-dark">${prod.name} ${decantBadge}</p>
                             <p class="text-xs text-gray-500">${brandLabel}${prod.category} • RD$ ${prod.price.toLocaleString('en-US')}</p>
+                            <div class="flex mt-1 items-center">
+                                ${stockStatus}
+                                ${saleBadge}
+                            </div>
                             ${prod.barcode ? `<p class="text-[9px] text-gray-400 font-mono mt-0.5">ID: ${prod.barcode}</p>` : ''}
                         </div>
                     </div>
@@ -1409,6 +1661,10 @@
                     </div>
                 </div>`;
             });
+        }
+
+        window.handleCSVUpload = function() {
+            window.showToast("Función de subida CSV en desarrollo.");
         }
 
         window.currentOrderTab = 'Pendientes';
@@ -1978,8 +2234,17 @@
         window.updateQty = (id, delta) => { let v = parseInt(document.getElementById('qty-'+id).innerText)+delta; document.getElementById('qty-'+id).innerText = v<1?1:v; }
         
         window.addToCart = (id, name, price, img, variantId, barcode = '') => { 
+            const prodData = window.catalogProducts.find(p => p.id === id);
+            if (!prodData) return;
             const q = parseInt(document.getElementById('qty-'+id).innerText); 
             const cartId = `${id}_${variantId}`; 
+            
+            // Verificación de stock antes de agregar al carrito general
+            const currentQtyInCart = window.cart.find(i=>i.cartId === cartId)?.qty || 0;
+            if (prodData.stock !== null && prodData.stock !== undefined && (currentQtyInCart + q) > prodData.stock) {
+                return window.showToast(`Solo quedan ${prodData.stock} unidades en stock.`);
+            }
+
             const ex = window.cart.find(i=>i.cartId === cartId); 
             if(ex) ex.qty+=q; 
             else window.cart.push({cartId, id, name, price, qty:q, img, variant: variantId, barcode: barcode}); 
@@ -2029,6 +2294,19 @@
             const orderId = `#PED-${orderIdHex}`;
 
             try {
+                // Descontar Stock en Firebase automáticamente
+                for(let item of window.cart) {
+                    const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
+                    const pSnap = await getDoc(pRef);
+                    if (pSnap.exists()) {
+                        const currentStock = pSnap.data().stock;
+                        if (typeof currentStock === 'number') {
+                            const newStock = Math.max(0, currentStock - item.qty);
+                            await updateDoc(pRef, { stock: newStock });
+                        }
+                    }
+                }
+
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), {
                     orderId: orderId,
                     userId: window.userId,
