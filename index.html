@@ -393,7 +393,7 @@
 
             <!-- BOTÓN PARA ACTIVAR NOTIFICACIONES PUSH FCM -->
             <button id="btn-push-notifications" onclick="requestPushNotifications()" class="hidden w-full mb-6 bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 transition flex items-center justify-center gap-2">
-                🔔 Recibir Alertas Push Aquí
+                🔔 Activar Alertas Push
             </button>
             
             <h3 class="text-lg font-bold text-perfume-dark mb-4">Mis Pedidos Anteriores</h3>
@@ -936,10 +936,10 @@
                 link.href = URL.createObjectURL(manifestBlob);
                 document.head.appendChild(link);
 
-                const swCode = "self.addEventListener('fetch', function(event) {});";
-                const swBlob = new Blob([swCode], {type: 'application/javascript'});
+                // CORRECCIÓN: Registramos el service worker real de notificaciones para la PWA también
                 if ('serviceWorker' in navigator) {
-                    navigator.serviceWorker.register(URL.createObjectURL(swBlob)).catch(function() {});
+                    navigator.serviceWorker.register('./firebase-messaging-sw.js')
+                        .catch(function(err) { console.log('Error registrando SW:', err); });
                 }
             } catch (e) { console.error("Error iniciando PWA"); }
         });
@@ -1013,12 +1013,14 @@
                 const permission = await Notification.requestPermission();
                 
                 if (permission === 'granted') {
-                    // 2. Si acepta, le pedimos un Token a Firebase
                     window.showToast("Generando token seguro...");
                     
-                    // REEMPLAZA "TU_CLAVE_VAPID_AQUI" CON LA CLAVE DEL PASO 1
+                    // CORRECCIÓN: Le forzamos a Firebase a usar nuestro archivo explícitamente
+                    let swReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js').catch(e => console.log(e));
+
                     const token = await getToken(messaging, { 
-                        vapidKey: 'BNKJWEd2wN3PKXwR2guYOa8WCaoRFUGA4YV09WBRWZLoWlcEUnV-AekH6v9Ko7qup_brN8d64VC1Z9FdFVL6lbo' 
+                        vapidKey: 'BNKJWEd2wN3PKXwR2guYOa8WCaoRFUGA4YV09WBRWZLoWlcEUnV-AekH6v9Ko7qup_brN8d64VC1Z9FdFVL6lbo',
+                        serviceWorkerRegistration: swReg
                     });
                     
                     if (token) {
@@ -1026,13 +1028,19 @@
                         if (window.userId && (SUPER_ADMIN_EMAILS.includes(auth.currentUser.email) || STAFF_EMAILS.includes(auth.currentUser.email))) {
                             await setDoc(doc(db, 'artifacts', appId, 'admin_tokens', window.userId), { 
                                 token: token, 
-                                device: navigator.userAgent 
+                                device: navigator.userAgent,
+                                updated_at: new Date().toISOString()
                             }, { merge: true });
                         }
                         console.log("FCM Token:", token);
                         window.showToast("✅ Notificaciones Push Activadas.");
-                        document.getElementById('btn-push-notifications').classList.replace('bg-blue-600', 'bg-green-600');
-                        document.getElementById('btn-push-notifications').innerText = "✅ Notificaciones Activadas";
+                        
+                        // Actualizar UI
+                        const btn = document.getElementById('btn-push-notifications');
+                        if (btn) {
+                            btn.classList.replace('bg-blue-600', 'bg-green-600');
+                            btn.innerText = "✅ Notificaciones Activadas";
+                        }
                     } else {
                         window.showToast("⚠️ No se generó el token.");
                     }
@@ -1041,7 +1049,7 @@
                 }
             } catch (error) {
                 console.error("Error activando FCM:", error);
-                window.showToast("Error. Asegúrate de poner tu clave VAPID en el código.");
+                window.showToast("Error. Revisa los permisos o la consola.");
             }
         }
 
@@ -2226,7 +2234,14 @@
 
                 if (isSuperAdmin || isStaff) {
                     document.getElementById('btn-orders-dashboard').classList.remove('hidden');
-                    document.getElementById('btn-push-notifications').classList.remove('hidden'); // MOSTRAR BOTÓN DE NOTIFICACIONES PUSH
+                    const pushBtn = document.getElementById('btn-push-notifications');
+                    pushBtn.classList.remove('hidden'); 
+                    
+                    // CORRECCIÓN: Comprobamos si las notificaciones ya estaban activadas previamente
+                    if (Notification.permission === 'granted') {
+                        pushBtn.classList.replace('bg-blue-600', 'bg-green-600');
+                        pushBtn.innerText = "✅ Notificaciones Activadas";
+                    }
                     
                     if (isSuperAdmin) { document.getElementById('btn-admin-panel').classList.remove('hidden'); } 
                     else { document.getElementById('btn-admin-panel').classList.add('hidden'); }
