@@ -11,6 +11,11 @@
     <title>famlyfragrancerd | Tu Tienda de Perfumes</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <!-- NUEVAS LIBRERÍAS PARA GENERAR PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
     <script>
         tailwind.config = {
             theme: {
@@ -179,6 +184,9 @@
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </span>
                         <input type="text" id="catalog-search" oninput="filterCatalog()" placeholder="Buscar por marca, nombre, SKU o género..." class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 shadow-sm text-sm focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta bg-white transition-all font-medium">
+                        
+                        <!-- NUEVO: Contenedor del Buscador Predictivo Flotante -->
+                        <div id="search-suggestions" class="absolute top-full left-0 w-full bg-white mt-2 rounded-xl shadow-2xl border border-gray-100 z-50 hidden max-h-80 overflow-y-auto divide-y divide-gray-50 transition-all duration-300"></div>
                     </div>
                     
                     <div class="flex flex-col md:flex-row gap-4 mt-4">
@@ -245,8 +253,16 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative transform scale-95 transition-transform duration-300 flex flex-col md:flex-row overflow-hidden max-h-[95vh]" id="product-details-box">
             <button onclick="closeProductModal()" class="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 md:bg-black/50 text-black md:text-white border border-gray-200 md:border-none rounded-full w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white z-50 transition shadow-md backdrop-blur-sm">&times;</button>
             
-            <div class="w-full md:w-1/2 bg-gray-50 flex items-center justify-center relative p-4 h-48 md:h-auto shrink-0 border-b border-gray-100 md:border-none">
-                <img id="detail-img" src="" alt="Perfume" class="w-full h-full object-contain mix-blend-multiply transition duration-500 p-2 md:p-6">
+            <!-- Contenedor con Lupa y Zoom -->
+            <div id="detail-img-container" class="w-full md:w-1/2 bg-gray-50 flex items-center justify-center relative h-64 md:h-auto shrink-0 border-b border-gray-100 md:border-none overflow-hidden cursor-crosshair group" onmousemove="handleZoom(event)" onmouseleave="resetZoom()" ontouchmove="handleTouchZoom(event)" ontouchend="resetZoom()">
+                <img id="detail-img" src="" alt="Perfume" class="w-full h-full object-contain mix-blend-multiply transition-all duration-200 p-4 md:p-8">
+                
+                <!-- Indicador visual de Lupa -->
+                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-[10px] font-bold px-3 py-1.5 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20 flex items-center gap-1.5 shadow-md pointer-events-none">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
+                    Pasa el dedo o mouse para explorar
+                </div>
+
                 <div id="detail-barcode-badge" class="absolute top-4 left-4 bg-white/90 backdrop-blur text-gray-800 text-[10px] font-mono px-2 py-1 rounded hidden border border-gray-300 shadow-sm z-10">
                     <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg><span id="detail-barcode-text"></span>
                 </div>
@@ -255,7 +271,13 @@
             <div class="w-full md:w-1/2 flex flex-col flex-1 overflow-hidden relative bg-white">
                 <div class="p-5 md:p-8 pb-4 flex-1 overflow-y-auto no-scrollbar">
                     <span id="detail-cat" class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block">Categoría</span>
-                    <h2 id="detail-name" class="text-2xl md:text-3xl font-extrabold text-perfume-dark mb-2 leading-tight">Nombre</h2>
+                    
+                    <div class="flex justify-between items-start mb-2 gap-2">
+                        <h2 id="detail-name" class="text-2xl md:text-3xl font-extrabold text-perfume-dark leading-tight flex-1">Nombre</h2>
+                        <button onclick="shareCurrentProduct()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2.5 rounded-full transition shadow-sm shrink-0 flex items-center justify-center" title="Compartir este perfume">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z"></path></svg>
+                        </button>
+                    </div>
                     
                     <div id="detail-swatches-container" class="mb-4 hidden">
                         <p class="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Modelos de esta colección:</p>
@@ -346,23 +368,26 @@
         </div>
     </div>
 
-    <!-- PANEL DE ADMINISTRADOR AVANZADO -->
-    <div id="admin-modal" class="fixed inset-0 bg-gray-900/80 z-[200] hidden flex justify-center items-center opacity-0 transition-opacity duration-300 backdrop-blur-sm">
-        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto relative transform scale-95 transition-transform duration-300" id="admin-box">
-            <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-3xl leading-none">&times;</button>
-            
-            <h2 class="text-2xl font-extrabold text-perfume-dark mb-2">⚙️ Panel de Administración</h2>
-            
-            <div class="flex space-x-4 border-b border-gray-200 mb-6 overflow-x-auto no-scrollbar pb-1">
-                <button onclick="switchAdminTab('products')" id="tab-btn-products" class="py-2 px-4 font-bold text-perfume-magenta border-b-2 border-perfume-magenta whitespace-nowrap">📦 Productos</button>
-                <button onclick="switchAdminTab('categories')" id="tab-btn-categories" class="py-2 px-4 font-bold text-gray-500 hover:text-gray-700 whitespace-nowrap">🏷️ Categorías y Marcas</button>
-                <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="py-2 px-4 font-bold text-gray-500 hover:text-gray-700 whitespace-nowrap">🎨 Configurar Tienda (Diseño)</button>
+    <!-- PANEL DE ADMINISTRADOR AVANZADO (A PANTALLA COMPLETA) -->
+    <div id="admin-modal" class="fixed inset-0 bg-gray-100 z-[200] hidden flex-col transition-opacity duration-300 opacity-0">
+        <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col shrink-0">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-extrabold text-perfume-dark">⚙️ Panel de Administración</h2>
+                <button onclick="closeAdminModal()" class="text-gray-400 hover:text-red-500 text-3xl leading-none" title="Cerrar Panel">&times;</button>
             </div>
+            <div class="flex gap-6 overflow-x-auto no-scrollbar">
+                <button onclick="switchAdminTab('products')" id="tab-btn-products" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">📦 Productos</button>
+                <button onclick="switchAdminTab('categories')" id="tab-btn-categories" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">🏷️ Categorías y Marcas</button>
+                <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">🎨 Configurar Tienda (Diseño)</button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8" id="admin-box">
             
             <!-- PESTAÑA: PRODUCTOS -->
-            <div id="admin-tab-products">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 relative">
+            <div id="admin-tab-products" class="max-w-6xl mx-auto w-full">
+                <div class="max-w-2xl mx-auto mb-8">
+                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 relative shadow-sm">
                         <button id="admin-cancel-edit" onclick="resetAdminForm()" class="hidden absolute top-4 right-4 text-xs font-bold text-gray-500 hover:text-red-500">Cancelar</button>
                         
                         <h3 id="admin-form-title" class="font-bold text-perfume-dark mb-4">➕ Agregar Perfume</h3>
@@ -433,17 +458,6 @@
                             </button>
                         </form>
                     </div>
-
-                    <div class="bg-gray-50 p-5 rounded-xl border border-gray-200 flex flex-col justify-between">
-                        <div>
-                            <h3 class="font-bold text-perfume-dark mb-2">📁 Subida por Lotes (CSV)</h3>
-                            <p class="text-xs text-gray-500 mb-4">Sube un archivo .csv con 6 columnas: <br><b>Nombre, Marca, Categoría, Precio, URL Imagen, Descripción.</b></p>
-                            <input type="file" id="admin-csv-file" accept=".csv" class="w-full text-sm text-gray-500 border border-gray-300 p-2 rounded-lg bg-white">
-                        </div>
-                        <button onclick="handleCSVUpload()" id="btn-csv-upload" class="mt-4 w-full bg-perfume-dark text-white font-bold py-2 rounded-lg hover:bg-black transition">
-                            Procesar Archivo
-                        </button>
-                    </div>
                 </div>
 
                 <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
@@ -457,7 +471,7 @@
             </div>
 
             <!-- PESTAÑA: CATEGORÍAS Y MARCAS -->
-            <div id="admin-tab-categories" class="hidden space-y-6">
+            <div id="admin-tab-categories" class="hidden space-y-6 max-w-6xl mx-auto w-full">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <h3 class="font-bold text-perfume-dark mb-4 border-b border-gray-200 pb-2">🏷️ Gestión de Categorías</h3>
@@ -490,7 +504,7 @@
             </div>
 
             <!-- PESTAÑA: CONFIGURACIÓN AVANZADA -->
-            <div id="admin-tab-settings" class="hidden space-y-6">
+            <div id="admin-tab-settings" class="hidden space-y-6 max-w-6xl mx-auto w-full">
                 <form onsubmit="saveSiteConfig(event)" class="space-y-6">
                     
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
@@ -745,6 +759,52 @@
         </div>
     </div>
 
+    <!-- MODAL CONFIGURAR ESTADOS (MEJORADO CON MENSAJES) -->
+    <div id="status-settings-modal" class="fixed inset-0 bg-black/60 z-[300] hidden flex-col justify-center items-center opacity-0 transition-opacity duration-300 backdrop-blur-sm p-4">
+        <div class="bg-white p-5 rounded-2xl shadow-2xl w-full max-w-lg transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col" id="status-settings-box">
+            <h3 class="text-xl font-bold text-perfume-dark mb-1 shrink-0">⚙️ Personalizar Estados</h3>
+            <p class="text-xs text-gray-500 mb-4 shrink-0">Modifica el nombre y el mensaje de WhatsApp que se envía al cliente en cada estado.</p>
+            
+            <div class="space-y-4 mb-4 overflow-y-auto pr-2 no-scrollbar flex-1">
+                <!-- Recibido -->
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🟡 Estado: Recibido</label>
+                    <input type="text" id="status-name-recibido" placeholder="Nombre (Ej: Recibido)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
+                    <textarea id="status-msg-recibido" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
+                </div>
+                <!-- Procesando -->
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🔵 Estado: Procesando</label>
+                    <input type="text" id="status-name-procesando" placeholder="Nombre (Ej: Empacando)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
+                    <textarea id="status-msg-procesando" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
+                </div>
+                <!-- Enviado -->
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🚚 Estado: Enviado</label>
+                    <input type="text" id="status-name-enviado" placeholder="Nombre (Ej: En Camino)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
+                    <textarea id="status-msg-enviado" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
+                </div>
+                <!-- Completado -->
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🟢 Estado: Completado</label>
+                    <input type="text" id="status-name-completado" placeholder="Nombre (Ej: Entregado)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
+                    <textarea id="status-msg-completado" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
+                </div>
+                <!-- Cancelado -->
+                <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🔴 Estado: Cancelado</label>
+                    <input type="text" id="status-name-cancelado" placeholder="Nombre (Ej: Rechazado)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
+                    <textarea id="status-msg-cancelado" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
+                </div>
+            </div>
+            
+            <div class="flex gap-3 shrink-0 pt-2 border-t border-gray-100">
+                <button onclick="closeStatusSettings()" class="flex-1 bg-gray-100 text-gray-700 py-2.5 rounded-xl font-bold hover:bg-gray-200 transition">Cancelar</button>
+                <button onclick="saveStatusSettings()" class="flex-1 bg-perfume-magenta text-white py-2.5 rounded-xl font-bold hover:bg-perfume-dark transition shadow-md">Guardar Todo</button>
+            </div>
+        </div>
+    </div>
+
     <!-- DASHBOARD DE PEDIDOS -->
     <div id="orders-dashboard-modal" class="fixed inset-0 bg-gray-100 z-[250] hidden flex-col transition-opacity duration-300 opacity-0">
         <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col">
@@ -758,12 +818,16 @@
                     <button onclick="loadAdminOrders()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 md:px-4 md:py-2 rounded-lg text-sm font-bold transition flex items-center justify-center" title="Actualizar Datos">
                         <span class="md:hidden">🔄</span><span class="hidden md:inline">🔄 Actualizar</span>
                     </button>
+                    <button onclick="openStatusSettings()" class="bg-gray-100 hover:bg-gray-200 text-gray-800 p-2 md:px-3 md:py-2 rounded-lg text-sm font-bold transition flex items-center justify-center ml-2" title="Personalizar Nombres de Estados">
+                        ⚙️
+                    </button>
                     <button onclick="closeOrdersDashboard()" class="text-gray-400 hover:text-red-500 text-3xl leading-none ml-2" title="Cerrar Monitor">&times;</button>
                 </div>
             </div>
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="setOrderTab('Pendientes')" id="tab-orders-pendientes" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">⏳ Pendientes</button>
-                <button onclick="setOrderTab('Atendidos')" id="tab-orders-atendidos" class="text-xs md:text-sm font-bold text-gray-400 pb-3 hover:text-gray-600 transition uppercase tracking-wide whitespace-nowrap">✅ Atendidos / Cerrados</button>
+                <button onclick="setOrderTab('Atendiendo')" id="tab-orders-atendiendo" class="text-xs md:text-sm font-bold text-gray-400 pb-3 hover:text-gray-600 transition uppercase tracking-wide whitespace-nowrap">👋 Atendiendo</button>
+                <button onclick="setOrderTab('Cerrados')" id="tab-orders-cerrados" class="text-xs md:text-sm font-bold text-gray-400 pb-3 hover:text-gray-600 transition uppercase tracking-wide whitespace-nowrap">✅ Cerrados</button>
                 <button onclick="setOrderTab('Todos')" id="tab-orders-todos" class="text-xs md:text-sm font-bold text-gray-400 pb-3 hover:text-gray-600 transition uppercase tracking-wide whitespace-nowrap">📋 Todos</button>
                 <button onclick="setOrderTab('Eliminados')" id="tab-orders-eliminados" class="text-xs md:text-sm font-bold text-red-400 hover:text-red-500 pb-3 transition uppercase tracking-wide whitespace-nowrap">🗑️ Eliminados</button>
             </div>
@@ -880,7 +944,6 @@
         const appId = "famlyfragrancerd"; 
 
         window.isLoggedIn = false; window.userId = null; window.cart = [];
-        window.phone = "18495161973"; 
         window.catalogProducts = [];
         window.adminOrders = []; 
         window.siteCategories = ['Damas', 'Caballeros', 'Unisex'];
@@ -890,6 +953,9 @@
 
         const SUPER_ADMIN_EMAILS = [ "geudri98@hotmail.com", "mrochelindachelle@gmail.com" ]; 
         const STAFF_EMAILS = [ "admin2@famlyfragrancerd.com", "famlyfragrancerd@hotmail.com", "gmarmol51@gmail.com" ]; 
+
+        window.statusDisplayNames = { 'Recibido': 'Recibido', 'Procesando': 'Procesando', 'Enviado': 'Enviado', 'Completado': 'Completado', 'Cancelado': 'Cancelado', 'Eliminado': 'Eliminado' };
+        window.statusMessages = { 'Recibido': 'Lo hemos recibido y estamos confirmando disponibilidad.', 'Procesando': 'Lo estamos preparando con mucho cuidado.', 'Enviado': '¡Tu paquete ya va en camino a tus manos!', 'Completado': 'Entregado. ¡Gracias por preferirnos!', 'Cancelado': 'El pedido fue cancelado.', 'Eliminado': 'El pedido fue eliminado de nuestro sistema.' };
 
         // =================================================================
         // DICCIONARIO DE CAMPOS DE CONFIGURACIÓN (MEJORA #2)
@@ -949,7 +1015,8 @@
                     
                     if (token) {
                         if (window.userId && (SUPER_ADMIN_EMAILS.includes(auth.currentUser.email) || STAFF_EMAILS.includes(auth.currentUser.email))) {
-                            await setDoc(doc(db, 'artifacts', appId, 'admin_tokens', window.userId), { 
+                            const deviceId = window.userId + '_' + navigator.userAgent.substring(0,20).replace(/[^a-zA-Z0-9]/g, '');
+                            await setDoc(doc(db, 'artifacts', appId, 'admin_tokens', deviceId), { 
                                 token: token, device: navigator.userAgent, updated_at: new Date().toISOString()
                             }, { merge: true });
                         }
@@ -1127,11 +1194,15 @@
                 const configRef = doc(db, 'artifacts', appId, 'public', 'config');
                 const snap = await getDoc(configRef);
                 const data = snap.exists() ? snap.data() : {};
+                window.siteConfig = data;
 
                 if(data.categoriesList && Array.isArray(data.categoriesList)) window.siteCategories = data.categoriesList;
                 window.renderCategoriesUI();
                 if(data.brandsList && Array.isArray(data.brandsList)) window.siteBrands = data.brandsList;
                 window.renderBrandsAdminUI();
+
+                if(data.statusDisplayNames) window.statusDisplayNames = { ...window.statusDisplayNames, ...data.statusDisplayNames };
+                if(data.statusMessages) window.statusMessages = { ...window.statusMessages, ...data.statusMessages };
 
                 window.siteAppearance = {
                     gridCols: data.gridCols || 'lg:grid-cols-4',
@@ -1343,7 +1414,50 @@
                 if (visibleCount === 0) emptyMsg.classList.remove('hidden');
                 else emptyMsg.classList.add('hidden');
             }
+
+            // NUEVO: Lógica del Buscador Predictivo
+            const suggestionsBox = document.getElementById('search-suggestions');
+            if (searchTerm.length > 1) {
+                // Filtramos los primeros 5 resultados que coincidan
+                const matches = window.catalogProducts.filter(p => 
+                    p.name.toLowerCase().includes(searchTerm) || 
+                    (p.brand && p.brand.toLowerCase().includes(searchTerm)) ||
+                    (p.category && p.category.toLowerCase().includes(searchTerm)) ||
+                    (p.barcode && p.barcode.toLowerCase().includes(searchTerm))
+                ).slice(0, 5); 
+
+                if (matches.length > 0) {
+                    let suggestionsHTML = '<div class="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50/50 rounded-t-xl">Resultados rápidos</div>';
+                    matches.forEach(m => {
+                        suggestionsHTML += `
+                            <div onclick="openProductModal('${m.id}'); document.getElementById('search-suggestions').classList.add('hidden');" class="flex items-center gap-4 p-3 hover:bg-gray-50 cursor-pointer transition">
+                                <img src="${m.img}" class="w-10 h-10 object-contain rounded bg-white border border-gray-100 mix-blend-multiply shadow-sm">
+                                <div class="flex-1">
+                                    <p class="text-sm font-bold text-perfume-dark leading-tight">${m.name}</p>
+                                    <p class="text-[10px] text-gray-500 mt-0.5 uppercase tracking-wider">${m.brand ? m.brand + ' • ' : ''}${m.category}</p>
+                                </div>
+                                <div class="text-perfume-magenta font-bold text-sm whitespace-nowrap">RD$ ${m.price.toLocaleString('en-US')}</div>
+                            </div>
+                        `;
+                    });
+                    suggestionsBox.innerHTML = suggestionsHTML;
+                    suggestionsBox.classList.remove('hidden');
+                } else {
+                    suggestionsBox.classList.add('hidden');
+                }
+            } else {
+                suggestionsBox.classList.add('hidden');
+            }
         }
+
+        // NUEVO: Cerrar el buscador predictivo al hacer clic afuera de la barra
+        document.addEventListener('click', function(event) {
+            const searchBox = document.getElementById('catalog-search');
+            const suggestionsBox = document.getElementById('search-suggestions');
+            if (searchBox && suggestionsBox && !searchBox.contains(event.target) && !suggestionsBox.contains(event.target)) {
+                suggestionsBox.classList.add('hidden');
+            }
+        });
 
         async function loadDynamicProducts() {
             const grid = document.getElementById('products-grid');
@@ -1364,6 +1478,15 @@
                 // Aplicamos los filtros actuales (ocultando con CSS lo necesario)
                 window.filterCatalog();
                 renderAdminProductsList();
+
+                // LÓGICA DEL ENLACE MÁGICO: Si alguien entra por un link compartido, abre ese perfume.
+                const urlParams = new URLSearchParams(window.location.search);
+                const sharedId = urlParams.get('p');
+                if(sharedId && !window.hasOpenedShared) {
+                    window.hasOpenedShared = true;
+                    setTimeout(() => window.openProductModal(sharedId), 500); 
+                }
+
             } catch (error) { grid.innerHTML = '<p class="text-red-500 col-span-full text-center py-10">Error al cargar el catálogo.</p>'; }
         }
 
@@ -1429,6 +1552,87 @@
         window.closeProductModal = function() {
             const modal = document.getElementById('product-details-modal'); const box = document.getElementById('product-details-box');
             modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
+            window.resetZoom(); // Resetear el zoom al cerrar
+            
+            // Limpiamos la URL para que quede bonita si cierran la ventana
+            if(window.location.search.includes('?p=')) {
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // NUEVA FUNCIÓN: Compartir Producto
+        window.shareCurrentProduct = async function() {
+            const id = document.getElementById('detail-id').value;
+            const prod = window.catalogProducts.find(p => p.id === id);
+            if(!prod) return;
+
+            // Creamos un link exacto hacia este producto (Mejorado para evitar URLs duplicadas)
+            const baseUrl = window.location.href.split('?')[0].split('#')[0];
+            const shareUrl = baseUrl + '?p=' + prod.id;
+            const shareTitle = `¡Mira este perfume en FamlyFragrancerd!`;
+            const shareText = `Descubre ${prod.name} por solo RD$ ${prod.price.toLocaleString('en-US')}. ✨\n\n`;
+
+            if (navigator.share) {
+                // En móviles abrirá el menú nativo (WhatsApp, Insta, Facebook...)
+                try {
+                    await navigator.share({
+                        title: shareTitle,
+                        text: shareText,
+                        url: shareUrl
+                    });
+                } catch (error) { console.log('Error al compartir', error); }
+            } else {
+                // En computadoras que no soportan Share API, copiamos al portapapeles
+                const tempInput = document.createElement("textarea");
+                tempInput.value = `${shareTitle}\n${shareText}${shareUrl}`;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand("copy");
+                document.body.removeChild(tempInput);
+                window.showToast("📋 Enlace copiado. ¡Pégalo en WhatsApp o donde quieras!");
+            }
+        }
+
+        // NUEVAS FUNCIONES: Efecto de Zoom y Lupa Dinámica
+        window.handleZoom = function(e) {
+            const container = document.getElementById('detail-img-container');
+            const img = document.getElementById('detail-img');
+            const rect = container.getBoundingClientRect();
+            
+            // Calculamos la posición del mouse en porcentaje (0 a 100%)
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            
+            img.style.transformOrigin = `${x}% ${y}%`;
+            img.style.transform = 'scale(2.2)'; // Aumenta 2.2 veces su tamaño original
+            img.classList.remove('p-4', 'md:p-8'); // Quitamos el margen interno para que llene la caja
+        }
+
+        window.handleTouchZoom = function(e) {
+            const container = document.getElementById('detail-img-container');
+            const img = document.getElementById('detail-img');
+            const rect = container.getBoundingClientRect();
+            
+            const touch = e.touches[0];
+            const x = ((touch.clientX - rect.left) / rect.width) * 100;
+            const y = ((touch.clientY - rect.top) / rect.height) * 100;
+            
+            // Limitamos para que la cámara no se salga del borde en móviles
+            const boundedX = Math.max(0, Math.min(100, x));
+            const boundedY = Math.max(0, Math.min(100, y));
+
+            img.style.transformOrigin = `${boundedX}% ${boundedY}%`;
+            img.style.transform = 'scale(2.2)';
+            img.classList.remove('p-4', 'md:p-8');
+        }
+
+        window.resetZoom = function() {
+            const img = document.getElementById('detail-img');
+            if(img) {
+                img.style.transformOrigin = 'center center';
+                img.style.transform = 'scale(1)';
+                img.classList.add('p-4', 'md:p-8'); // Devolvemos el margen interno original
+            }
         }
 
         window.addDetailToCart = function() {
@@ -1556,7 +1760,26 @@
 
         window.deleteDynamicProduct = function(docId) {
             window.openCustomConfirm("Eliminar Perfume", "¿Seguro que deseas eliminar este perfume del catálogo permanentemente?", async () => {
-                    try { await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', docId)); window.showToast("✅ Producto eliminado."); await loadDynamicProducts(); } catch(e) { window.showToast("❌ Error al eliminar el producto."); }
+                    try { 
+                        const prod = window.catalogProducts.find(p => p.id === docId);
+                        if(prod && prod.img && prod.img.includes('githubusercontent')) {
+                            const configRef = doc(db, 'artifacts', appId, 'public', 'config'); const snap = await getDoc(configRef); const data = snap.exists() ? snap.data() : {};
+                            if(data.ghToken && data.ghRepo) {
+                                try {
+                                    const pathParts = prod.img.split('/main/');
+                                    if(pathParts.length === 2) {
+                                        const filePath = pathParts[1];
+                                        const res = await fetch(`https://api.github.com/repos/${data.ghRepo}/contents/${filePath}`, { headers: { 'Authorization': `token ${data.ghToken}` }});
+                                        if(res.ok) {
+                                            const fileData = await res.json();
+                                            await fetch(`https://api.github.com/repos/${data.ghRepo}/contents/${filePath}`, { method: 'DELETE', headers: { 'Authorization': `token ${data.ghToken}`, 'Content-Type': 'application/json' }, body: JSON.stringify({ message: "Eliminar imagen huérfana", sha: fileData.sha }) });
+                                        }
+                                    }
+                                } catch(e) { console.log("No se pudo borrar imagen de GH", e); }
+                            }
+                        }
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', docId)); window.showToast("✅ Producto eliminado."); await loadDynamicProducts(); 
+                    } catch(e) { window.showToast("❌ Error al eliminar el producto."); }
                 }
             );
         }
@@ -1584,12 +1807,11 @@
             });
         }
 
-        window.handleCSVUpload = function() { window.showToast("Función de subida CSV en desarrollo."); }
         window.currentOrderTab = 'Pendientes';
 
         window.setOrderTab = function(tab) {
             window.currentOrderTab = tab;
-            const tabs = ['Pendientes', 'Atendidos', 'Todos', 'Eliminados'];
+            const tabs = ['Pendientes', 'Atendiendo', 'Cerrados', 'Todos', 'Eliminados'];
             tabs.forEach(t => {
                 const btn = document.getElementById('tab-orders-' + t.toLowerCase()); if(!btn) return;
                 if(t === tab) {
@@ -1607,7 +1829,7 @@
             try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { attendedBy: adminName }); window.showToast("👋 Te has asignado este pedido."); window.loadAdminOrders(); } catch(e) { window.showToast("❌ Error al asignar el pedido."); }
         }
 
-        window.deleteAdminOrder = function(docId) { window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas mover este pedido a la papelera?", async () => { try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: 'Eliminado' }); window.showToast("🗑️ Pedido movido a eliminados."); window.loadAdminOrders(); } catch(e) { window.showToast("❌ Error al eliminar el pedido."); } }); }
+        window.deleteAdminOrder = function(docId) { window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas mover este pedido a la papelera?", async () => { await window.updateOrderStatus(docId, 'Eliminado'); window.showToast("🗑️ Pedido movido a eliminados."); }); }
 
         window.updateAdminItemQty = async function(orderId, itemIdx, delta) {
             const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
@@ -1623,7 +1845,32 @@
             try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { items: newItems, total: newTotal }); window.loadAdminOrders(); } catch(e) { window.showToast("Error al eliminar artículo."); }
         }
 
-        window.toggleAddItemForm = function(orderId) { const form = document.getElementById('add-item-form-' + orderId); if(form) form.classList.toggle('hidden'); }
+        window.toggleAddItemForm = function(orderId) { 
+            const form = document.getElementById('add-item-form-' + orderId); 
+            const shipForm = document.getElementById('add-shipping-form-' + orderId);
+            if(form) form.classList.toggle('hidden'); 
+            if(shipForm) shipForm.classList.add('hidden'); // Oculta el otro si está abierto
+        }
+
+        window.toggleAddShippingForm = function(orderId) { 
+            const form = document.getElementById('add-shipping-form-' + orderId); 
+            const itemForm = document.getElementById('add-item-form-' + orderId);
+            if(form) {
+                form.classList.toggle('hidden');
+                if(itemForm) itemForm.classList.add('hidden'); // Oculta el otro si está abierto
+
+                // Si abrimos el formulario y ya había un envío aplicado, pre-llenar la caja
+                if (!form.classList.contains('hidden')) {
+                    const order = window.adminOrders.find(o => o.id === orderId);
+                    if (order) {
+                        const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+                        const diff = order.total - subtotal;
+                        const input = document.getElementById('new-shipping-price-' + orderId);
+                        if (diff > 0) input.value = diff; else input.value = '';
+                    }
+                }
+            } 
+        }
 
         window.saveNewAdminItem = async function(orderId) {
             const name = document.getElementById('new-item-name-' + orderId).value.trim(); const price = parseFloat(document.getElementById('new-item-price-' + orderId).value); const qty = parseInt(document.getElementById('new-item-qty-' + orderId).value);
@@ -1633,8 +1880,23 @@
             try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { items: newItems, total: newTotal }); window.showToast("Artículo añadido."); window.loadAdminOrders(); } catch(e) { window.showToast("Error al agregar artículo."); }
         }
 
+        window.saveShippingFee = async function(orderId) {
+            const inputVal = document.getElementById('new-shipping-price-' + orderId).value;
+            const shipping = parseFloat(inputVal) || 0; 
+            const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
+            
+            const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+            const newTotal = subtotal + shipping; 
+            
+            try { 
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { total: newTotal }); 
+                window.showToast(shipping > 0 ? "🚚 Costo de envío agregado." : "Envío eliminado."); 
+                window.loadAdminOrders(); 
+            } catch(e) { window.showToast("Error al agregar el costo."); }
+        }
+
         window.updateAdminTotal = async function(orderId, valStr) {
-            const val = parseFloat(valStr); if(isNaN(val)) return;
+            const val = parseFloat(valStr); if(isNaN(val)) return window.showToast("Monto inválido");
             try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { total: val }); window.showToast("💰 Total modificado exitosamente."); window.loadAdminOrders(); } catch(e) { window.showToast("Error al actualizar el total."); }
         }
 
@@ -1654,7 +1916,19 @@
 
         window.renderAdminOrdersList = function(filterTerm = "") {
             const listDiv = document.getElementById('admin-orders-list'); let filtered = window.adminOrders;
-            if (window.currentOrderTab === 'Pendientes') filtered = filtered.filter(o => !o.attendedBy && o.status !== 'Eliminado'); else if (window.currentOrderTab === 'Atendidos') filtered = filtered.filter(o => o.attendedBy && o.status !== 'Eliminado'); else if (window.currentOrderTab === 'Todos') filtered = filtered.filter(o => o.status !== 'Eliminado'); else if (window.currentOrderTab === 'Eliminados') filtered = filtered.filter(o => o.status === 'Eliminado');
+            
+            if (window.currentOrderTab === 'Pendientes') {
+                filtered = filtered.filter(o => !o.attendedBy && o.status !== 'Completado' && o.status !== 'Cancelado' && o.status !== 'Eliminado');
+            } else if (window.currentOrderTab === 'Atendiendo') {
+                filtered = filtered.filter(o => o.attendedBy && o.status !== 'Completado' && o.status !== 'Cancelado' && o.status !== 'Eliminado');
+            } else if (window.currentOrderTab === 'Cerrados') {
+                filtered = filtered.filter(o => o.status === 'Completado' || o.status === 'Cancelado');
+            } else if (window.currentOrderTab === 'Todos') {
+                filtered = filtered.filter(o => o.status !== 'Eliminado');
+            } else if (window.currentOrderTab === 'Eliminados') {
+                filtered = filtered.filter(o => o.status === 'Eliminado');
+            }
+            
             if(filterTerm) { filtered = filtered.filter(o => (o.orderId && o.orderId.toLowerCase().includes(filterTerm)) || (o.customerName && o.customerName.toLowerCase().includes(filterTerm)) || (o.customerPhone && o.customerPhone.toLowerCase().includes(filterTerm))); }
             if(filtered.length === 0) return listDiv.innerHTML = '<p class="text-sm text-gray-500 col-span-full text-center py-10">No hay pedidos en esta categoría actualmente.</p>';
 
@@ -1666,8 +1940,8 @@
                 const attendedBadge = order.attendedBy ? `<div class="mt-2 inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-md border border-gray-200">👨‍💻 Atendido por: ${order.attendedBy}</div>` : '';
                 const attendButton = (!order.attendedBy && order.status !== 'Eliminado') ? `<button onclick="attendOrder('${order.id}')" class="w-full bg-gray-800 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-black transition flex items-center justify-center gap-2 shadow-sm border border-gray-900 mb-2">👋 Tomar y Atender Cliente</button>` : '';
 
-                const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0); const discount = subtotal - order.total;
-                let discountHTML = ''; if (discount > 0) { discountHTML = `<div class="flex justify-between items-center mb-1"><span class="text-green-500 text-[10px] font-bold uppercase tracking-widest">Descuento aplicado</span><span class="text-green-500 font-bold text-sm">-RD$ ${discount.toLocaleString('en-US')}</span></div>`; }
+                const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0); const diff = subtotal - order.total;
+                let discountHTML = ''; if (diff > 0) { discountHTML = `<div class="flex justify-between items-center mb-1"><span class="text-green-500 text-[10px] font-bold uppercase tracking-widest">Descuento aplicado</span><span class="text-green-500 font-bold text-sm">-RD$ ${diff.toLocaleString('en-US')}</span></div>`; } else if (diff < 0) { discountHTML = `<div class="flex justify-between items-center mb-1"><span class="text-blue-500 text-[10px] font-bold uppercase tracking-widest">Cargo Extra / Envío</span><span class="text-blue-500 font-bold text-sm">+RD$ ${Math.abs(diff).toLocaleString('en-US')}</span></div>`; }
 
                 const editableItemsHTML = order.items.map((item, idx) => {
                     const skuText = item.barcode ? `<span class="text-[9px] text-gray-400 font-mono block leading-none mt-0.5">SKU: ${item.barcode}</span>` : '';
@@ -1680,7 +1954,7 @@
                         <div><span class="text-sm font-extrabold text-perfume-dark bg-gray-100 px-2 py-1 rounded">${order.orderId || '#PED-XXX'}</span><p class="text-[10px] text-gray-400 mt-1">📅 ${dateStr}</p></div>
                         <div class="flex items-center gap-2">
                             <select onchange="updateOrderStatus('${order.id}', this.value)" class="text-xs font-bold border border-gray-300 rounded-lg px-2 py-1.5 outline-none cursor-pointer ${statusColor} bg-gray-50 hover:bg-white transition shadow-sm">
-                                <option value="Recibido" ${order.status==='Recibido'?'selected':''} class="text-gray-800">Recibido</option><option value="Procesando" ${order.status==='Procesando'?'selected':''} class="text-blue-600">Procesando</option><option value="Enviado" ${order.status==='Enviado'?'selected':''} class="text-gray-600">Enviado</option><option value="Completado" ${order.status==='Completado'?'selected':''} class="text-green-600">Completado</option><option value="Cancelado" ${order.status==='Cancelado'?'selected':''} class="text-red-600">Cancelado</option><option value="Eliminado" ${order.status==='Eliminado'?'selected':''} class="text-gray-400">Eliminado</option>
+                                <option value="Recibido" ${order.status==='Recibido'?'selected':''} class="text-gray-800">${window.statusDisplayNames['Recibido']}</option><option value="Procesando" ${order.status==='Procesando'?'selected':''} class="text-blue-600">${window.statusDisplayNames['Procesando']}</option><option value="Enviado" ${order.status==='Enviado'?'selected':''} class="text-gray-600">${window.statusDisplayNames['Enviado']}</option><option value="Completado" ${order.status==='Completado'?'selected':''} class="text-green-600">${window.statusDisplayNames['Completado']}</option><option value="Cancelado" ${order.status==='Cancelado'?'selected':''} class="text-red-600">${window.statusDisplayNames['Cancelado']}</option><option value="Eliminado" ${order.status==='Eliminado'?'selected':''} class="text-gray-400">${window.statusDisplayNames['Eliminado']}</option>
                             </select>
                             ${order.status !== 'Eliminado' ? `<button onclick="deleteAdminOrder('${order.id}')" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition shadow-sm border border-red-100" title="Eliminar Pedido"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
                         </div>
@@ -1689,37 +1963,361 @@
                     
                     <div class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100 flex-1 flex flex-col">
                         <div class="space-y-2 mb-2">${editableItemsHTML}</div>
+                        
+                        <!-- Formulario Añadir Artículo -->
                         <div id="add-item-form-${order.id}" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
                             <input type="text" id="new-item-name-${order.id}" placeholder="Nombre del perfume o artículo" class="border border-gray-300 p-1.5 rounded-md w-full text-xs mb-2 outline-none focus:border-perfume-magenta">
                             <div class="flex gap-2"><input type="number" id="new-item-price-${order.id}" placeholder="Precio (RD$)" class="border border-gray-300 p-1.5 rounded-md w-1/2 text-xs outline-none focus:border-perfume-magenta"><input type="number" id="new-item-qty-${order.id}" value="1" min="1" class="border border-gray-300 p-1.5 rounded-md w-1/4 text-xs text-center outline-none"><button onclick="saveNewAdminItem('${order.id}')" class="bg-perfume-dark text-white rounded-md w-1/4 text-xs font-bold hover:bg-black">OK</button></div>
                             <button onclick="toggleAddItemForm('${order.id}')" class="text-gray-400 text-[10px] w-full text-right mt-2 hover:underline">Cancelar</button>
                         </div>
-                        <button onclick="toggleAddItemForm('${order.id}')" class="text-perfume-magenta text-[10px] font-bold uppercase tracking-widest text-left mt-auto pt-2 hover:underline">+ Agregar Artículo</button>
+
+                        <!-- Formulario Añadir Costo de Envío -->
+                        <div id="add-shipping-form-${order.id}" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm border-l-4 border-l-blue-500">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">🚚 Costo de Envío / Extra</p>
+                            <div class="flex gap-2">
+                                <input type="number" id="new-shipping-price-${order.id}" placeholder="Monto (RD$)" class="border border-gray-300 p-1.5 rounded-md w-3/4 text-xs outline-none focus:border-blue-500">
+                                <button onclick="saveShippingFee('${order.id}')" class="bg-blue-600 text-white rounded-md w-1/4 text-xs font-bold hover:bg-blue-700">OK</button>
+                            </div>
+                            <button onclick="toggleAddShippingForm('${order.id}')" class="text-gray-400 text-[10px] w-full text-right mt-2 hover:underline">Cancelar</button>
+                        </div>
+
+                        <div class="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
+                            <button onclick="toggleAddItemForm('${order.id}')" class="text-perfume-magenta text-[10px] font-bold uppercase tracking-widest hover:underline">+ Artículo</button>
+                            <button onclick="toggleAddShippingForm('${order.id}')" class="text-blue-600 text-[10px] font-bold uppercase tracking-widest hover:underline">+ Costo Envío</button>
+                        </div>
                     </div>
 
                     <div class="mt-auto border-t border-gray-100 pt-4 flex flex-col">
                         ${discountHTML}
                         <div class="flex justify-between items-center mb-4"><span class="text-gray-400 text-xs font-bold uppercase tracking-widest">Total</span><div class="flex items-center gap-1"><span class="text-perfume-magenta font-extrabold text-lg">RD$</span><input type="number" onchange="updateAdminTotal('${order.id}', this.value)" value="${order.total}" class="w-24 text-right font-extrabold text-perfume-magenta text-xl tracking-tight bg-transparent border-b-2 border-transparent hover:border-gray-200 focus:border-perfume-magenta outline-none transition px-1" title="Editar precio final"></div></div>
                         ${attendButton}
-                        <button onclick="notifyCustomerWhatsApp('${order.id}')" class="w-full bg-[#25D366] text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-[#20ba59] transition flex items-center justify-center gap-2 shadow-sm border border-[#20ba59]">
-                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12.031 0C5.385 0 0 5.385 0 12.031c0 2.648.835 5.125 2.378 7.218L.063 24l4.909-1.286A11.97 11.97 0 0012.031 24c6.645 0 12.031-5.385 12.031-12.031S18.676 0 12.031 0zm0 21.992c-2.22 0-4.382-.593-6.281-1.716l-.45-.266-3.64.954.969-3.548-.293-.466A9.975 9.975 0 012.039 12.03c0-5.517 4.49-10.007 10.007-10.007s10.007 4.49 10.007 10.007-4.49 10.007-10.007 10.007zm5.494-7.514c-.302-.15-1.785-.882-2.062-.983-.277-.101-.48-.15-.683.15s-.782.982-.958 1.183c-.176.202-.352.227-.654.076-2.144-.943-3.705-2.618-4.316-3.666-.126-.201.066-.188.358-.769.101-.202.05-.378-.025-.53-.076-.15-.683-1.646-.935-2.253-.246-.593-.496-.513-.683-.523-.176-.008-.378-.01-.58-.01-.202 0-.53.076-.807.378-.277.302-1.058 1.034-1.058 2.52s1.083 2.923 1.234 3.125c.15.202 2.13 3.253 5.158 4.558 2.019.869 2.809.948 3.842.793 1.144-.171 2.593-1.049 2.956-2.066.363-1.017.363-1.89.254-2.066-.109-.176-.411-.277-.713-.428z"/></svg>
-                            Abrir WhatsApp
-                        </button>
+                        <div class="flex flex-col gap-2">
+                            <button onclick="generateAndSendPDF('${order.id}')" class="w-full bg-perfume-magenta text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-perfume-dark transition flex items-center justify-center gap-2 shadow-sm">
+                                📄 Generar PDF y Enviar a Cliente
+                            </button>
+                            <div class="flex gap-2">
+                                <button onclick="generateInvoicePDF('${order.id}')" class="flex-1 bg-gray-100 text-gray-800 px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-gray-200 transition flex items-center justify-center shadow-sm border border-gray-300" title="Solo Descargar PDF">
+                                    ⬇️ Solo Bajar PDF
+                                </button>
+                                <button onclick="notifyCustomerWhatsApp('${order.id}')" class="flex-1 bg-[#25D366] text-white px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-[#20ba59] transition flex items-center justify-center shadow-sm border border-[#20ba59]" title="Solo enviar mensaje de estado sin adjunto">
+                                    💬 Solo Mensaje
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>`;
             });
             listDiv.innerHTML = html;
         }
 
-        window.updateOrderStatus = async function(docId, newStatus) { try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: newStatus }); window.showToast("✅ Estado del pedido guardado: " + newStatus); window.loadAdminOrders(); } catch(e) { window.showToast("❌ Error al actualizar estado."); } }
+        window.updateOrderStatus = async function(docId, newStatus) { 
+            try { 
+                const order = window.adminOrders.find(o => o.id === docId);
+                if (!order) return;
 
+                let stockUpdates = [];
+                let needsStockUpdate = false;
+                let stockDeducted = order.stockDeducted || false;
+
+                // LÓGICA DE STOCK: Si se marca como completado y NO se había descontado el stock
+                if (newStatus === 'Completado' && !stockDeducted) {
+                    needsStockUpdate = true; stockDeducted = true;
+                    for(let item of order.items) {
+                        if(!item.id.startsWith('custom_')) {
+                            const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
+                            const pSnap = await getDoc(pRef);
+                            if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
+                                stockUpdates.push({ ref: pRef, newStock: Math.max(0, pSnap.data().stock - item.qty) });
+                            }
+                        }
+                    }
+                } 
+                // LÓGICA DE DEVOLUCIÓN: Si se cancela o devuelve a procesando, y el stock YA se había descontado
+                else if (newStatus !== 'Completado' && stockDeducted) {
+                    needsStockUpdate = true; stockDeducted = false;
+                    for(let item of order.items) {
+                        if(!item.id.startsWith('custom_')) {
+                            const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
+                            const pSnap = await getDoc(pRef);
+                            if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
+                                stockUpdates.push({ ref: pRef, newStock: pSnap.data().stock + item.qty });
+                            }
+                        }
+                    }
+                }
+
+                // Aplicar los cambios en la base de datos de los productos
+                if (needsStockUpdate) {
+                    for (let update of stockUpdates) { await updateDoc(update.ref, { stock: update.newStock }); }
+                    window.loadDynamicProducts(); // Refresca el catálogo visualmente
+                }
+
+                // Guardar el nuevo estado del pedido
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: newStatus, stockDeducted: stockDeducted }); 
+                if(newStatus !== 'Eliminado') window.showToast("✅ Estado del pedido guardado: " + newStatus); 
+                window.loadAdminOrders(); 
+            } catch(e) { 
+                window.showToast("❌ Error al actualizar estado."); console.error(e);
+            } 
+        }
+
+        // NUEVA FUNCIÓN: Generador de Recibos PDF (MEJORADO CON LOGO Y ESTILO)
+        window.generateInvoicePDF = async function(orderId) {
+            const order = window.adminOrders.find(o => o.id === orderId);
+            if(!order) return window.showToast("❌ Pedido no encontrado.");
+
+            window.showToast("Generando PDF... ⏳");
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Limpieza de textos y valores por defecto seguros
+            const storeName = "FamlyFragrancerd";
+            
+            let rawPhone = window.siteConfig?.fPhone || "";
+            let storePhone = rawPhone.replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim();
+            if (storePhone.length < 5) storePhone = "+1 (849) 516-1973"; // Si está vacío o tiene caracteres raros, usa el oficial
+
+            let rawEmail = window.siteConfig?.fEmail || "";
+            let storeEmail = rawEmail;
+            
+            // TRADUCTOR DE FUENTES ESPECIALES: Si detecta la fuente "ꜰᴀᴍʟʏ", la pasa a texto normal para el PDF
+            if (rawEmail.includes('ꜰᴀᴍʟʏ') || rawEmail.includes('ʜᴏᴛᴍᴀɪʟ') || rawEmail.includes('ᴄᴏᴍ')) {
+                storeEmail = "famlyfragrancerd@hotmail.com";
+            } else {
+                storeEmail = rawEmail.replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim();
+            }
+
+            if (storeEmail.length < 5 || storeEmail === '@') storeEmail = "famlyfragrancerd@hotmail.com";
+
+            const primaryColorHex = window.siteConfig?.colorPrimary || '#000000';
+            
+            // 1. Cabecera Decorativa (Banda superior)
+            doc.setFillColor(primaryColorHex);
+            doc.rect(0, 0, 210, 8, 'F'); 
+
+            // Intentar cargar y dibujar el Logo Dinámicamente
+            try {
+                const logoUrl = window.siteConfig?.logoUrl || "https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png";
+                const img = new Image();
+                img.crossOrigin = "Anonymous";
+                img.src = logoUrl;
+                await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = img.width; canvas.height = img.height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0);
+                doc.addImage(canvas.toDataURL('image/png'), 'PNG', 14, 12, 28, 28);
+            } catch(e) { console.log("Logo PDF no cargado"); }
+
+            // Info de la Tienda (desplazada a la derecha del logo)
+            doc.setFontSize(20);
+            doc.setTextColor(primaryColorHex);
+            doc.setFont("helvetica", "bold");
+            doc.text(storeName, 46, 22);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(80, 80, 80);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Tel. Tienda: ${storePhone}`, 46, 29);
+            doc.text(`Email Tienda: ${storeEmail}`, 46, 34);
+
+            // Info de la Factura (A la derecha)
+            doc.setFontSize(14);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "bold");
+            doc.text("RECIBO DE VENTA", 196, 22, { align: "right" });
+            
+            doc.setFontSize(9);
+            doc.setTextColor(100, 100, 100);
+            doc.setFont("helvetica", "normal");
+            const dateStr = new Date(order.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
+            doc.text(`Orden: ${order.orderId}`, 196, 30, { align: "right" });
+            doc.text(`Fecha: ${dateStr}`, 196, 35, { align: "right" });
+            
+            // Estado con color
+            doc.setFont("helvetica", "bold");
+            let statusColor = [100, 100, 100];
+            if(order.status === 'Completado') statusColor = [0, 150, 0];
+            if(order.status === 'Cancelado' || order.status === 'Eliminado') statusColor = [200, 0, 0];
+            if(order.status === 'Procesando') statusColor = [0, 100, 200];
+            doc.setTextColor(statusColor[0], statusColor[1], statusColor[2]);
+            const displayStatus = window.statusDisplayNames[order.status] || order.status;
+            doc.text(`Estado: ${displayStatus.toUpperCase()}`, 196, 40, { align: "right" });
+
+            // 2. Línea divisoria
+            doc.setDrawColor(220, 220, 220);
+            doc.line(14, 46, 196, 46);
+
+            // 3. Información del Cliente (En una caja sombreada)
+            doc.setFillColor(250, 250, 250);
+            doc.rect(14, 50, 182, 22, 'F');
+            
+            doc.setFontSize(10);
+            doc.setTextColor(0, 0, 0);
+            doc.setFont("helvetica", "bold");
+            doc.text("Facturado a (Cliente):", 18, 56);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(60, 60, 60);
+            doc.setFont("helvetica", "normal");
+            
+            const cleanName = order.customerName.replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim() || 'Cliente'; 
+            let cleanPhone = (order.customerPhone || 'N/A').replace(/[^\x20-\x7E]/g, '').trim();
+            if(cleanPhone.length < 3) cleanPhone = 'N/A';
+            let cleanEmail = (order.customerEmail || 'Sin correo registrado').replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim();
+            if(cleanEmail.length < 4 || cleanEmail === '@') cleanEmail = 'Sin correo registrado';
+
+            doc.text(`Nombre: ${cleanName}`, 18, 62);
+            doc.text(`WhatsApp: ${cleanPhone}`, 18, 67);
+            doc.text(`Email: ${cleanEmail}`, 100, 62);
+
+            // 4. Tabla de Artículos (Estilo Grid Profesional)
+            const tableColumn = ["Cant", "Descripción", "SKU", "P. Unitario", "Subtotal"];
+            const tableRows = [];
+            let subtotalCalc = 0;
+
+            order.items.forEach(item => {
+                const itemSub = item.price * item.qty;
+                subtotalCalc += itemSub;
+                const cleanItemName = item.name.replace(/[^\x20-\x7E\xC0-\xFF]/g, '');
+                tableRows.push([
+                    item.qty,
+                    cleanItemName,
+                    item.barcode || '-',
+                    `RD$ ${item.price.toLocaleString('en-US')}`,
+                    `RD$ ${itemSub.toLocaleString('en-US')}`
+                ]);
+            });
+
+            doc.autoTable({
+                startY: 78,
+                head: [tableColumn],
+                body: tableRows,
+                theme: 'grid',
+                headStyles: { fillColor: primaryColorHex, textColor: [255, 255, 255], fontStyle: 'bold', halign: 'center' },
+                styles: { fontSize: 9, cellPadding: 5, textColor: [40, 40, 40] },
+                alternateRowStyles: { fillColor: [250, 250, 250] },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 15 },
+                    2: { cellWidth: 30, halign: 'center' },
+                    3: { halign: 'right', cellWidth: 30 },
+                    4: { halign: 'right', cellWidth: 35, fontStyle: 'bold' }
+                }
+            });
+
+            // 5. Totales (Alineados profesionalmente)
+            const finalY = doc.lastAutoTable.finalY + 10;
+            const diff = subtotalCalc - order.total;
+
+            doc.setFontSize(10);
+            doc.setTextColor(80, 80, 80);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Subtotal:`, 140, finalY);
+            doc.text(`RD$ ${subtotalCalc.toLocaleString('en-US')}`, 196, finalY, { align: "right" });
+            
+            let nextY = finalY + 6;
+            if (diff > 0) {
+                doc.setTextColor(0, 150, 0); 
+                doc.text(`Descuento:`, 140, nextY);
+                doc.text(`-RD$ ${diff.toLocaleString('en-US')}`, 196, nextY, { align: "right" });
+                nextY += 6;
+            } else if (diff < 0) {
+                doc.setTextColor(0, 0, 255); 
+                doc.text(`Cargo / Envío:`, 140, nextY);
+                doc.text(`+RD$ ${Math.abs(diff).toLocaleString('en-US')}`, 196, nextY, { align: "right" });
+                nextY += 6;
+            }
+
+            // Línea superior del total
+            doc.setDrawColor(200, 200, 200);
+            doc.line(140, nextY - 2, 196, nextY - 2);
+
+            // Total Final
+            doc.setFontSize(14);
+            doc.setTextColor(primaryColorHex);
+            doc.setFont("helvetica", "bold");
+            doc.text(`TOTAL:`, 140, nextY + 5);
+            doc.text(`RD$ ${order.total.toLocaleString('en-US')}`, 196, nextY + 5, { align: "right" });
+
+            // 6. Pie de página decorativo
+            const pageHeight = doc.internal.pageSize.height;
+            doc.setFillColor(primaryColorHex);
+            doc.rect(0, pageHeight - 15, 210, 15, 'F');
+            
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "italic");
+            doc.setTextColor(255, 255, 255);
+            doc.text("¡Gracias por su compra en FamlyFragrancerd!", 105, pageHeight - 6, { align: "center" });
+
+            // 7. Guardar y descargar
+            doc.save(`Recibo_Famly_${order.orderId.replace('#', '')}.pdf`);
+            window.showToast("✅ PDF generado y descargado.");
+        }
+
+        // FUNCIÓN MEJORADA: Notificar WhatsApp usando los mensajes personalizados
         window.notifyCustomerWhatsApp = function(docId) {
             const order = window.adminOrders.find(o => o.id === docId); if(!order || !order.customerPhone) return window.showToast("Número de cliente no disponible.");
             let phone = order.customerPhone.replace(/\D/g,''); if(phone.length === 10) phone = '1' + phone; 
-            let text = `*FamlyFragrancerd* \nHola ${order.customerName.split(' ')[0]}, el estado de tu pedido *${order.orderId}* es: *${order.status.toUpperCase()}*\n\n`;
-            if(order.status === 'Recibido') text += ` Lo hemos recibido y estamos confirmando disponibilidad.\n`; else if(order.status === 'Procesando') text += ` Lo estamos preparando con mucho cuidado.\n`; else if(order.status === 'Enviado') text += ` ¡Tu paquete ya va en camino a tus manos!\n`; else if(order.status === 'Completado') text += ` Entregado. ¡Gracias por preferirnos!\n`; else if(order.status === 'Cancelado') text += ` El pedido fue cancelado.\n`; else if(order.status === 'Eliminado') text += ` El pedido fue eliminado de nuestro sistema.\n`;
+            
+            const displayStatus = window.statusDisplayNames[order.status] || order.status;
+            const customMsg = window.statusMessages[order.status] || '';
+            
+            let text = `*FamlyFragrancerd* \nHola ${order.customerName.split(' ')[0]}, el estado de tu pedido *${order.orderId}* es: *${displayStatus.toUpperCase()}*\n\n`;
+            text += `${customMsg}\n`;
             text += `\n*Total:* RD$ ${order.total.toLocaleString('en-US')}\n*Ver seguimiento:* ${window.location.origin}${window.location.pathname}#pedidos\n\n¿Dudas? ¡Solo responde este mensaje!`;
+            
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+        }
+
+        window.generateAndSendPDF = async function(orderId) {
+            await window.generateInvoicePDF(orderId);
+            const order = window.adminOrders.find(o => o.id === orderId);
+            if(!order || !order.customerPhone) return window.showToast("Número de cliente no disponible para WhatsApp.");
+            let phone = order.customerPhone.replace(/\D/g,''); if(phone.length === 10) phone = '1' + phone;
+            let text = `*FamlyFragrancerd*\nHola ${order.customerName.split(' ')[0]}, te enviamos adjunto a este mensaje el *Recibo PDF Oficial* de tu pedido *${order.orderId}*.\n\n¡Gracias por preferirnos!`;
+            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+            setTimeout(() => window.showToast("📎 PDF descargado. ¡Adjúntalo ahora en el chat de WhatsApp!"), 1500);
+        }
+
+        window.openStatusSettings = function() {
+            const statuses = ['recibido', 'procesando', 'enviado', 'completado', 'cancelado'];
+            statuses.forEach(s => {
+                const key = s.charAt(0).toUpperCase() + s.slice(1);
+                document.getElementById('status-name-' + s).value = window.statusDisplayNames[key] || '';
+                document.getElementById('status-msg-' + s).value = window.statusMessages[key] || '';
+            });
+
+            const modal = document.getElementById('status-settings-modal'); const box = document.getElementById('status-settings-box');
+            modal.classList.remove('hidden'); modal.classList.add('flex'); setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); }, 10);
+        }
+
+        window.closeStatusSettings = function() {
+            const modal = document.getElementById('status-settings-modal'); const box = document.getElementById('status-settings-box');
+            modal.classList.add('opacity-0'); box.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300);
+        }
+
+        window.saveStatusSettings = async function() {
+            const newNames = { 'Eliminado': 'Eliminado' };
+            const newMsgs = { 'Eliminado': window.statusMessages['Eliminado'] || 'Eliminado' };
+            
+            const statuses = ['recibido', 'procesando', 'enviado', 'completado', 'cancelado'];
+            statuses.forEach(s => {
+                const key = s.charAt(0).toUpperCase() + s.slice(1);
+                newNames[key] = document.getElementById('status-name-' + s).value.trim() || key;
+                newMsgs[key] = document.getElementById('status-msg-' + s).value.trim() || window.statusMessages[key];
+            });
+
+            try { 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { statusDisplayNames: newNames, statusMessages: newMsgs }, { merge: true }); 
+                window.statusDisplayNames = newNames; 
+                window.statusMessages = newMsgs;
+                window.showToast("✅ Nombres y mensajes guardados exitosamente."); 
+                window.closeStatusSettings(); 
+                window.loadAdminOrders(); 
+                if(window.userId) fetchUserOrders(); 
+            } catch(e) { window.showToast("❌ Error al guardar."); }
         }
 
         window.updateUserPhone = async function() {
@@ -1754,8 +2352,8 @@
             try { await updatePassword(auth.currentUser, newPass); window.showToast("✅ Contraseña actualizada exitosamente."); newPassInput.value = ''; } catch (error) { if(error.code === 'auth/requires-recent-login') window.showToast("⚠️ Cierra sesión, vuelve a entrar e intenta de nuevo."); else window.showToast("❌ Error al actualizar la contraseña."); }
         }
 
-        window.openAdminModal = () => { window.closeProfileModal(); document.getElementById('admin-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('admin-modal').classList.remove('opacity-0'), 10); window.renderAdminDecants(); }
-        window.closeAdminModal = () => { document.getElementById('admin-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('admin-modal').classList.add('hidden'), 300); }
+        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); }
+        window.closeAdminModal = () => { const m = document.getElementById('admin-modal'); m.classList.add('opacity-0'); setTimeout(()=> { m.classList.remove('flex'); m.classList.add('hidden'); }, 300); }
         window.handleProfileClick = () => { if(window.isLoggedIn) { document.getElementById('profile-modal').classList.remove('translate-x-full'); fetchUserOrders(); } else { window.openLoginModal(); } }
         window.closeProfileModal = () => document.getElementById('profile-modal').classList.add('translate-x-full');
         window.openLoginModal = () => { document.getElementById('login-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('login-modal').classList.remove('opacity-0'), 10); }
@@ -1796,7 +2394,8 @@
                 orders.forEach(order => {
                     const dateStr = new Date(order.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
                     let statusColor = "text-yellow-600 bg-yellow-50"; if(order.status === "Completado") statusColor = "text-green-600 bg-green-50"; if(order.status === "Cancelado") statusColor = "text-red-600 bg-red-50"; if(order.status === "Procesando") statusColor = "text-blue-600 bg-blue-50";
-                    html += `<div class="bg-white border border-gray-100 p-4 rounded-xl shadow-sm"><div class="flex justify-between items-start mb-2"><span class="text-xs text-gray-500 font-mono font-bold bg-gray-100 px-2 py-0.5 rounded">${order.orderId || '#PED-XXX'}</span><span class="text-[10px] font-bold px-2 py-1 rounded-full ${statusColor}">${order.status || 'Recibido'}</span></div><p class="text-xs text-gray-500 mb-2">📅 ${dateStr}</p><div class="space-y-1 mb-3">${order.items.map(item => { const skuText = item.barcode ? ` <span class="text-[9px] text-gray-400 font-mono">[SKU: ${item.barcode}]</span>` : ''; return `<p class="text-sm text-gray-800">• ${item.qty}x ${item.name}${skuText}</p>`; }).join('')}</div><div class="border-t border-gray-50 pt-2 text-right"><span class="font-bold text-perfume-dark">Total: RD$ ${order.total.toLocaleString('en-US')}</span></div></div>`;
+                    const displayStatus = window.statusDisplayNames[order.status] || order.status || 'Recibido';
+                    html += `<div class="bg-white border border-gray-100 p-4 rounded-xl shadow-sm"><div class="flex justify-between items-start mb-2"><span class="text-xs text-gray-500 font-mono font-bold bg-gray-100 px-2 py-0.5 rounded">${order.orderId || '#PED-XXX'}</span><span class="text-[10px] font-bold px-2 py-1 rounded-full ${statusColor}">${displayStatus}</span></div><p class="text-xs text-gray-500 mb-2">📅 ${dateStr}</p><div class="space-y-1 mb-3">${order.items.map(item => { const skuText = item.barcode ? ` <span class="text-[9px] text-gray-400 font-mono">[SKU: ${item.barcode}]</span>` : ''; return `<p class="text-sm text-gray-800">• ${item.qty}x ${item.name}${skuText}</p>`; }).join('')}</div><div class="border-t border-gray-50 pt-2 text-right"><span class="font-bold text-perfume-dark">Total: RD$ ${order.total.toLocaleString('en-US')}</span></div></div>`;
                 });
                 listDiv.innerHTML = html;
             } catch (error) { listDiv.innerHTML = '<p class="text-sm text-red-500 text-center py-4">Error al cargar historial.</p>'; }
@@ -1834,12 +2433,9 @@
             const orderIdHex = Math.random().toString(36).substring(2, 7).toUpperCase(); const orderId = `#PED-${orderIdHex}`;
 
             try {
-                for(let item of window.cart) {
-                    const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id); const pSnap = await getDoc(pRef);
-                    if (pSnap.exists()) { const currentStock = pSnap.data().stock; if (typeof currentStock === 'number') { const newStock = Math.max(0, currentStock - item.qty); await updateDoc(pRef, { stock: newStock }); } }
-                }
-
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), { orderId: orderId, userId: window.userId, customerName: auth.currentUser.displayName || "Cliente", customerPhone: customerPhone, items: window.cart, total: total, date: new Date().toISOString(), status: "Recibido" });
+                // El stock ya no se descuenta aquí para evitar secuestros de inventario por clientes que no pagan.
+                // Se descontará de forma inteligente solo cuando el Admin marque el pedido como "Completado".
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), { orderId: orderId, userId: window.userId, customerName: auth.currentUser.displayName || "Cliente", customerPhone: customerPhone, customerEmail: auth.currentUser.email || "", items: window.cart, total: total, date: new Date().toISOString(), status: "Recibido", stockDeducted: false });
 
                 const firstName = auth.currentUser.displayName ? auth.currentUser.displayName.split(' ')[0] : "Cliente";
                 let text = `*¡Hola FamlyFragrancerd!*\n\nSoy *${firstName}* y acabo de confirmar el pedido web: *${orderId}*\n\n*DETALLE DEL PEDIDO:*\n`;
@@ -1848,8 +2444,14 @@
                 
                 if (auth.currentUser && !auth.currentUser.isAnonymous) { await setDoc(doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'info'), { phone: customerPhone }, { merge: true }).catch(e=>{}); }
 
-                window.cart=[]; window.updateCartUI(); window.toggleCart(); document.getElementById('checkout-phone').value = ''; window.showToast("¡Pedido registrado exitosamente!");
-                window.open(`https://wa.me/18495161973?text=${encodeURIComponent(text)}`, '_blank');
+                // Se eliminó la línea que borraba el número del carrito
+                window.cart=[]; window.updateCartUI(); window.toggleCart(); window.showToast("¡Pedido registrado exitosamente!");
+                
+                let adminPhone = window.siteConfig?.fPhone || "18495161973";
+                adminPhone = adminPhone.replace(/\D/g, '');
+                if (adminPhone.length === 10) adminPhone = '1' + adminPhone;
+
+                window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(text)}`, '_blank');
                 setTimeout(() => { btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false; }, 3000);
             } catch (error) { console.error(error); window.showToast("Error al procesar el pedido."); btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false; }
         }
