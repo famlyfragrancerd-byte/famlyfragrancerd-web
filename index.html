@@ -964,6 +964,56 @@
             } catch (error) { window.showToast("Error. Revisa los permisos o la consola."); }
         }
 
+        // NUEVA FUNCIÓN: Escucha pedidos en vivo y lanza Notificaciones Locales (PWA)
+        window.isListeningOrders = false;
+        window.listenForNewOrders = function() {
+            if (window.isListeningOrders) return;
+            window.isListeningOrders = true;
+            
+            const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos');
+            const initTime = Date.now(); // Guardamos la hora a la que abriste la app
+            
+            onSnapshot(ordersRef, (snapshot) => {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === 'added') {
+                        const order = change.doc.data();
+                        const orderTime = new Date(order.date).getTime();
+                        
+                        // Solo notificar si el pedido se creó DESPUÉS de que abriste la app
+                        if (orderTime > initTime) {
+                            
+                            // 1. Mostrar notificación nativa en el teléfono (PWA)
+                            if (Notification.permission === 'granted' && window.swRegistration) {
+                                window.swRegistration.showNotification('¡Nuevo Pedido Recibido! 🛍️', {
+                                    body: `${order.customerName} ha pedido por RD$ ${order.total.toLocaleString('en-US')}.`,
+                                    icon: 'https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png',
+                                    vibrate: [200, 100, 200, 100, 200, 100, 200], // Patrón de vibración
+                                    tag: 'new-order',
+                                    requireInteraction: true // Evita que se cierre sola
+                                });
+                            } else {
+                                // Fallback si el SW falla pero hay permisos
+                                window.showToast(`🔔 Nuevo Pedido de ${order.customerName}`);
+                            }
+                            
+                            // 2. Reproducir sonido fuerte
+                            try { 
+                                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{}); 
+                            } catch(e) {}
+                            
+                            // 3. Si tienes el monitor de pedidos abierto, lo actualiza solo
+                            const ordersModal = document.getElementById('orders-dashboard-modal');
+                            if (ordersModal && !ordersModal.classList.contains('hidden')) {
+                                window.loadAdminOrders();
+                            }
+                        }
+                    }
+                });
+            }, (error) => {
+                console.error("Error escuchando pedidos en vivo:", error);
+            });
+        }
+
         onMessage(messaging, (payload) => {
             window.showToast(`🔔 ${payload.notification?.title || 'Notificación'}: ${payload.notification?.body || ''}`);
             try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{}); } catch(e) {}
@@ -1690,6 +1740,9 @@
                     if (Notification.permission === 'granted') { pushBtn.classList.replace('bg-blue-600', 'bg-green-600'); pushBtn.innerText = "✅ Notificaciones Activadas"; }
                     if (isSuperAdmin) { document.getElementById('btn-admin-panel').classList.remove('hidden'); } else { document.getElementById('btn-admin-panel').classList.add('hidden'); }
                     if(window.location.hash === '#admin' || window.location.hash === '#pedidos') { setTimeout(() => { openOrdersDashboard(); }, 800); history.replaceState(null, null, ' '); }
+                    
+                    // INICIAR EL RADAR DE PEDIDOS EN VIVO PARA EL ADMIN
+                    window.listenForNewOrders();
                 }
             } else {
                 window.isLoggedIn = false; window.userId = null; document.getElementById('nav-login-text').innerText = "Ingresar"; document.getElementById('btn-admin-panel').classList.add('hidden'); document.getElementById('btn-orders-dashboard').classList.add('hidden'); document.getElementById('btn-push-notifications').classList.add('hidden'); document.getElementById('profile-name').innerText = "Cargando..."; document.getElementById('profile-email').innerText = "..."; document.getElementById('profile-initial').innerText = "?";
