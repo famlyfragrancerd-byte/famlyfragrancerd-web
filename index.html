@@ -2546,7 +2546,15 @@
             doc.setTextColor(255, 255, 255);
             doc.text("¡Gracias por su compra en FamlyFragrancerd!", 105, pageHeight - 6, { align: "center" });
 
-            doc.save(`Recibo_Famly_${order.orderId.replace('#', '')}.pdf`);
+            const fileName = `Recibo_Famly_${order.orderId.replace('#', '')}.pdf`;
+            
+            // Lógica para devolver el archivo como objeto si se solicita (Opción A)
+            if (arguments.length > 1 && arguments[1] === true) {
+                const pdfBlob = doc.output('blob');
+                return new File([pdfBlob], fileName, { type: 'application/pdf' });
+            }
+
+            doc.save(fileName);
             window.showToast("✅ PDF generado y descargado.");
         }
 
@@ -2565,13 +2573,41 @@
         }
 
         window.generateAndSendPDF = async function(orderId) {
-            await window.generateInvoicePDF(orderId);
             const order = window.adminOrders.find(o => o.id === orderId);
             if(!order || !order.customerPhone) return window.showToast("Número de cliente no disponible para WhatsApp.");
             let phone = order.customerPhone.replace(/\D/g,''); if(phone.length === 10) phone = '1' + phone;
             let text = `*FamlyFragrancerd*\nHola ${order.customerName.split(' ')[0]}, te enviamos adjunto a este mensaje el *Recibo PDF Oficial* de tu pedido *${order.orderId}*.\n\n¡Gracias por preferirnos!`;
-            window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
-            setTimeout(() => window.showToast("📎 PDF descargado. ¡Adjúntalo ahora en el chat de WhatsApp!"), 1500);
+            
+            // Creamos el archivo PDF en la memoria del celular sin descargarlo
+            const pdfFile = await window.generateInvoicePDF(orderId, true);
+            if (!pdfFile) return;
+
+            // OPCIÓN A: Usar la API nativa de Compartir en Móviles
+            if (navigator.canShare && navigator.canShare({ files: [pdfFile] })) {
+                try {
+                    await navigator.share({
+                        files: [pdfFile],
+                        title: `Recibo ${order.orderId}`,
+                        text: text
+                    });
+                    window.showToast("✅ Menú abierto. Elige WhatsApp y envía el recibo.");
+                } catch (err) {
+                    console.log("El usuario canceló el menú de compartir", err);
+                }
+            } else {
+                // FALLBACK PARA PC (Si lo haces desde la computadora, usa la descarga tradicional)
+                const url = URL.createObjectURL(pdfFile);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = pdfFile.name;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
+                setTimeout(() => window.showToast("📎 PDF descargado en tu PC. ¡Adjúntalo en el chat!"), 1500);
+            }
         }
 
         window.openStatusSettings = function() {
