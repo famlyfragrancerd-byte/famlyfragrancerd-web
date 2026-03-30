@@ -1027,6 +1027,11 @@
             return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
         };
 
+        // FUNCIONES GLOBALES DE LIMPIEZA Y FORMATO PARA EL PDF Y UI
+        window.cleanText = function(text) { return text ? String(text).replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim() : ''; };
+        window.formatMoney = function(amount) { return `RD$ ${parseFloat(amount).toLocaleString('en-US')}`; };
+        window.cachedPdfLogo = null;
+
         window.requestPushNotifications = async function() {
             try {
                 const permission = await Notification.requestPermission();
@@ -2687,7 +2692,10 @@
                     document.getElementById('btn-orders-dashboard').classList.remove('hidden'); const pushBtn = document.getElementById('btn-push-notifications'); pushBtn.classList.remove('hidden'); 
                     if (Notification.permission === 'granted') { pushBtn.classList.replace('bg-blue-600', 'bg-green-600'); pushBtn.innerText = "✅ Notificaciones Activadas"; }
                     if (isSuperAdmin) { document.getElementById('btn-admin-panel').classList.remove('hidden'); } else { document.getElementById('btn-admin-panel').classList.add('hidden'); }
-                    if(window.location.hash === '#admin' || window.location.hash === '#pedidos') { setTimeout(() => { openOrdersDashboard(); }, 800); history.replaceState(null, null, ' '); }
+                    if(window.location.hash === '#admin' || window.location.hash === '#pedidos') { 
+                        setTimeout(() => { openOrdersDashboard(); }, 800); 
+                        try { history.replaceState(null, null, ' '); } catch(e) {} 
+                    }
                     
                     window.listenForNewOrders();
                 }
