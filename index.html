@@ -10,12 +10,6 @@
     
     <title>famlyfragrancerd | Tu Tienda de Perfumes</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
-    
-    <!-- NUEVAS LIBRERÍAS PARA GENERAR PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
-
     <script>
         tailwind.config = {
             theme: {
@@ -29,6 +23,12 @@
             }
         }
     </script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    
+    <!-- LIBRERÍAS PARA GENERAR PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+
     <style>
         :root {
             --primary: #000000;
@@ -99,8 +99,6 @@
         .swatch-circle img { width: 100%; height: 100%; object-fit: contain; mix-blend-multiply; }
 
         #contacto { background-color: var(--footer-bg); }
-        
-        /* Ocultar tarjetas en la búsqueda dinámicamente */
         .card-hidden { display: none !important; }
     </style>
 </head>
@@ -185,7 +183,6 @@
                         </span>
                         <input type="text" id="catalog-search" oninput="filterCatalog()" placeholder="Buscar por marca, nombre, SKU o género..." class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 shadow-sm text-sm focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta bg-white transition-all font-medium">
                         
-                        <!-- Buscador Predictivo Flotante -->
                         <div id="search-suggestions" class="absolute top-full left-0 w-full bg-white mt-2 rounded-xl shadow-2xl border border-gray-100 z-50 hidden max-h-80 overflow-y-auto divide-y divide-gray-50 transition-all duration-300"></div>
                     </div>
                     
@@ -211,14 +208,12 @@
                 </div>
             </div>
 
-            <!-- Grilla Dinámica (Controlada por el Visual Builder) -->
             <div id="products-grid" class="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8 transition-all duration-500">
                 <div class="col-span-full text-center py-10">
                     <div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-perfume-magenta mb-4"></div>
                     <p class="text-gray-500">Cargando catálogo...</p>
                 </div>
             </div>
-            <!-- Mensaje de estado vacío optimizado -->
             <p id="catalog-empty-msg" class="text-center text-gray-500 py-10 font-medium hidden">No se encontraron perfumes con esa búsqueda.</p>
         </div>
     </section>
@@ -253,11 +248,9 @@
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl relative transform scale-95 transition-transform duration-300 flex flex-col md:flex-row overflow-hidden max-h-[95vh]" id="product-details-box">
             <button onclick="closeProductModal()" class="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 md:bg-black/50 text-black md:text-white border border-gray-200 md:border-none rounded-full w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white z-50 transition shadow-md backdrop-blur-sm">&times;</button>
             
-            <!-- Contenedor con Lupa y Zoom -->
             <div id="detail-img-container" class="w-full md:w-1/2 bg-gray-50 flex items-center justify-center relative h-64 md:h-auto shrink-0 border-b border-gray-100 md:border-none overflow-hidden cursor-crosshair group" onmousemove="handleZoom(event)" onmouseleave="resetZoom()" ontouchmove="handleTouchZoom(event)" ontouchend="resetZoom()">
                 <img id="detail-img" src="" alt="Perfume" class="w-full h-full object-contain mix-blend-multiply transition-all duration-200 p-4 md:p-8">
                 
-                <!-- Indicador visual de Lupa -->
                 <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-[10px] font-bold px-3 py-1.5 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20 flex items-center gap-1.5 shadow-md pointer-events-none">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
                     Pasa el dedo o mouse para explorar
@@ -339,8 +332,9 @@
             <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 text-center relative">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-perfume-magenta text-2xl font-bold mx-auto mb-3"><span id="profile-initial">?</span></div>
                 <h3 id="profile-name" class="text-lg font-bold text-perfume-dark flex items-center justify-center">Cargando...</h3>
-                <p id="profile-email" class="text-sm text-gray-500 mb-2">...</p>
-                <button onclick="logout()" class="text-xs text-red-500 font-semibold hover:underline">Cerrar Sesión</button>
+                <p id="profile-email" class="text-sm text-gray-500 mb-1">...</p>
+                <p class="text-[10px] text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded inline-block mb-3 border border-gray-100">ID: <span id="profile-id">...</span></p>
+                <button onclick="logout()" class="text-xs text-red-500 font-semibold hover:underline block mx-auto">Cerrar Sesión</button>
                 
                 <div class="mt-4 pt-4 border-t border-gray-100 text-left">
                     <p class="text-xs font-bold text-gray-500 mb-2">Seguridad de la cuenta</p>
@@ -378,6 +372,7 @@
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="switchAdminTab('products')" id="tab-btn-products" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">📦 Productos</button>
                 <button onclick="switchAdminTab('categories')" id="tab-btn-categories" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">🏷️ Categorías y Marcas</button>
+                <button onclick="switchAdminTab('clients')" id="tab-btn-clients" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">👥 Clientes VIP</button>
                 <button onclick="switchAdminTab('settings')" id="tab-btn-settings" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">🎨 Configurar Tienda (Diseño)</button>
             </div>
         </div>
@@ -410,7 +405,6 @@
                                     <option value="" disabled selected>Selecciona Categoría</option>
                                 </select>
                                 <input type="number" id="admin-prod-price" required min="1" placeholder="Precio (RD$)" class="w-1/3 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
-                                <!-- NUEVO: CAMPO PRECIO MAYORISTA -->
                                 <input type="number" id="admin-prod-wholesale" min="1" placeholder="P. Mayor (RD$)" class="w-1/3 border border-yellow-300 bg-yellow-50 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta" title="Precio especial para mayoristas">
                             </div>
                             
@@ -505,11 +499,29 @@
                 </div>
             </div>
 
+            <!-- PESTAÑA: CLIENTES -->
+            <div id="admin-tab-clients" class="hidden space-y-6 max-w-6xl mx-auto w-full">
+                <div class="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                        <div>
+                            <h3 class="font-bold text-perfume-dark text-xl">👥 Gestión de Clientes (CRM)</h3>
+                            <p class="text-xs text-gray-500 mt-1">Busca clientes por ID, nombre o correo y asígnalos como Mayoristas VIP.</p>
+                        </div>
+                        <div class="relative w-full md:w-72">
+                            <input type="text" id="admin-search-clients" oninput="window.renderAdminClientsList(this.value)" placeholder="🔍 Buscar cliente, email o ID..." class="w-full border border-gray-300 px-4 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta shadow-sm">
+                        </div>
+                    </div>
+                    
+                    <div id="admin-clients-list" class="max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+                        <p class="text-sm text-gray-500 py-4 text-center">Cargando clientes...</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- PESTAÑA: CONFIGURACIÓN AVANZADA -->
             <div id="admin-tab-settings" class="hidden space-y-6 max-w-6xl mx-auto w-full">
                 <form onsubmit="saveSiteConfig(event)" class="space-y-6">
 
-                    <!-- NUEVO: SECCIÓN MAYORISTAS -->
                     <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200 mb-6">
                         <h3 class="font-bold text-yellow-900 mb-2 border-b border-yellow-200 pb-2 flex items-center gap-2">💼 Clientes VIP / Mayoristas</h3>
                         <p class="text-xs text-yellow-800 mb-3">Los correos que agregues aquí verán automáticamente el "Precio x Mayor" en toda la tienda cuando inicien sesión.</p>
@@ -769,38 +781,33 @@
         </div>
     </div>
 
-    <!-- MODAL CONFIGURAR ESTADOS (MEJORADO CON MENSAJES) -->
+    <!-- MODAL CONFIGURAR ESTADOS -->
     <div id="status-settings-modal" class="fixed inset-0 bg-black/60 z-[300] hidden flex-col justify-center items-center opacity-0 transition-opacity duration-300 backdrop-blur-sm p-4">
         <div class="bg-white p-5 rounded-2xl shadow-2xl w-full max-w-lg transform scale-95 transition-transform duration-300 max-h-[90vh] flex flex-col" id="status-settings-box">
             <h3 class="text-xl font-bold text-perfume-dark mb-1 shrink-0">⚙️ Personalizar Estados</h3>
             <p class="text-xs text-gray-500 mb-4 shrink-0">Modifica el nombre y el mensaje de WhatsApp que se envía al cliente en cada estado.</p>
             
             <div class="space-y-4 mb-4 overflow-y-auto pr-2 no-scrollbar flex-1">
-                <!-- Recibido -->
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                     <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🟡 Estado: Recibido</label>
                     <input type="text" id="status-name-recibido" placeholder="Nombre (Ej: Recibido)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
                     <textarea id="status-msg-recibido" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
                 </div>
-                <!-- Procesando -->
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                     <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🔵 Estado: Procesando</label>
                     <input type="text" id="status-name-procesando" placeholder="Nombre (Ej: Empacando)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
                     <textarea id="status-msg-procesando" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
                 </div>
-                <!-- Enviado -->
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                     <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🚚 Estado: Enviado</label>
                     <input type="text" id="status-name-enviado" placeholder="Nombre (Ej: En Camino)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
                     <textarea id="status-msg-enviado" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
                 </div>
-                <!-- Completado -->
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                     <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🟢 Estado: Completado</label>
                     <input type="text" id="status-name-completado" placeholder="Nombre (Ej: Entregado)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
                     <textarea id="status-msg-completado" rows="2" placeholder="Mensaje de WhatsApp para el cliente..." class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-xs focus:border-perfume-magenta focus:outline-none text-gray-600"></textarea>
                 </div>
-                <!-- Cancelado -->
                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
                     <label class="block text-[10px] font-bold text-gray-700 uppercase mb-2 tracking-widest border-b border-gray-200 pb-1">🔴 Estado: Cancelado</label>
                     <input type="text" id="status-name-cancelado" placeholder="Nombre (Ej: Rechazado)" class="w-full border border-gray-300 px-3 py-1.5 rounded-md text-sm focus:border-perfume-magenta focus:outline-none mb-2 font-bold text-perfume-dark">
@@ -890,8 +897,27 @@
     <div id="toast" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 bg-gray-900 text-white px-6 py-3 rounded-full z-[300] transition duration-300 shadow-xl pointer-events-none font-medium text-sm">Mensaje</div>
 
     <!-- SCRIPTS FIREBASE -->
-    <script>
-        // VARIABLE GLOBAL DEL SERVICE WORKER
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, updatePassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAmlMj1m1KNZlkNVcqWMGRBeFujAQySDvM",
+            authDomain: "famlyfragrancerd.firebaseapp.com",
+            projectId: "famlyfragrancerd",
+            storageBucket: "famlyfragrancerd.firebasestorage.app",
+            messagingSenderId: "575510984505",
+            appId: "1:575510984505:web:bbb460ccf8aa892f18dae8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const messaging = getMessaging(app);
+        const appId = "famlyfragrancerd"; 
+
         window.swRegistration = null;
 
         window.addEventListener('load', function() {
@@ -930,37 +956,16 @@
                 logo.classList.add('h-24', 'md:h-32'); logo.classList.remove('logo-scrolled');
             }
         });
-    </script>
-
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, updatePassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
-
-        const firebaseConfig = {
-            apiKey: "AIzaSyAmlMj1m1KNZlkNVcqWMGRBeFujAQySDvM",
-            authDomain: "famlyfragrancerd.firebaseapp.com",
-            projectId: "famlyfragrancerd",
-            storageBucket: "famlyfragrancerd.firebasestorage.app",
-            messagingSenderId: "575510984505",
-            appId: "1:575510984505:web:bbb460ccf8aa892f18dae8"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const messaging = getMessaging(app);
-        const appId = "famlyfragrancerd"; 
 
         window.isLoggedIn = false; window.userId = null; window.cart = [];
         window.catalogProducts = [];
         window.adminOrders = []; 
+        window.adminClients = [];
         window.siteCategories = ['Damas', 'Caballeros', 'Unisex'];
         window.siteBrands = []; 
         window.siteAppearance = {}; 
         window.currentDecants = []; 
-        window.isWholesaler = false; // <-- VARIABLE MAYORISTA INTEGRADA
+        window.isWholesaler = false; 
 
         const SUPER_ADMIN_EMAILS = [ "geudri98@hotmail.com", "mrochelindachelle@gmail.com" ]; 
         const STAFF_EMAILS = [ "admin2@famlyfragrancerd.com", "famlyfragrancerd@hotmail.com", "gmarmol51@gmail.com", "espinalleily@gmail.com" ];
@@ -968,9 +973,19 @@
         window.statusDisplayNames = { 'Recibido': 'Recibido', 'Procesando': 'Procesando', 'Enviado': 'Enviado', 'Completado': 'Completado', 'Cancelado': 'Cancelado', 'Eliminado': 'Eliminado' };
         window.statusMessages = { 'Recibido': 'Lo hemos recibido y estamos confirmando disponibilidad.', 'Procesando': 'Lo estamos preparando con mucho cuidado.', 'Enviado': '¡Tu paquete ya va en camino a tus manos!', 'Completado': 'Entregado. ¡Gracias por preferirnos!', 'Cancelado': 'El pedido fue cancelado.', 'Eliminado': 'El pedido fue eliminado de nuestro sistema.' };
 
-        // DICCIONARIO DE CAMPOS DE CONFIGURACIÓN CON EL CAMPO DE MAYORISTA
+        // Función para convertir el UID de Firebase en un código numérico de 6 dígitos (Ej: 024485)
+        window.generateNumericId = function(uid) {
+            if (!uid || uid === 'Sin ID' || uid === 'N/A') return 'N/A';
+            let hash = 0;
+            for (let i = 0; i < uid.length; i++) {
+                hash = (hash << 5) - hash + uid.charCodeAt(i);
+                hash |= 0; 
+            }
+            return (Math.abs(hash) % 1000000).toString().padStart(6, '0');
+        };
+
         const CONFIG_FIELDS = [
-            { key: 'wholesaleEmails', id: 'cfg-wholesale-emails', type: 'textarea' }, // <-- CAMPO DE CORREOS VIP
+            { key: 'wholesaleEmails', id: 'cfg-wholesale-emails', type: 'textarea' }, 
             { key: 'logoUrl', id: 'cfg-logo-url', type: 'url' },
             { key: 'colorPrimary', id: 'cfg-color-primary', type: 'color' },
             { key: 'colorSecondary', id: 'cfg-color-secondary', type: 'color' },
@@ -1005,6 +1020,12 @@
             { key: 'ghRepo', id: 'cfg-gh-repo', type: 'text' },
             { key: 'ghToken', id: 'cfg-gh-token', type: 'password' }
         ];
+
+        // FUNCIÓN SEGURA PARA ESCAPAR TEXTOS EN HTML ATTRIBUTES
+        window.safeStr = function(str) {
+            if (!str) return '';
+            return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;').replace(/\n/g, '\\n');
+        };
 
         window.requestPushNotifications = async function() {
             try {
@@ -1121,16 +1142,24 @@
                 adminList.innerHTML = listHtml;
             }
         }
+
         window.addSiteCategory = async function() {
             const input = document.getElementById('new-category-input'); const val = input.value.trim();
             if(!val) return; if(window.siteCategories.includes(val)) return window.showToast("La categoría ya existe.");
             window.siteCategories.push(val); input.value = ''; window.renderCategoriesUI(); await saveCategoriesToDB();
         }
+
         window.removeSiteCategory = async function(idx) {
             if(!confirm("¿Seguro que deseas eliminar esta categoría?")) return;
             window.siteCategories.splice(idx, 1); window.renderCategoriesUI(); await saveCategoriesToDB();
         }
-        async function saveCategoriesToDB() { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { categoriesList: window.siteCategories }, { merge: true }); window.showToast("Categorías actualizadas."); } catch(e) { } }
+
+        async function saveCategoriesToDB() { 
+            try { 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { categoriesList: window.siteCategories }, { merge: true }); 
+                window.showToast("Categorías actualizadas."); 
+            } catch(e) { } 
+        }
 
         window.renderBrandsAdminUI = function() {
             const brandSelectAdmin = document.getElementById('admin-prod-brand');
@@ -1146,17 +1175,24 @@
                 adminList.innerHTML = listHtml;
             }
         }
+
         window.addSiteBrand = async function() {
             const input = document.getElementById('new-brand-input'); const val = input.value.trim();
             if(!val) return; if(window.siteBrands.includes(val)) return window.showToast("La marca ya existe.");
             window.siteBrands.push(val); window.siteBrands.sort(); input.value = ''; window.renderBrandsAdminUI(); await saveBrandsToDB();
         }
+
         window.removeSiteBrand = async function(idx) {
             if(!confirm("¿Seguro que deseas eliminar esta marca?")) return;
             window.siteBrands.splice(idx, 1); window.renderBrandsAdminUI(); await saveBrandsToDB();
         }
-        async function saveBrandsToDB() { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { brandsList: window.siteBrands }, { merge: true }); window.showToast("Marcas actualizadas."); } catch(e) { } }
 
+        async function saveBrandsToDB() { 
+            try { 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { brandsList: window.siteBrands }, { merge: true }); 
+                window.showToast("Marcas actualizadas."); 
+            } catch(e) { } 
+        }
 
         window.saveSiteConfig = async function(e) {
             e.preventDefault(); 
@@ -1193,7 +1229,6 @@
                 const data = snap.exists() ? snap.data() : {};
                 window.siteConfig = data;
 
-                // LOGICA MAYORISTA: Detectar al instante si el usuario activo es VIP
                 if(auth.currentUser) {
                     const wholesaleList = (data.wholesaleEmails || "").split(',').map(e=>e.trim().toLowerCase());
                     window.isWholesaler = wholesaleList.includes(auth.currentUser.email.toLowerCase());
@@ -1328,14 +1363,13 @@
 
             let htmlFull = '';
             productsList.forEach((prod) => {
-                // LOGICA MAYORISTA: Define qué precio usar y mostrar
                 let activePrice = prod.price;
                 let isWholesaleActive = window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price;
                 if (isWholesaleActive) activePrice = prod.wholesalePrice;
 
                 let priceFormatted = `RD$ ${activePrice.toLocaleString('en-US')}`;
                 if (isWholesaleActive) {
-                    priceFormatted = `<span class="line-through text-gray-400 text-sm md:text-base mr-2">RD$ ${prod.price.toLocaleString('en-US')}</span><span class="text-green-600 font-extrabold text-lg md:text-xl">RD$ ${activePrice.toLocaleString('en-US')}</span>`;
+                    priceFormatted = `<div class="flex flex-col items-center"><span class="line-through text-gray-400 text-xs md:text-sm leading-none mb-1">RD$ ${prod.price.toLocaleString('en-US')}</span><span class="text-green-600 font-extrabold text-lg md:text-xl leading-none">RD$ ${activePrice.toLocaleString('en-US')}</span></div>`;
                 }
 
                 const brandLabel = prod.brand ? `${prod.brand} • ` : '';
@@ -1347,7 +1381,7 @@
 
                 const btnHtml = isOutOfStock 
                     ? `<button disabled class="w-full bg-gray-200 text-gray-400 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold cursor-not-allowed uppercase tracking-wider">Agotado</button>`
-                    : `<button onclick="addToCart('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', ${activePrice}, '${prod.img}', 'full', '${prod.barcode || ''}')" class="w-full bg-white border border-perfume-magenta text-perfume-magenta py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold hover:bg-perfume-magenta hover:text-white transition">Agregar al Carrito</button>`;
+                    : `<button onclick="addToCart('${window.safeStr(prod.id)}', '${window.safeStr(prod.name)}', ${activePrice}, '${window.safeStr(prod.img)}', 'full', '${window.safeStr(prod.barcode || '')}')" class="w-full bg-white border border-perfume-magenta text-perfume-magenta py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold hover:bg-perfume-magenta hover:text-white transition">Agregar al Carrito</button>`;
 
                 const searchString = `${prod.name || ''} ${prod.category || ''} ${prod.brand || ''} ${prod.description || ''} ${prod.barcode || ''}`.toLowerCase();
 
@@ -1369,9 +1403,9 @@
                             ${skuLabel}
                         </div>
                         <h4 class="text-sm md:text-lg font-bold text-perfume-dark mt-1 group-hover:text-perfume-magenta transition leading-tight">${prod.name}</h4>
-                        <div class="flex justify-between items-end mt-2">
-                            <p class="text-perfume-magenta font-bold ${priceSize}">${priceFormatted}</p>
-                            ${showStockBadge ? `<span class="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full border border-green-100">${prod.stock} disp.</span>` : ''}
+                        <div class="flex justify-between items-center mt-2">
+                            <div class="text-perfume-magenta font-bold ${priceSize} flex-shrink-0">${priceFormatted}</div>
+                            ${showStockBadge ? `<span class="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full border border-green-100 whitespace-nowrap">${prod.stock} disp.</span>` : ''}
                         </div>
                     </div>
                     <div class="mt-4 md:mt-5 border-t border-gray-100 pt-3 md:pt-4">
@@ -1457,7 +1491,7 @@
             }
         });
 
-        async function loadDynamicProducts() {
+        window.loadDynamicProducts = async function() {
             const grid = document.getElementById('products-grid');
             try {
                 const prodRef = collection(db, 'artifacts', appId, 'public', 'data', 'productos');
@@ -1486,7 +1520,7 @@
         }
 
         loadSiteConfig();
-        loadDynamicProducts();
+        window.loadDynamicProducts();
 
         window.openProductModal = function(id) {
             const prod = window.catalogProducts.find(p => p.id === id);
@@ -1518,7 +1552,6 @@
                 } else { swatchesContainer.classList.add('hidden'); }
             } else { swatchesContainer.classList.add('hidden'); }
 
-            // LÓGICA DE MAYORISTA PARA EL MODAL DE DETALLES
             let activePrice = prod.price;
             let isWholesaleActive = window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price;
             if (isWholesaleActive) activePrice = prod.wholesalePrice;
@@ -1555,7 +1588,7 @@
 
                 const priceDisplay = document.getElementById('detail-price-display');
                 if (isWholesaleActive) {
-                    priceDisplay.innerHTML = `<span class="line-through text-gray-400 text-lg mr-2">RD$ ${prod.price.toLocaleString('en-US')}</span><span class="text-2xl font-extrabold text-green-600">RD$ ${basePrice.toLocaleString('en-US')}</span> <span class="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded font-bold uppercase ml-2">VIP Mayorista</span>`;
+                    priceDisplay.innerHTML = `<div class="flex flex-col items-start"><span class="line-through text-gray-400 text-lg leading-none mb-1">RD$ ${prod.price.toLocaleString('en-US')}</span><div class="flex items-center"><span class="text-2xl font-extrabold text-green-600 leading-none">RD$ ${basePrice.toLocaleString('en-US')}</span> <span class="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded font-bold uppercase ml-2">VIP Mayorista</span></div></div>`;
                 } else {
                     priceDisplay.innerHTML = `<span class="text-2xl font-bold text-perfume-magenta">RD$ ${basePrice.toLocaleString('en-US')}</span>`;
                 }
@@ -1688,13 +1721,15 @@
         window.updateDecantVal = function(idx, field, val) { if(field === 'price') window.currentDecants[idx][field] = parseFloat(val) || 0; else window.currentDecants[idx][field] = val; }
 
         window.switchAdminTab = function(tab) {
-            const tabs = ['products', 'categories', 'settings'];
+            const tabs = ['products', 'categories', 'clients', 'settings'];
             tabs.forEach(t => {
                 const el = document.getElementById('admin-tab-'+t); const btn = document.getElementById('tab-btn-'+t);
                 if(el) el.classList.add('hidden');
                 if(btn) { btn.classList.replace('text-perfume-magenta', 'text-gray-500'); btn.classList.remove('border-b-2', 'border-perfume-magenta'); }
             });
             document.getElementById('admin-tab-'+tab).classList.remove('hidden'); document.getElementById('tab-btn-'+tab).classList.replace('text-gray-500', 'text-perfume-magenta'); document.getElementById('tab-btn-'+tab).classList.add('border-b-2', 'border-perfume-magenta');
+            
+            if(tab === 'clients') window.extractClientsFromOrders();
         }
 
         window.toggleInvInput = function() {
@@ -1717,7 +1752,7 @@
             document.getElementById('admin-prod-brand').value = brandVal; document.getElementById('admin-prod-barcode').value = prod.barcode || '';
             document.getElementById('admin-prod-cat').value = prod.category; 
             document.getElementById('admin-prod-price').value = prod.price;
-            document.getElementById('admin-prod-wholesale').value = prod.wholesalePrice || ''; // <-- CARGAR PRECIO MAYORISTA
+            document.getElementById('admin-prod-wholesale').value = prod.wholesalePrice || ''; 
             document.getElementById('admin-prod-desc').value = prod.description || ''; document.getElementById('admin-prod-img').value = prod.img;
             
             const useInvCheckbox = document.getElementById('admin-prod-use-inv'); const stockInput = document.getElementById('admin-prod-stock');
@@ -1757,7 +1792,7 @@
             const brand = document.getElementById('admin-prod-brand').value.trim(); const barcode = document.getElementById('admin-prod-barcode').value.trim();
             const category = document.getElementById('admin-prod-cat').value; 
             const price = parseFloat(document.getElementById('admin-prod-price').value);
-            const wholesalePrice = parseFloat(document.getElementById('admin-prod-wholesale').value) || null; // <-- GUARDAR PRECIO MAYORISTA
+            const wholesalePrice = parseFloat(document.getElementById('admin-prod-wholesale').value) || null; 
             const description = document.getElementById('admin-prod-desc').value; const imgUrl = document.getElementById('admin-prod-img').value;
             const useInv = document.getElementById('admin-prod-use-inv').checked; const stock = useInv ? (parseInt(document.getElementById('admin-prod-stock').value) || 0) : null;
             const onSale = document.getElementById('admin-prod-sale').checked; const isAgotado = document.getElementById('admin-prod-agotado').checked;
@@ -1770,7 +1805,7 @@
                 if(editId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', editId), dataObj); window.showToast("Producto actualizado exitosamente."); } 
                 else { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'productos'), dataObj); window.showToast("Producto agregado correctamente."); }
                 
-                window.resetAdminForm(); await loadDynamicProducts();
+                window.resetAdminForm(); await window.loadDynamicProducts();
             } catch (error) { window.showToast(error.message || "Error al guardar el producto."); } finally { btn.innerHTML = originalText; btn.disabled = false; }
         }
 
@@ -1794,7 +1829,7 @@
                                 } catch(e) { console.log("No se pudo borrar imagen de GH", e); }
                             }
                         }
-                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', docId)); window.showToast("✅ Producto eliminado."); await loadDynamicProducts(); 
+                        await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', docId)); window.showToast("✅ Producto eliminado."); await window.loadDynamicProducts(); 
                     } catch(e) { window.showToast("❌ Error al eliminar el producto."); }
                 }
             );
@@ -1847,92 +1882,282 @@
             try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { attendedBy: adminName }); window.showToast("👋 Te has asignado este pedido."); window.loadAdminOrders(); } catch(e) { window.showToast("❌ Error al asignar el pedido."); }
         }
 
-        window.deleteAdminOrder = function(docId) { window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas mover este pedido a la papelera?", async () => { await window.updateOrderStatus(docId, 'Eliminado'); window.showToast("🗑️ Pedido movido a eliminados."); }); }
-
-        window.updateAdminItemQty = async function(orderId, itemIdx, delta) {
-            const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
-            let newItems = [...order.items]; newItems[itemIdx].qty += delta; if(newItems[itemIdx].qty < 1) return; 
-            let newTotal = newItems.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-            try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { items: newItems, total: newTotal }); window.loadAdminOrders(); } catch(e) { window.showToast("Error al actualizar cantidad."); }
+        window.deleteAdminOrder = function(docId) { 
+            window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas mover este pedido a la papelera?", async () => { 
+                await window.updateOrderStatus(docId, 'Eliminado'); 
+                window.showToast("🗑️ Pedido movido a eliminados."); 
+            }); 
         }
 
-        window.removeAdminItem = async function(orderId, itemIdx) {
+        window.recalculateOrderFinancials = async function(orderId, modifications = {}) {
+            const order = window.adminOrders.find(o => o.id === orderId);
+            if(!order) return;
+
+            let newItems = modifications.items || [...order.items];
+            let subtotal = newItems.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+
+            let currentShipping = order.shippingFee !== undefined ? order.shippingFee : (order.total > subtotal ? order.total - subtotal : 0);
+            let currentDiscount = order.discount !== undefined ? order.discount : (order.total < subtotal ? subtotal - order.total : 0);
+
+            let shippingFee = modifications.shippingFee !== undefined ? modifications.shippingFee : currentShipping;
+            let discount = modifications.discount !== undefined ? modifications.discount : currentDiscount;
+
+            let newTotal = subtotal + shippingFee - discount;
+
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), {
+                    items: newItems,
+                    shippingFee: shippingFee,
+                    discount: discount,
+                    total: newTotal
+                });
+                window.loadAdminOrders();
+            } catch(e) { window.showToast("Error al actualizar montos."); }
+        }
+
+        window.updateAdminItemQty = function(orderId, itemIdx, delta) {
+            const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
+            let newItems = [...order.items]; newItems[itemIdx].qty += delta;
+            if(newItems[itemIdx].qty < 1) return;
+            window.recalculateOrderFinancials(orderId, { items: newItems });
+        }
+
+        window.removeAdminItem = function(orderId, itemIdx) {
             if(!confirm("¿Quitar este artículo de la factura?")) return;
             const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
-            let newItems = [...order.items]; newItems.splice(itemIdx, 1); let newTotal = newItems.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-            try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { items: newItems, total: newTotal }); window.loadAdminOrders(); } catch(e) { window.showToast("Error al eliminar artículo."); }
+            let newItems = [...order.items]; newItems.splice(itemIdx, 1);
+            window.recalculateOrderFinancials(orderId, { items: newItems });
+        }
+
+        window.updateAdminItemPrice = function(orderId, itemIdx, newPriceStr) {
+            const newPrice = parseFloat(newPriceStr); if(isNaN(newPrice) || newPrice < 0) return window.showToast("Precio inválido");
+            const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
+            let newItems = [...order.items]; newItems[itemIdx].price = newPrice;
+            window.recalculateOrderFinancials(orderId, { items: newItems });
+        }
+
+        window.updateOrderShipping = function(orderId, valStr) {
+            const val = parseFloat(valStr) || 0;
+            window.recalculateOrderFinancials(orderId, { shippingFee: val });
+        }
+
+        window.updateOrderDiscount = function(orderId, valStr) {
+            const val = parseFloat(valStr) || 0;
+            window.recalculateOrderFinancials(orderId, { discount: val });
         }
 
         window.toggleAddItemForm = function(orderId) { 
             const form = document.getElementById('add-item-form-' + orderId); 
-            const shipForm = document.getElementById('add-shipping-form-' + orderId);
             if(form) form.classList.toggle('hidden'); 
-            if(shipForm) shipForm.classList.add('hidden'); 
         }
 
-        window.toggleAddShippingForm = function(orderId) { 
-            const form = document.getElementById('add-shipping-form-' + orderId); 
-            const itemForm = document.getElementById('add-item-form-' + orderId);
-            if(form) {
-                form.classList.toggle('hidden');
-                if(itemForm) itemForm.classList.add('hidden'); 
+        window.filterNewItemSearch = function(orderId, term) {
+            const box = document.getElementById(`new-item-suggestions-${orderId}`);
+            const input = document.getElementById(`new-item-search-${orderId}`);
+            delete input.dataset.prodId; 
 
-                if (!form.classList.contains('hidden')) {
-                    const order = window.adminOrders.find(o => o.id === orderId);
-                    if (order) {
-                        const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-                        const diff = order.total - subtotal;
-                        const input = document.getElementById('new-shipping-price-' + orderId);
-                        if (diff > 0) input.value = diff; else input.value = '';
+            const t = term.toLowerCase().trim();
+            if(t.length < 2) { box.classList.add('hidden'); return; }
+
+            const matches = window.catalogProducts.filter(p =>
+                p.name.toLowerCase().includes(t) ||
+                (p.barcode && p.barcode.toLowerCase().includes(t)) ||
+                (p.brand && p.brand.toLowerCase().includes(t))
+            ).slice(0, 10); 
+
+            if(matches.length > 0) {
+                let html = '';
+                matches.forEach(m => {
+                    html += `
+                    <div onclick="selectNewItem('${orderId}', '${m.id}', '${window.safeStr(m.name)}', ${m.price})" class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
+                        <img src="${m.img}" class="w-6 h-6 object-contain rounded border border-gray-100 mix-blend-multiply">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[10px] font-bold text-gray-800 truncate leading-tight">${m.name}</p>
+                            ${m.barcode ? `<p class="text-[8px] font-mono text-gray-400">${m.barcode}</p>` : ''}
+                        </div>
+                        <span class="text-[10px] font-bold text-perfume-magenta whitespace-nowrap">RD$ ${m.price.toLocaleString()}</span>
+                    </div>`;
+                    
+                    if(m.decants && m.decants.length > 0) {
+                        m.decants.forEach(d => {
+                            const dName = `${m.name} (Decant ${d.size})`;
+                            html += `
+                            <div onclick="selectNewItem('${orderId}', '${m.id}_decant_${d.size}', '${window.safeStr(dName)}', ${d.price})" class="flex items-center gap-2 p-2 hover:bg-gray-100 cursor-pointer border-b border-gray-100 bg-gray-50/50">
+                                <span class="w-6 text-center text-[8px] font-bold text-gray-400">DEC</span>
+                                <div class="flex-1 min-w-0">
+                                    <p class="text-[10px] font-bold text-gray-600 truncate leading-tight">${dName}</p>
+                                </div>
+                                <span class="text-[10px] font-bold text-perfume-magenta whitespace-nowrap">RD$ ${d.price.toLocaleString()}</span>
+                            </div>`;
+                        });
                     }
-                }
-            } 
+                });
+                box.innerHTML = html;
+                box.classList.remove('hidden');
+            } else {
+                box.classList.add('hidden');
+            }
+        }
+
+        window.selectNewItem = function(orderId, prodId, name, price) {
+            const input = document.getElementById(`new-item-search-${orderId}`);
+            input.value = name;
+            input.dataset.prodId = prodId;
+            document.getElementById(`new-item-price-${orderId}`).value = price;
+            document.getElementById(`new-item-suggestions-${orderId}`).classList.add('hidden');
         }
 
         window.saveNewAdminItem = async function(orderId) {
-            const name = document.getElementById('new-item-name-' + orderId).value.trim(); const price = parseFloat(document.getElementById('new-item-price-' + orderId).value); const qty = parseInt(document.getElementById('new-item-qty-' + orderId).value);
+            const searchInput = document.getElementById(`new-item-search-${orderId}`);
+            const name = searchInput.value.trim();
+            const price = parseFloat(document.getElementById(`new-item-price-${orderId}`).value);
+            const qty = parseInt(document.getElementById(`new-item-qty-${orderId}`).value);
+
             if(!name || isNaN(price) || isNaN(qty)) return window.showToast("Por favor llena todos los campos.");
+
             const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
-            let newItems = [...order.items]; newItems.push({ id: 'custom_' + Date.now(), name, price, qty, img: '', barcode: '' }); let newTotal = newItems.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-            try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { items: newItems, total: newTotal }); window.showToast("Artículo añadido."); window.loadAdminOrders(); } catch(e) { window.showToast("Error al agregar artículo."); }
-        }
 
-        window.saveShippingFee = async function(orderId) {
-            const inputVal = document.getElementById('new-shipping-price-' + orderId).value;
-            const shipping = parseFloat(inputVal) || 0; 
-            const order = window.adminOrders.find(o => o.id === orderId); if(!order) return;
+            let prodId = searchInput.dataset.prodId || ('custom_' + Date.now());
+            let barcode = ''; let img = '';
             
-            const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
-            const newTotal = subtotal + shipping; 
+            if(!prodId.startsWith('custom_')) {
+                const baseId = prodId.split('_decant_')[0];
+                const catalogItem = window.catalogProducts.find(p => p.id === baseId);
+                if(catalogItem) { barcode = catalogItem.barcode || ''; img = catalogItem.img || ''; }
+            }
+
+            let newItems = [...order.items];
+            newItems.push({ id: prodId, name, price, qty, img, barcode });
+
+            window.recalculateOrderFinancials(orderId, { items: newItems });
+            window.showToast("Artículo añadido.");
             
-            try { 
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { total: newTotal }); 
-                window.showToast(shipping > 0 ? "🚚 Costo de envío agregado." : "Envío eliminado."); 
-                window.loadAdminOrders(); 
-            } catch(e) { window.showToast("Error al agregar el costo."); }
+            searchInput.value = ''; delete searchInput.dataset.prodId;
+            document.getElementById(`new-item-price-${orderId}`).value = '';
+            document.getElementById(`new-item-qty-${orderId}`).value = '1';
         }
 
-        window.updateAdminTotal = async function(orderId, valStr) {
-            const val = parseFloat(valStr); if(isNaN(val)) return window.showToast("Monto inválido");
-            try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { total: val }); window.showToast("💰 Total modificado exitosamente."); window.loadAdminOrders(); } catch(e) { window.showToast("Error al actualizar el total."); }
+        window.openOrdersDashboard = function() { 
+            window.closeProfileModal(); 
+            window.closeAdminModal(); 
+            const modal = document.getElementById('orders-dashboard-modal'); 
+            modal.classList.remove('hidden'); 
+            modal.classList.add('flex'); 
+            setTimeout(()=> modal.classList.remove('opacity-0'), 10); 
+            window.loadAdminOrders(); 
         }
 
-        window.openOrdersDashboard = function() { window.closeProfileModal(); window.closeAdminModal(); const modal = document.getElementById('orders-dashboard-modal'); modal.classList.remove('hidden'); modal.classList.add('flex'); setTimeout(()=> modal.classList.remove('opacity-0'), 10); window.loadAdminOrders(); }
-        window.closeOrdersDashboard = function() { const modal = document.getElementById('orders-dashboard-modal'); modal.classList.add('opacity-0'); setTimeout(()=> { modal.classList.remove('flex'); modal.classList.add('hidden'); }, 300); }
+        window.closeOrdersDashboard = function() { 
+            const modal = document.getElementById('orders-dashboard-modal'); 
+            modal.classList.add('opacity-0'); 
+            setTimeout(()=> { 
+                modal.classList.remove('flex'); 
+                modal.classList.add('hidden'); 
+            }, 300); 
+        }
 
         window.loadAdminOrders = async function() {
-            const listDiv = document.getElementById('admin-orders-list'); listDiv.innerHTML = '<div class="col-span-full text-center py-10"><div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-perfume-magenta mb-4"></div><p class="text-gray-500 font-bold">Sincronizando el panel de pedidos...</p></div>';
+            const listDiv = document.getElementById('admin-orders-list'); 
+            listDiv.innerHTML = '<div class="col-span-full text-center py-10"><div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-perfume-magenta mb-4"></div><p class="text-gray-500 font-bold">Sincronizando el panel de pedidos...</p></div>';
             try {
-                const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'); const querySnapshot = await getDocs(ordersRef); window.adminOrders = []; 
-                querySnapshot.forEach(doc => window.adminOrders.push({ id: doc.id, ...doc.data() })); window.adminOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
-                const searchInput = document.getElementById('admin-search-orders'); if(searchInput) searchInput.value = ''; window.renderAdminOrdersList();
-            } catch(e) { listDiv.innerHTML = '<p class="text-sm text-red-500 col-span-full text-center py-4">Error cargando pedidos.</p>'; }
+                const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'); 
+                const querySnapshot = await getDocs(ordersRef); 
+                window.adminOrders = []; 
+                querySnapshot.forEach(doc => window.adminOrders.push({ id: doc.id, ...doc.data() })); 
+                window.adminOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+                const searchInput = document.getElementById('admin-search-orders'); 
+                if(searchInput) searchInput.value = ''; 
+                window.renderAdminOrdersList();
+                window.extractClientsFromOrders();
+            } catch(e) { 
+                listDiv.innerHTML = '<p class="text-sm text-red-500 col-span-full text-center py-4">Error cargando pedidos.</p>'; 
+            }
         }
 
-        window.filterAdminOrders = function() { const term = document.getElementById('admin-search-orders').value.toLowerCase(); window.renderAdminOrdersList(term); }
+        window.filterAdminOrders = function() { 
+            const term = document.getElementById('admin-search-orders').value.toLowerCase(); 
+            window.renderAdminOrdersList(term); 
+        }
+
+        window.extractClientsFromOrders = function() {
+            const clientsMap = new Map();
+            window.adminOrders.forEach(o => {
+                if (o.customerEmail && o.customerEmail !== '@' && o.customerEmail !== 'Sin correo registrado') {
+                    if (!clientsMap.has(o.customerEmail)) {
+                        clientsMap.set(o.customerEmail, { id: o.userId ? window.generateNumericId(o.userId) : 'N/A', name: o.customerName || 'Cliente', email: o.customerEmail, phone: o.customerPhone || '', orderCount: 1, totalSpent: o.total || 0 });
+                    } else {
+                        let c = clientsMap.get(o.customerEmail); c.orderCount++; c.totalSpent += (o.total || 0);
+                        if(o.userId && (c.id === 'Sin ID' || c.id === 'N/A')) c.id = window.generateNumericId(o.userId); 
+                    }
+                }
+            });
+            
+            const wholesaleList = (window.siteConfig?.wholesaleEmails || "").split(',').map(e=>e.trim().toLowerCase()).filter(e=>e);
+            wholesaleList.forEach(email => {
+                if (!clientsMap.has(email)) { clientsMap.set(email, { id: 'N/A', name: 'Usuario Mayorista', email: email, phone: '', orderCount: 0, totalSpent: 0 }); }
+            });
+
+            window.adminClients = Array.from(clientsMap.values());
+            const searchInput = document.getElementById('admin-search-clients');
+            window.renderAdminClientsList(searchInput ? searchInput.value : "");
+        }
+
+        window.renderAdminClientsList = function(filterTerm = "") {
+            const listDiv = document.getElementById('admin-clients-list'); if (!listDiv) return;
+            let filtered = window.adminClients;
+            
+            if (filterTerm && typeof filterTerm === 'string') { 
+                const t = filterTerm.toLowerCase().trim(); 
+                if (t !== "") {
+                    filtered = filtered.filter(c => {
+                        const sName = c.name ? String(c.name).toLowerCase() : "";
+                        const sEmail = c.email ? String(c.email).toLowerCase() : "";
+                        const sPhone = c.phone ? String(c.phone).toLowerCase() : "";
+                        const sId = c.id ? String(c.id).toLowerCase() : "";
+                        return sName.includes(t) || sEmail.includes(t) || sPhone.includes(t) || sId.includes(t);
+                    }); 
+                }
+            }
+            
+            if (filtered.length === 0) { 
+                listDiv.innerHTML = `
+                    <div class="text-center py-8">
+                        <p class="text-sm text-gray-500 font-bold mb-1">No se encontraron clientes con esa búsqueda.</p>
+                        <p class="text-[11px] text-gray-400 max-w-sm mx-auto mt-2">Nota: Los clientes solo aparecen en este radar <strong>después de realizar su primer pedido</strong>. Si es una cuenta nueva sin compras, aún no existirá en el registro del CRM.</p>
+                    </div>`;
+                return;
+            }
+
+            const wholesaleList = (window.siteConfig?.wholesaleEmails || "").split(',').map(e=>e.trim().toLowerCase());
+            let html = '';
+            filtered.forEach(c => {
+                const isWholesale = wholesaleList.includes(c.email.toLowerCase());
+                const toggleBtn = isWholesale ? `<button onclick="toggleWholesaleStatus('${c.email}')" class="bg-yellow-100 text-yellow-800 border border-yellow-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-yellow-200 transition shadow-sm">⭐ Es Mayorista (Quitar)</button>` : `<button onclick="toggleWholesaleStatus('${c.email}')" class="bg-gray-100 text-gray-600 border border-gray-300 px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-gray-200 transition shadow-sm">Hacer Mayorista</button>`;
+                html += `<div class="flex flex-col md:flex-row items-start md:items-center justify-between bg-white border border-gray-200 p-4 rounded-xl shadow-sm mb-3 gap-4"><div><p class="font-bold text-perfume-dark text-sm flex items-center gap-2">${c.name} ${isWholesale ? '<span class="text-[10px] bg-yellow-400 text-black px-1.5 py-0.5 rounded font-bold uppercase tracking-wide">VIP</span>' : ''}</p><div class="text-xs text-gray-500 mt-1 space-y-0.5"><p>📧 ${c.email}</p><p>📞 ${c.phone || 'Sin teléfono'}</p><p class="font-mono text-[9px] text-gray-400 mt-1 flex items-center gap-1"><span class="bg-gray-100 border border-gray-200 px-1.5 rounded font-bold text-gray-600">ID: ${c.id}</span></p></div></div><div class="flex flex-col md:items-end gap-2 w-full md:w-auto"><div class="text-xs text-gray-600 font-medium bg-gray-50 border border-gray-100 px-2.5 py-1 rounded-lg">🛍️ ${c.orderCount} pedidos | 💰 RD$ ${c.totalSpent.toLocaleString('en-US')}</div>${toggleBtn}</div></div>`;
+            });
+            listDiv.innerHTML = html;
+        }
+
+        window.toggleWholesaleStatus = async function(email) {
+            if(!email) return; email = email.toLowerCase().trim();
+            let emails = (window.siteConfig?.wholesaleEmails || "").split(',').map(e=>e.trim().toLowerCase()).filter(e=>e);
+            
+            if (emails.includes(email)) emails = emails.filter(e => e !== email);
+            else emails.push(email);
+            
+            const newVal = emails.join(', ');
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { wholesaleEmails: newVal }, { merge: true });
+                window.siteConfig.wholesaleEmails = newVal; 
+                const input = document.getElementById('cfg-wholesale-emails'); if(input) input.value = newVal;
+                window.showToast(emails.includes(email) ? "✅ Añadido a mayoristas" : "❌ Eliminado de mayoristas");
+                window.extractClientsFromOrders();
+            } catch(e) { window.showToast("Error al actualizar estado."); }
+        }
 
         window.renderAdminOrdersList = function(filterTerm = "") {
-            const listDiv = document.getElementById('admin-orders-list'); let filtered = window.adminOrders;
+            const listDiv = document.getElementById('admin-orders-list'); 
+            let filtered = window.adminOrders;
             
             if (window.currentOrderTab === 'Pendientes') {
                 filtered = filtered.filter(o => !o.attendedBy && o.status !== 'Completado' && o.status !== 'Cancelado' && o.status !== 'Eliminado');
@@ -1946,24 +2171,58 @@
                 filtered = filtered.filter(o => o.status === 'Eliminado');
             }
             
-            if(filterTerm) { filtered = filtered.filter(o => (o.orderId && o.orderId.toLowerCase().includes(filterTerm)) || (o.customerName && o.customerName.toLowerCase().includes(filterTerm)) || (o.customerPhone && o.customerPhone.toLowerCase().includes(filterTerm))); }
+            if(filterTerm) { 
+                filtered = filtered.filter(o => (o.orderId && o.orderId.toLowerCase().includes(filterTerm)) || (o.customerName && o.customerName.toLowerCase().includes(filterTerm)) || (o.customerPhone && o.customerPhone.toLowerCase().includes(filterTerm))); 
+            }
+
             if(filtered.length === 0) return listDiv.innerHTML = '<p class="text-sm text-gray-500 col-span-full text-center py-10">No hay pedidos en esta categoría actualmente.</p>';
 
             let html = '';
             filtered.forEach(order => {
                 const dateStr = new Date(order.date).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
                 let statusColor = "text-gray-800";
-                if(order.status === 'Completado') statusColor = "text-green-600"; if(order.status === 'Cancelado') statusColor = "text-red-600"; if(order.status === 'Procesando') statusColor = "text-blue-600"; if(order.status === 'Enviado') statusColor = "text-gray-600"; if(order.status === 'Eliminado') statusColor = "text-gray-400 bg-gray-100";
+                if(order.status === 'Completado') statusColor = "text-green-600"; 
+                if(order.status === 'Cancelado') statusColor = "text-red-600"; 
+                if(order.status === 'Procesando') statusColor = "text-blue-600"; 
+                if(order.status === 'Enviado') statusColor = "text-gray-600"; 
+                if(order.status === 'Eliminado') statusColor = "text-gray-400 bg-gray-100";
+                
                 const attendedBadge = order.attendedBy ? `<div class="mt-2 inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-md border border-gray-200">👨‍💻 Atendido por: ${order.attendedBy}</div>` : '';
                 const attendButton = (!order.attendedBy && order.status !== 'Eliminado') ? `<button onclick="attendOrder('${order.id}')" class="w-full bg-gray-800 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-black transition flex items-center justify-center gap-2 shadow-sm border border-gray-900 mb-2">👋 Tomar y Atender Cliente</button>` : '';
 
-                const subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0); const diff = subtotal - order.total;
-                let discountHTML = ''; if (diff > 0) { discountHTML = `<div class="flex justify-between items-center mb-1"><span class="text-green-500 text-[10px] font-bold uppercase tracking-widest">Descuento aplicado</span><span class="text-green-500 font-bold text-sm">-RD$ ${diff.toLocaleString('en-US')}</span></div>`; } else if (diff < 0) { discountHTML = `<div class="flex justify-between items-center mb-1"><span class="text-blue-500 text-[10px] font-bold uppercase tracking-widest">Cargo Extra / Envío</span><span class="text-blue-500 font-bold text-sm">+RD$ ${Math.abs(diff).toLocaleString('en-US')}</span></div>`; }
+                let subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+                let shippingFee = order.shippingFee !== undefined ? order.shippingFee : (order.total > subtotal ? order.total - subtotal : 0);
+                let discount = order.discount !== undefined ? order.discount : (order.total < subtotal ? subtotal - order.total : 0);
+                let calculatedTotal = subtotal + shippingFee - discount;
 
-                const editableItemsHTML = order.items.map((item, idx) => {
+                let editableItemsHTML = '';
+                order.items.forEach((item, idx) => {
                     const skuText = item.barcode ? `<span class="text-[9px] text-gray-400 font-mono block leading-none mt-0.5">SKU: ${item.barcode}</span>` : '';
-                    return `<div class="flex justify-between items-center mb-1"><div class="flex-1 flex items-start gap-2"><div class="flex items-center gap-1 mt-0.5"><button onclick="updateAdminItemQty('${order.id}', ${idx}, -1)" class="bg-gray-200 w-5 h-5 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300">-</button><span class="text-xs font-bold w-4 text-center">${item.qty}</span><button onclick="updateAdminItemQty('${order.id}', ${idx}, 1)" class="bg-gray-200 w-5 h-5 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300">+</button></div><div class="flex flex-col flex-1"><span class="text-xs leading-tight font-medium text-gray-800">${item.name}</span>${skuText}</div></div><div class="flex items-center gap-2 ml-2"><span class="text-gray-400 font-bold text-xs">RD$ ${(item.price * item.qty).toLocaleString('en-US')}</span><button onclick="removeAdminItem('${order.id}', ${idx})" class="text-red-400 hover:text-red-600 font-bold px-1 text-lg">&times;</button></div></div>`;
-                }).join('');
+                    editableItemsHTML += `
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
+                        <div class="flex-1 flex items-start gap-2">
+                            <div class="flex items-center gap-1 mt-0.5">
+                                <button onclick="updateAdminItemQty('${order.id}', ${idx}, -1)" class="bg-gray-200 w-5 h-5 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300 transition">-</button>
+                                <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
+                                <button onclick="updateAdminItemQty('${order.id}', ${idx}, 1)" class="bg-gray-200 w-5 h-5 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300 transition">+</button>
+                            </div>
+                            <div class="flex flex-col flex-1">
+                                <span class="text-xs leading-tight font-medium text-gray-800 pr-1">${item.name}</span>
+                                ${skuText}
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-1.5 ml-1">
+                            <div class="flex flex-col items-end">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-[9px] text-gray-400 font-bold">RD$</span>
+                                    <input type="number" value="${item.price}" onchange="updateAdminItemPrice('${order.id}', ${idx}, this.value)" class="w-16 text-right text-xs border border-gray-300 p-1 rounded outline-none focus:border-perfume-magenta font-bold bg-white" title="Editar precio del artículo">
+                                </div>
+                                <span class="text-[9px] text-gray-400 mt-0.5 font-bold">Sub: ${(item.price * item.qty).toLocaleString('en-US')}</span>
+                            </div>
+                            <button onclick="removeAdminItem('${order.id}', ${idx})" class="text-red-400 hover:text-red-600 font-bold px-1.5 text-lg transition" title="Quitar artículo">&times;</button>
+                        </div>
+                    </div>`;
+                });
 
                 html += `
                 <div class="bg-white border ${order.status === 'Eliminado' ? 'border-red-200 opacity-80' : 'border-gray-200'} p-5 rounded-2xl shadow-sm hover:shadow-lg transition duration-300 flex flex-col h-full relative group">
@@ -1971,50 +2230,79 @@
                         <div><span class="text-sm font-extrabold text-perfume-dark bg-gray-100 px-2 py-1 rounded">${order.orderId || '#PED-XXX'}</span><p class="text-[10px] text-gray-400 mt-1">📅 ${dateStr}</p></div>
                         <div class="flex items-center gap-2">
                             <select onchange="updateOrderStatus('${order.id}', this.value)" class="text-xs font-bold border border-gray-300 rounded-lg px-2 py-1.5 outline-none cursor-pointer ${statusColor} bg-gray-50 hover:bg-white transition shadow-sm">
-                                <option value="Recibido" ${order.status==='Recibido'?'selected':''} class="text-gray-800">${window.statusDisplayNames['Recibido']}</option><option value="Procesando" ${order.status==='Procesando'?'selected':''} class="text-blue-600">${window.statusDisplayNames['Procesando']}</option><option value="Enviado" ${order.status==='Enviado'?'selected':''} class="text-gray-600">${window.statusDisplayNames['Enviado']}</option><option value="Completado" ${order.status==='Completado'?'selected':''} class="text-green-600">${window.statusDisplayNames['Completado']}</option><option value="Cancelado" ${order.status==='Cancelado'?'selected':''} class="text-red-600">${window.statusDisplayNames['Cancelado']}</option><option value="Eliminado" ${order.status==='Eliminado'?'selected':''} class="text-gray-400">${window.statusDisplayNames['Eliminado']}</option>
+                                <option value="Recibido" ${order.status==='Recibido'?'selected':''} class="text-gray-800">${window.statusDisplayNames['Recibido']}</option>
+                                <option value="Procesando" ${order.status==='Procesando'?'selected':''} class="text-blue-600">${window.statusDisplayNames['Procesando']}</option>
+                                <option value="Enviado" ${order.status==='Enviado'?'selected':''} class="text-gray-600">${window.statusDisplayNames['Enviado']}</option>
+                                <option value="Completado" ${order.status==='Completado'?'selected':''} class="text-green-600">${window.statusDisplayNames['Completado']}</option>
+                                <option value="Cancelado" ${order.status==='Cancelado'?'selected':''} class="text-red-600">${window.statusDisplayNames['Cancelado']}</option>
+                                <option value="Eliminado" ${order.status==='Eliminado'?'selected':''} class="text-gray-400">${window.statusDisplayNames['Eliminado']}</option>
                             </select>
                             ${order.status !== 'Eliminado' ? `<button onclick="deleteAdminOrder('${order.id}')" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition shadow-sm border border-red-100" title="Eliminar Pedido"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
                         </div>
                     </div>
                     <div class="mb-4"><p class="text-sm font-bold text-gray-800 flex items-center gap-2">👤 ${order.customerName}</p><p class="text-sm text-gray-500 flex items-center gap-2 mt-1">📞 ${order.customerPhone || 'Sin número'}</p>${attendedBadge}</div>
                     
-                    <div class="mb-4 bg-gray-50 p-3 rounded-lg border border-gray-100 flex-1 flex flex-col">
-                        <div class="space-y-2 mb-2">${editableItemsHTML}</div>
+                    <div class="mb-4 bg-gray-50/70 p-3 rounded-lg border border-gray-100 flex-1 flex flex-col">
+                        <div class="space-y-1 mb-2">${editableItemsHTML}</div>
                         
-                        <!-- Formulario Añadir Artículo -->
-                        <div id="add-item-form-${order.id}" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                            <input type="text" id="new-item-name-${order.id}" placeholder="Nombre del perfume o artículo" class="border border-gray-300 p-1.5 rounded-md w-full text-xs mb-2 outline-none focus:border-perfume-magenta">
-                            <div class="flex gap-2"><input type="number" id="new-item-price-${order.id}" placeholder="Precio (RD$)" class="border border-gray-300 p-1.5 rounded-md w-1/2 text-xs outline-none focus:border-perfume-magenta"><input type="number" id="new-item-qty-${order.id}" value="1" min="1" class="border border-gray-300 p-1.5 rounded-md w-1/4 text-xs text-center outline-none"><button onclick="saveNewAdminItem('${order.id}')" class="bg-perfume-dark text-white rounded-md w-1/4 text-xs font-bold hover:bg-black">OK</button></div>
-                            <button onclick="toggleAddItemForm('${order.id}')" class="text-gray-400 text-[10px] w-full text-right mt-2 hover:underline">Cancelar</button>
-                        </div>
-
-                        <!-- Formulario Añadir Costo de Envío -->
-                        <div id="add-shipping-form-${order.id}" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm border-l-4 border-l-blue-500">
-                            <p class="text-[10px] font-bold text-gray-500 uppercase mb-2">🚚 Costo de Envío / Extra</p>
-                            <div class="flex gap-2">
-                                <input type="number" id="new-shipping-price-${order.id}" placeholder="Monto (RD$)" class="border border-gray-300 p-1.5 rounded-md w-3/4 text-xs outline-none focus:border-blue-500">
-                                <button onclick="saveShippingFee('${order.id}')" class="bg-blue-600 text-white rounded-md w-1/4 text-xs font-bold hover:bg-blue-700">OK</button>
+                        <div id="add-item-form-${order.id}" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm border-l-4 border-l-perfume-magenta">
+                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">➕ Añadir Producto</p>
+                            <div class="relative mb-2">
+                                <input type="text" id="new-item-search-${order.id}" placeholder="Buscar por nombre..."
+                                       oninput="filterNewItemSearch('${order.id}', this.value)" autocomplete="off"
+                                       class="border border-gray-300 p-1.5 rounded-md w-full text-xs outline-none focus:border-perfume-magenta bg-gray-50">
+                                <div id="new-item-suggestions-${order.id}" class="absolute z-20 w-full bg-white border border-gray-200 shadow-xl max-h-40 overflow-y-auto hidden rounded-b-lg"></div>
                             </div>
-                            <button onclick="toggleAddShippingForm('${order.id}')" class="text-gray-400 text-[10px] w-full text-right mt-2 hover:underline">Cancelar</button>
+                            <div class="flex gap-2">
+                                <input type="number" id="new-item-price-${order.id}" placeholder="RD$ Precio" class="border border-gray-300 p-1.5 rounded-md w-1/2 text-xs outline-none focus:border-perfume-magenta">
+                                <input type="number" id="new-item-qty-${order.id}" value="1" min="1" class="border border-gray-300 p-1.5 rounded-md w-1/4 text-xs text-center outline-none">
+                                <button onclick="saveNewAdminItem('${order.id}')" class="bg-perfume-magenta text-white rounded-md w-1/4 text-xs font-bold hover:bg-perfume-dark transition">OK</button>
+                            </div>
+                            <button onclick="toggleAddItemForm('${order.id}')" class="text-gray-400 text-[10px] w-full text-center mt-3 hover:text-red-500 uppercase tracking-widest font-bold">Cerrar</button>
                         </div>
 
-                        <div class="flex justify-between items-center mt-auto pt-3 border-t border-gray-200">
-                            <button onclick="toggleAddItemForm('${order.id}')" class="text-perfume-magenta text-[10px] font-bold uppercase tracking-widest hover:underline">+ Artículo</button>
-                            <button onclick="toggleAddShippingForm('${order.id}')" class="text-blue-600 text-[10px] font-bold uppercase tracking-widest hover:underline">+ Costo Envío</button>
+                        <div class="flex justify-start items-center mt-auto pt-3 border-t border-gray-100">
+                            <button onclick="toggleAddItemForm('${order.id}')" class="text-perfume-magenta text-[10px] font-bold uppercase tracking-widest hover:underline flex items-center gap-1 bg-white border border-perfume-magenta/20 px-2 py-1 rounded">
+                                <span>➕</span> Buscar y Añadir Artículo
+                            </button>
                         </div>
                     </div>
 
-                    <div class="mt-auto border-t border-gray-100 pt-4 flex flex-col">
-                        ${discountHTML}
-                        <div class="flex justify-between items-center mb-4"><span class="text-gray-400 text-xs font-bold uppercase tracking-widest">Total</span><div class="flex items-center gap-1"><span class="text-perfume-magenta font-extrabold text-lg">RD$</span><input type="number" onchange="updateAdminTotal('${order.id}', this.value)" value="${order.total}" class="w-24 text-right font-extrabold text-perfume-magenta text-xl tracking-tight bg-transparent border-b-2 border-transparent hover:border-gray-200 focus:border-perfume-magenta outline-none transition px-1" title="Editar precio final"></div></div>
+                    <div class="mt-auto border-t border-gray-100 pt-3 flex flex-col">
+                        <div class="flex flex-col gap-1.5 mb-3 pt-1">
+                            <div class="flex justify-between items-center">
+                                <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Subtotal</span>
+                                <span class="text-gray-800 font-bold text-sm">RD$ ${subtotal.toLocaleString('en-US')}</span>
+                            </div>
+                            <div class="flex justify-between items-center bg-blue-50/50 p-1 rounded">
+                                <span class="text-blue-500 text-[10px] font-bold uppercase tracking-widest">🚚 Envío / Extra</span>
+                                <div class="flex items-center gap-1">
+                                    <span class="text-blue-500 text-[10px] font-bold">+RD$</span>
+                                    <input type="number" onchange="updateOrderShipping('${order.id}', this.value)" value="${shippingFee}" class="w-16 text-right text-xs border border-blue-200 p-1 rounded outline-none focus:border-blue-500 font-bold text-blue-600 bg-white shadow-sm" title="Modificar costo de envío">
+                                </div>
+                            </div>
+                            <div class="flex justify-between items-center bg-green-50/50 p-1 rounded">
+                                <span class="text-green-500 text-[10px] font-bold uppercase tracking-widest">📉 Descuento</span>
+                                <div class="flex items-center gap-1">
+                                    <span class="text-green-500 text-[10px] font-bold">-RD$</span>
+                                    <input type="number" onchange="updateOrderDiscount('${order.id}', this.value)" value="${discount}" class="w-16 text-right text-xs border border-green-200 p-1 rounded outline-none focus:border-green-500 font-bold text-green-600 bg-white shadow-sm" title="Aplicar descuento manual">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center mb-4 border-t border-gray-200 pt-3">
+                            <span class="text-gray-800 text-sm font-black uppercase tracking-widest">Total Final</span>
+                            <span class="text-perfume-magenta font-extrabold text-xl">RD$ ${calculatedTotal.toLocaleString('en-US')}</span>
+                        </div>
+                        
                         ${attendButton}
+                        
                         <div class="flex flex-col gap-2">
                             <button onclick="generateAndSendPDF('${order.id}')" class="w-full bg-perfume-magenta text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-perfume-dark transition flex items-center justify-center gap-2 shadow-sm">
                                 📄 Generar PDF y Enviar a Cliente
                             </button>
                             <div class="flex gap-2">
                                 <button onclick="generateInvoicePDF('${order.id}')" class="flex-1 bg-gray-100 text-gray-800 px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-gray-200 transition flex items-center justify-center shadow-sm border border-gray-300" title="Solo Descargar PDF">
-                                    ⬇️ Solo Bajar PDF
+                                    ⬇️ Bajar PDF
                                 </button>
                                 <button onclick="notifyCustomerWhatsApp('${order.id}')" class="flex-1 bg-[#25D366] text-white px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-[#20ba59] transition flex items-center justify-center shadow-sm border border-[#20ba59]" title="Solo enviar mensaje de estado sin adjunto">
                                     💬 Solo Mensaje
@@ -2081,7 +2369,8 @@
             window.showToast("Generando PDF... ⏳");
 
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            // ACTIVAR COMPRESIÓN DEL DOCUMENTO PDF
+            const doc = new jsPDF({ compress: true });
 
             const storeName = "FamlyFragrancerd";
             
@@ -2106,17 +2395,20 @@
             doc.rect(0, 0, 210, 8, 'F'); 
 
             try {
-                const logoUrl = window.siteConfig?.logoUrl || "https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png";
-                const img = new Image();
-                img.crossOrigin = "Anonymous";
-                img.src = logoUrl;
-                await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
-                
-                const canvas = document.createElement('canvas');
-                canvas.width = img.width; canvas.height = img.height;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(img, 0, 0);
-                doc.addImage(canvas.toDataURL('image/png'), 'PNG', 14, 12, 28, 28);
+                // USA LA VERSIÓN CACHEADA PARA AHORRAR DATOS Y TIEMPO
+                if (window.cachedPdfLogo) {
+                    doc.addImage(window.cachedPdfLogo, 'PNG', 14, 12, 28, 28, 'logoTienda', 'FAST');
+                } else {
+                    const logoUrl = window.siteConfig?.logoUrl || "https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png";
+                    const img = new Image(); img.crossOrigin = "Anonymous"; img.src = logoUrl;
+                    await new Promise((resolve) => { img.onload = resolve; img.onerror = resolve; });
+                    const MAX_SIZE = 300; let w = img.width; let h = img.height;
+                    if (w > MAX_SIZE || h > MAX_SIZE) { if (w > h) { h = Math.round((h * MAX_SIZE) / w); w = MAX_SIZE; } else { w = Math.round((w * MAX_SIZE) / h); h = MAX_SIZE; } }
+                    const canvas = document.createElement('canvas'); canvas.width = w; canvas.height = h;
+                    const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, w, h);
+                    window.cachedPdfLogo = canvas.toDataURL('image/png');
+                    doc.addImage(window.cachedPdfLogo, 'PNG', 14, 12, 28, 28, 'logoTienda', 'FAST');
+                }
             } catch(e) { console.log("Logo PDF no cargado"); }
 
             doc.setFontSize(20);
@@ -2166,10 +2458,11 @@
             doc.setTextColor(60, 60, 60);
             doc.setFont("helvetica", "normal");
             
-            const cleanName = order.customerName.replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim() || 'Cliente'; 
-            let cleanPhone = (order.customerPhone || 'N/A').replace(/[^\x20-\x7E]/g, '').trim();
+            // USO DE FUNCIONES LIMPIAS GLOBALES
+            const cleanName = window.cleanText(order.customerName) || 'Cliente'; 
+            let cleanPhone = window.cleanText(order.customerPhone);
             if(cleanPhone.length < 3) cleanPhone = 'N/A';
-            let cleanEmail = (order.customerEmail || 'Sin correo registrado').replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim();
+            let cleanEmail = window.cleanText(order.customerEmail);
             if(cleanEmail.length < 4 || cleanEmail === '@') cleanEmail = 'Sin correo registrado';
 
             doc.text(`Nombre: ${cleanName}`, 18, 62);
@@ -2183,13 +2476,13 @@
             order.items.forEach(item => {
                 const itemSub = item.price * item.qty;
                 subtotalCalc += itemSub;
-                const cleanItemName = item.name.replace(/[^\x20-\x7E\xC0-\xFF]/g, '');
+                const cleanItemName = window.cleanText(item.name);
                 tableRows.push([
                     item.qty,
                     cleanItemName,
                     item.barcode || '-',
-                    `RD$ ${item.price.toLocaleString('en-US')}`,
-                    `RD$ ${itemSub.toLocaleString('en-US')}`
+                    window.formatMoney(item.price),
+                    window.formatMoney(itemSub)
                 ]);
             });
 
@@ -2210,7 +2503,10 @@
             });
 
             const finalY = doc.lastAutoTable.finalY + 10;
-            const diff = subtotalCalc - order.total;
+            
+            let shippingFee = order.shippingFee !== undefined ? order.shippingFee : (order.total > subtotalCalc ? order.total - subtotalCalc : 0);
+            let discount = order.discount !== undefined ? order.discount : (order.total < subtotalCalc ? subtotalCalc - order.total : 0);
+            let calculatedTotal = subtotalCalc + shippingFee - discount;
 
             doc.setFontSize(10);
             doc.setTextColor(80, 80, 80);
@@ -2219,15 +2515,16 @@
             doc.text(`RD$ ${subtotalCalc.toLocaleString('en-US')}`, 196, finalY, { align: "right" });
             
             let nextY = finalY + 6;
-            if (diff > 0) {
+            if (discount > 0) {
                 doc.setTextColor(0, 150, 0); 
                 doc.text(`Descuento:`, 140, nextY);
-                doc.text(`-RD$ ${diff.toLocaleString('en-US')}`, 196, nextY, { align: "right" });
+                doc.text(`-RD$ ${discount.toLocaleString('en-US')}`, 196, nextY, { align: "right" });
                 nextY += 6;
-            } else if (diff < 0) {
+            }
+            if (shippingFee > 0) {
                 doc.setTextColor(0, 0, 255); 
                 doc.text(`Cargo / Envío:`, 140, nextY);
-                doc.text(`+RD$ ${Math.abs(diff).toLocaleString('en-US')}`, 196, nextY, { align: "right" });
+                doc.text(`+RD$ ${shippingFee.toLocaleString('en-US')}`, 196, nextY, { align: "right" });
                 nextY += 6;
             }
 
@@ -2238,7 +2535,7 @@
             doc.setTextColor(primaryColorHex);
             doc.setFont("helvetica", "bold");
             doc.text(`TOTAL:`, 140, nextY + 5);
-            doc.text(`RD$ ${order.total.toLocaleString('en-US')}`, 196, nextY + 5, { align: "right" });
+            doc.text(`RD$ ${calculatedTotal.toLocaleString('en-US')}`, 196, nextY + 5, { align: "right" });
 
             const pageHeight = doc.internal.pageSize.height;
             doc.setFillColor(primaryColorHex);
@@ -2326,7 +2623,6 @@
                 window.isLoggedIn = true; window.userId = user.uid;
                 const fullName = user.displayName || "Cliente"; 
                 
-                // LÓGICA DE MAYORISTA
                 let badgeHTML = '';
                 if (window.siteConfig && window.siteConfig.wholesaleEmails) {
                     const wholesaleList = window.siteConfig.wholesaleEmails.split(',').map(e=>e.trim().toLowerCase());
@@ -2339,9 +2635,10 @@
                 document.getElementById('nav-login-text').innerText = fullName.split(' ')[0]; 
                 document.getElementById('profile-name').innerHTML = fullName + badgeHTML; 
                 document.getElementById('profile-email').innerText = user.email || ""; 
+                const profileIdEl = document.getElementById('profile-id');
+                if (profileIdEl) profileIdEl.innerText = window.generateNumericId(user.uid);
                 document.getElementById('profile-initial').innerText = fullName.charAt(0).toUpperCase();
 
-                // Actualizar Catálogo con los nuevos precios de Mayorista si aplican
                 if(window.catalogProducts.length > 0) { 
                     window.renderCatalog(window.catalogProducts); 
                     window.filterCatalog(); 
