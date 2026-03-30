@@ -185,7 +185,7 @@
                         </span>
                         <input type="text" id="catalog-search" oninput="filterCatalog()" placeholder="Buscar por marca, nombre, SKU o género..." class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 shadow-sm text-sm focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta bg-white transition-all font-medium">
                         
-                        <!-- NUEVO: Contenedor del Buscador Predictivo Flotante -->
+                        <!-- Buscador Predictivo Flotante -->
                         <div id="search-suggestions" class="absolute top-full left-0 w-full bg-white mt-2 rounded-xl shadow-2xl border border-gray-100 z-50 hidden max-h-80 overflow-y-auto divide-y divide-gray-50 transition-all duration-300"></div>
                     </div>
                     
@@ -290,7 +290,7 @@
                         </select>
                     </div>
 
-                    <p id="detail-price-display" class="text-2xl font-bold text-perfume-magenta mb-4">RD$ 0</p>
+                    <div id="detail-price-display" class="mb-4"></div>
                     
                     <div>
                         <h4 class="text-sm font-bold text-gray-800 mb-1">Notas y Descripción:</h4>
@@ -338,7 +338,7 @@
         <div class="flex-1 overflow-y-auto bg-perfume-light p-6 no-scrollbar">
             <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 text-center relative">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-perfume-magenta text-2xl font-bold mx-auto mb-3"><span id="profile-initial">?</span></div>
-                <h3 id="profile-name" class="text-lg font-bold text-perfume-dark">Cargando...</h3>
+                <h3 id="profile-name" class="text-lg font-bold text-perfume-dark flex items-center justify-center">Cargando...</h3>
                 <p id="profile-email" class="text-sm text-gray-500 mb-2">...</p>
                 <button onclick="logout()" class="text-xs text-red-500 font-semibold hover:underline">Cerrar Sesión</button>
                 
@@ -406,10 +406,12 @@
                             </div>
 
                             <div class="flex gap-2">
-                                <select id="admin-prod-cat" required class="w-1/2 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                <select id="admin-prod-cat" required class="w-1/3 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                                     <option value="" disabled selected>Selecciona Categoría</option>
                                 </select>
-                                <input type="number" id="admin-prod-price" required min="1" placeholder="Precio Botella (RD$)" class="w-1/2 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                <input type="number" id="admin-prod-price" required min="1" placeholder="Precio (RD$)" class="w-1/3 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                <!-- NUEVO: CAMPO PRECIO MAYORISTA -->
+                                <input type="number" id="admin-prod-wholesale" min="1" placeholder="P. Mayor (RD$)" class="w-1/3 border border-yellow-300 bg-yellow-50 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta" title="Precio especial para mayoristas">
                             </div>
                             
                             <div class="flex items-center gap-4 border border-gray-200 p-3 rounded-lg bg-white shadow-sm mt-2">
@@ -506,6 +508,14 @@
             <!-- PESTAÑA: CONFIGURACIÓN AVANZADA -->
             <div id="admin-tab-settings" class="hidden space-y-6 max-w-6xl mx-auto w-full">
                 <form onsubmit="saveSiteConfig(event)" class="space-y-6">
+
+                    <!-- NUEVO: SECCIÓN MAYORISTAS -->
+                    <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200 mb-6">
+                        <h3 class="font-bold text-yellow-900 mb-2 border-b border-yellow-200 pb-2 flex items-center gap-2">💼 Clientes VIP / Mayoristas</h3>
+                        <p class="text-xs text-yellow-800 mb-3">Los correos que agregues aquí verán automáticamente el "Precio x Mayor" en toda la tienda cuando inicien sesión.</p>
+                        <label class="block text-xs font-bold text-yellow-900 mb-1">Correos electrónicos (separados por coma)</label>
+                        <textarea id="cfg-wholesale-emails" rows="2" class="w-full border border-yellow-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:border-yellow-500" placeholder="cliente1@gmail.com, revendedor@hotmail.com"></textarea>
+                    </div>
                     
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <h3 class="font-bold text-perfume-dark mb-4 border-b border-gray-200 pb-2">🎨 Identidad Visual y Colores</h3>
@@ -881,7 +891,7 @@
 
     <!-- SCRIPTS FIREBASE -->
     <script>
-        // VARIABLE GLOBAL DEL SERVICE WORKER (MEJORA #1)
+        // VARIABLE GLOBAL DEL SERVICE WORKER
         window.swRegistration = null;
 
         window.addEventListener('load', function() {
@@ -903,7 +913,7 @@
 
                 if ('serviceWorker' in navigator) {
                     navigator.serviceWorker.register('./firebase-messaging-sw.js')
-                        .then(reg => { window.swRegistration = reg; }) // Guardamos el registro aquí
+                        .then(reg => { window.swRegistration = reg; })
                         .catch(function(err) { console.log('Error registrando SW:', err); });
                 }
             } catch (e) { console.error("Error iniciando PWA"); }
@@ -950,6 +960,7 @@
         window.siteBrands = []; 
         window.siteAppearance = {}; 
         window.currentDecants = []; 
+        window.isWholesaler = false; // <-- VARIABLE MAYORISTA INTEGRADA
 
         const SUPER_ADMIN_EMAILS = [ "geudri98@hotmail.com", "mrochelindachelle@gmail.com" ]; 
         const STAFF_EMAILS = [ "admin2@famlyfragrancerd.com", "famlyfragrancerd@hotmail.com", "gmarmol51@gmail.com", "espinalleily@gmail.com" ];
@@ -957,10 +968,9 @@
         window.statusDisplayNames = { 'Recibido': 'Recibido', 'Procesando': 'Procesando', 'Enviado': 'Enviado', 'Completado': 'Completado', 'Cancelado': 'Cancelado', 'Eliminado': 'Eliminado' };
         window.statusMessages = { 'Recibido': 'Lo hemos recibido y estamos confirmando disponibilidad.', 'Procesando': 'Lo estamos preparando con mucho cuidado.', 'Enviado': '¡Tu paquete ya va en camino a tus manos!', 'Completado': 'Entregado. ¡Gracias por preferirnos!', 'Cancelado': 'El pedido fue cancelado.', 'Eliminado': 'El pedido fue eliminado de nuestro sistema.' };
 
-        // =================================================================
-        // DICCIONARIO DE CAMPOS DE CONFIGURACIÓN (MEJORA #2)
-        // =================================================================
+        // DICCIONARIO DE CAMPOS DE CONFIGURACIÓN CON EL CAMPO DE MAYORISTA
         const CONFIG_FIELDS = [
+            { key: 'wholesaleEmails', id: 'cfg-wholesale-emails', type: 'textarea' }, // <-- CAMPO DE CORREOS VIP
             { key: 'logoUrl', id: 'cfg-logo-url', type: 'url' },
             { key: 'colorPrimary', id: 'cfg-color-primary', type: 'color' },
             { key: 'colorSecondary', id: 'cfg-color-secondary', type: 'color' },
@@ -1002,7 +1012,6 @@
                 if (permission === 'granted') {
                     window.showToast("Generando token seguro...");
                     
-                    // REUTILIZACIÓN DEL SERVICE WORKER (MEJORA #1)
                     let swReg = window.swRegistration;
                     if (!swReg) {
                         swReg = await navigator.serviceWorker.register('./firebase-messaging-sw.js').catch(e => console.log(e));
@@ -1031,14 +1040,13 @@
             } catch (error) { window.showToast("Error. Revisa los permisos o la consola."); }
         }
 
-        // NUEVA FUNCIÓN: Escucha pedidos en vivo y lanza Notificaciones Locales (PWA)
         window.isListeningOrders = false;
         window.listenForNewOrders = function() {
             if (window.isListeningOrders) return;
             window.isListeningOrders = true;
             
             const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos');
-            const initTime = Date.now(); // Guardamos la hora a la que abriste la app
+            const initTime = Date.now(); 
             
             onSnapshot(ordersRef, (snapshot) => {
                 snapshot.docChanges().forEach((change) => {
@@ -1046,29 +1054,21 @@
                         const order = change.doc.data();
                         const orderTime = new Date(order.date).getTime();
                         
-                        // Solo notificar si el pedido se creó DESPUÉS de que abriste la app
                         if (orderTime > initTime) {
-                            
-                            // 1. Mostrar notificación nativa en el teléfono (PWA)
                             if (Notification.permission === 'granted' && window.swRegistration) {
                                 window.swRegistration.showNotification('¡Nuevo Pedido Recibido! 🛍️', {
                                     body: `${order.customerName} ha pedido por RD$ ${order.total.toLocaleString('en-US')}.`,
                                     icon: 'https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png',
-                                    vibrate: [200, 100, 200, 100, 200, 100, 200], // Patrón de vibración
+                                    vibrate: [200, 100, 200, 100, 200, 100, 200],
                                     tag: 'new-order',
-                                    requireInteraction: true // Evita que se cierre sola
+                                    requireInteraction: true 
                                 });
                             } else {
-                                // Fallback si el SW falla pero hay permisos
                                 window.showToast(`🔔 Nuevo Pedido de ${order.customerName}`);
                             }
                             
-                            // 2. Reproducir sonido fuerte
-                            try { 
-                                new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{}); 
-                            } catch(e) {}
+                            try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{}); } catch(e) {}
                             
-                            // 3. Si tienes el monitor de pedidos abierto, lo actualiza solo
                             const ordersModal = document.getElementById('orders-dashboard-modal');
                             if (ordersModal && !ordersModal.classList.contains('hidden')) {
                                 window.loadAdminOrders();
@@ -1086,7 +1086,6 @@
             try { new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3').play().catch(()=>{}); } catch(e) {}
         });
 
-        // --- SISTEMAS DE ADMIN (Escaner, Categorías, Marcas) ---
         let html5QrCodeScanner = null;
         window.openScannerModal = function() {
             document.getElementById('barcode-scanner-modal').classList.remove('hidden');
@@ -1159,7 +1158,6 @@
         async function saveBrandsToDB() { try { await setDoc(doc(db, 'artifacts', appId, 'public', 'config'), { brandsList: window.siteBrands }, { merge: true }); window.showToast("Marcas actualizadas."); } catch(e) { } }
 
 
-        // --- SISTEMA DE CONFIGURACIÓN VISUAL (MEJORADO CON LOOP) ---
         window.saveSiteConfig = async function(e) {
             e.preventDefault(); 
             const btn = document.getElementById('btn-save-cfg');
@@ -1168,7 +1166,6 @@
 
             try {
                 const dataObj = {};
-                // MEJORA #2: Loop para leer todos los datos del formulario de una sola vez
                 CONFIG_FIELDS.forEach(field => {
                     const el = document.getElementById(field.id);
                     if(el) {
@@ -1196,6 +1193,12 @@
                 const data = snap.exists() ? snap.data() : {};
                 window.siteConfig = data;
 
+                // LOGICA MAYORISTA: Detectar al instante si el usuario activo es VIP
+                if(auth.currentUser) {
+                    const wholesaleList = (data.wholesaleEmails || "").split(',').map(e=>e.trim().toLowerCase());
+                    window.isWholesaler = wholesaleList.includes(auth.currentUser.email.toLowerCase());
+                }
+
                 if(data.categoriesList && Array.isArray(data.categoriesList)) window.siteCategories = data.categoriesList;
                 window.renderCategoriesUI();
                 if(data.brandsList && Array.isArray(data.brandsList)) window.siteBrands = data.brandsList;
@@ -1213,7 +1216,6 @@
                     priceSize: data.priceSize || 'text-base md:text-lg'
                 };
 
-                // APLICAR CAMBIOS VISUALES AL DOM
                 const defaultLogo = "https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png";
                 const logoUrl = data.logoUrl || defaultLogo;
                 document.getElementById('main-logo').src = logoUrl; document.getElementById('splash-logo').src = logoUrl;
@@ -1276,14 +1278,12 @@
                     else { waContainer.classList.add('right-6'); waTooltip.classList.add('right-full', 'mr-3'); }
                 } else { waContainer.classList.add('hidden'); }
 
-                // MEJORA #2: Loop para llenar los valores en el formulario del panel de admin
                 CONFIG_FIELDS.forEach(field => {
                     const el = document.getElementById(field.id);
                     if(el) {
                         if(field.type === 'checkbox') {
-                            el.checked = data[field.key] !== false; // Para los que por defecto son true
+                            el.checked = data[field.key] !== false; 
                         } else {
-                            // Asignamos el valor cargado o dejamos vacío si no existe
                             if(data[field.key] !== undefined) {
                                 el.value = data[field.key];
                             }
@@ -1292,7 +1292,6 @@
                 });
 
                 if(window.catalogProducts && window.catalogProducts.length > 0) {
-                    // Re-renderizamos para que tomen los nuevos ajustes visuales
                     window.renderCatalog(window.catalogProducts);
                     window.filterCatalog();
                 }
@@ -1314,9 +1313,6 @@
             select.value = window.currentBrandFilter;
         }
 
-        // =================================================================
-        // MEJORA #3: SEPARACIÓN DE RENDERIZADO (Una vez) Y FILTRADO (Clases CSS)
-        // =================================================================
         window.renderCatalog = function(productsList) {
             const grid = document.getElementById('products-grid');
             grid.innerHTML = ''; 
@@ -1332,7 +1328,16 @@
 
             let htmlFull = '';
             productsList.forEach((prod) => {
-                const priceFormatted = `RD$ ${prod.price.toLocaleString('en-US')}`;
+                // LOGICA MAYORISTA: Define qué precio usar y mostrar
+                let activePrice = prod.price;
+                let isWholesaleActive = window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price;
+                if (isWholesaleActive) activePrice = prod.wholesalePrice;
+
+                let priceFormatted = `RD$ ${activePrice.toLocaleString('en-US')}`;
+                if (isWholesaleActive) {
+                    priceFormatted = `<span class="line-through text-gray-400 text-sm md:text-base mr-2">RD$ ${prod.price.toLocaleString('en-US')}</span><span class="text-green-600 font-extrabold text-lg md:text-xl">RD$ ${activePrice.toLocaleString('en-US')}</span>`;
+                }
+
                 const brandLabel = prod.brand ? `${prod.brand} • ` : '';
                 const skuLabel = prod.barcode ? `<span class="bg-gray-100 text-gray-600 text-[9px] font-mono px-1.5 py-0.5 rounded shadow-sm border border-gray-200">SKU: ${prod.barcode}</span>` : '';
                 const isOutOfStock = !!prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0);
@@ -1342,17 +1347,15 @@
 
                 const btnHtml = isOutOfStock 
                     ? `<button disabled class="w-full bg-gray-200 text-gray-400 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold cursor-not-allowed uppercase tracking-wider">Agotado</button>`
-                    : `<button onclick="addToCart('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', ${prod.price}, '${prod.img}', 'full', '${prod.barcode || ''}')" class="w-full bg-white border border-perfume-magenta text-perfume-magenta py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold hover:bg-perfume-magenta hover:text-white transition">Agregar al Carrito</button>`;
+                    : `<button onclick="addToCart('${prod.id}', '${prod.name.replace(/'/g, "\\'")}', ${activePrice}, '${prod.img}', 'full', '${prod.barcode || ''}')" class="w-full bg-white border border-perfume-magenta text-perfume-magenta py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold hover:bg-perfume-magenta hover:text-white transition">Agregar al Carrito</button>`;
 
-                // Generamos un string de búsqueda para esa tarjeta en específico
                 const searchString = `${prod.name || ''} ${prod.category || ''} ${prod.brand || ''} ${prod.description || ''} ${prod.barcode || ''}`.toLowerCase();
 
-                // Añadimos la clase product-card-item y los atributos data-*
                 htmlFull += `
                 <div class="product-card-item flex flex-col h-full bg-white p-3 md:p-5 ${cardRadius} ${cardBorder} ${cardShadow} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group relative overflow-hidden" 
                      data-category="${prod.category || ''}" data-brand="${prod.brand || ''}" data-search="${searchString}">
                     ${offerBadge}
-                    ${prod.decants && prod.decants.length > 0 ? '<div class="absolute top-2 right-2 bg-gray-200 text-gray-800 text-[9px] font-bold px-2 py-1 rounded-full z-10">Con Decants</div>' : ''}
+                    ${isWholesaleActive ? `<div class="absolute top-2 right-2 bg-green-500 text-white text-[10px] font-black px-2 py-1 rounded-full z-10 shadow-md tracking-wider">MAYORISTA</div>` : (prod.decants && prod.decants.length > 0 ? '<div class="absolute top-2 right-2 bg-gray-200 text-gray-800 text-[9px] font-bold px-2 py-1 rounded-full z-10">Con Decants</div>' : '')}
                     <div class="relative overflow-hidden rounded-xl mb-4 bg-white flex items-center justify-center aspect-[4/5] cursor-pointer" onclick="openProductModal('${prod.id}')">
                         ${agotadoOverlay}
                         <img src="${prod.img}" class="w-full h-full ${imgFit} p-2 md:p-4 group-hover:scale-110 transition duration-700 mix-blend-multiply">
@@ -1390,7 +1393,6 @@
             const cards = document.querySelectorAll('.product-card-item');
             let visibleCount = 0;
 
-            // En vez de reconstruir el HTML, solo mostramos/ocultamos las tarjetas
             cards.forEach(card => {
                 const cat = card.getAttribute('data-category');
                 const brand = card.getAttribute('data-brand');
@@ -1408,17 +1410,14 @@
                 }
             });
 
-            // Manejar el mensaje de catálogo vacío
             const emptyMsg = document.getElementById('catalog-empty-msg');
             if (emptyMsg) {
                 if (visibleCount === 0) emptyMsg.classList.remove('hidden');
                 else emptyMsg.classList.add('hidden');
             }
 
-            // NUEVO: Lógica del Buscador Predictivo
             const suggestionsBox = document.getElementById('search-suggestions');
             if (searchTerm.length > 1) {
-                // Filtramos los primeros 5 resultados que coincidan
                 const matches = window.catalogProducts.filter(p => 
                     p.name.toLowerCase().includes(searchTerm) || 
                     (p.brand && p.brand.toLowerCase().includes(searchTerm)) ||
@@ -1450,7 +1449,6 @@
             }
         }
 
-        // NUEVO: Cerrar el buscador predictivo al hacer clic afuera de la barra
         document.addEventListener('click', function(event) {
             const searchBox = document.getElementById('catalog-search');
             const suggestionsBox = document.getElementById('search-suggestions');
@@ -1473,13 +1471,10 @@
                 }
 
                 window.renderBrandsUI(); 
-                // Renderizamos todo el HTML una sola vez
                 window.renderCatalog(window.catalogProducts);
-                // Aplicamos los filtros actuales (ocultando con CSS lo necesario)
                 window.filterCatalog();
                 renderAdminProductsList();
 
-                // LÓGICA DEL ENLACE MÁGICO: Si alguien entra por un link compartido, abre ese perfume.
                 const urlParams = new URLSearchParams(window.location.search);
                 const sharedId = urlParams.get('p');
                 if(sharedId && !window.hasOpenedShared) {
@@ -1523,8 +1518,13 @@
                 } else { swatchesContainer.classList.add('hidden'); }
             } else { swatchesContainer.classList.add('hidden'); }
 
+            // LÓGICA DE MAYORISTA PARA EL MODAL DE DETALLES
+            let activePrice = prod.price;
+            let isWholesaleActive = window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price;
+            if (isWholesaleActive) activePrice = prod.wholesalePrice;
+
             const selectVariant = document.getElementById('detail-variant');
-            let variantHtml = `<option value="full" data-price="${prod.price}">Botella Completa - RD$ ${prod.price.toLocaleString('en-US')}</option>`;
+            let variantHtml = `<option value="full" data-price="${activePrice}">Botella Completa - RD$ ${activePrice.toLocaleString('en-US')}</option>`;
             if(prod.decants && prod.decants.length > 0) { prod.decants.forEach((decant, idx) => { variantHtml += `<option value="decant_${idx}" data-price="${decant.price}">Decant ${decant.size} - RD$ ${decant.price.toLocaleString('en-US')}</option>`; }); }
             selectVariant.innerHTML = variantHtml; selectVariant.value = 'full'; window.updateDetailPrice(); 
 
@@ -1545,35 +1545,47 @@
         window.updateDetailPrice = function() {
             const select = document.getElementById('detail-variant');
             if(select && select.selectedIndex >= 0) {
-                const price = parseFloat(select.options[select.selectedIndex].getAttribute('data-price')); document.getElementById('detail-price-display').innerText = `RD$ ${price.toLocaleString('en-US')}`;
+                const isFullBottle = select.value === 'full';
+                const basePrice = parseFloat(select.options[select.selectedIndex].getAttribute('data-price'));
+                
+                const id = document.getElementById('detail-id').value;
+                const prod = window.catalogProducts.find(p => p.id === id);
+                
+                let isWholesaleActive = isFullBottle && window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price;
+
+                const priceDisplay = document.getElementById('detail-price-display');
+                if (isWholesaleActive) {
+                    priceDisplay.innerHTML = `<span class="line-through text-gray-400 text-lg mr-2">RD$ ${prod.price.toLocaleString('en-US')}</span><span class="text-2xl font-extrabold text-green-600">RD$ ${basePrice.toLocaleString('en-US')}</span> <span class="bg-green-100 text-green-700 text-[10px] px-2 py-1 rounded font-bold uppercase ml-2">VIP Mayorista</span>`;
+                } else {
+                    priceDisplay.innerHTML = `<span class="text-2xl font-bold text-perfume-magenta">RD$ ${basePrice.toLocaleString('en-US')}</span>`;
+                }
             }
         }
 
         window.closeProductModal = function() {
             const modal = document.getElementById('product-details-modal'); const box = document.getElementById('product-details-box');
             modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
-            window.resetZoom(); // Resetear el zoom al cerrar
+            window.resetZoom(); 
             
-            // Limpiamos la URL para que quede bonita si cierran la ventana
             if(window.location.search.includes('?p=')) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
 
-        // NUEVA FUNCIÓN: Compartir Producto
         window.shareCurrentProduct = async function() {
             const id = document.getElementById('detail-id').value;
             const prod = window.catalogProducts.find(p => p.id === id);
             if(!prod) return;
 
-            // Creamos un link exacto hacia este producto (Mejorado para evitar URLs duplicadas)
             const baseUrl = window.location.href.split('?')[0].split('#')[0];
             const shareUrl = baseUrl + '?p=' + prod.id;
             const shareTitle = `¡Mira este perfume en FamlyFragrancerd!`;
-            const shareText = `Descubre ${prod.name} por solo RD$ ${prod.price.toLocaleString('en-US')}. ✨\n\n`;
+            
+            let activePrice = prod.price;
+            if (window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price) { activePrice = prod.wholesalePrice; }
+            const shareText = `Descubre ${prod.name} por solo RD$ ${activePrice.toLocaleString('en-US')}. ✨\n\n`;
 
             if (navigator.share) {
-                // En móviles abrirá el menú nativo (WhatsApp, Insta, Facebook...)
                 try {
                     await navigator.share({
                         title: shareTitle,
@@ -1582,7 +1594,6 @@
                     });
                 } catch (error) { console.log('Error al compartir', error); }
             } else {
-                // En computadoras que no soportan Share API, copiamos al portapapeles
                 const tempInput = document.createElement("textarea");
                 tempInput.value = `${shareTitle}\n${shareText}${shareUrl}`;
                 document.body.appendChild(tempInput);
@@ -1593,19 +1604,17 @@
             }
         }
 
-        // NUEVAS FUNCIONES: Efecto de Zoom y Lupa Dinámica
         window.handleZoom = function(e) {
             const container = document.getElementById('detail-img-container');
             const img = document.getElementById('detail-img');
             const rect = container.getBoundingClientRect();
             
-            // Calculamos la posición del mouse en porcentaje (0 a 100%)
             const x = ((e.clientX - rect.left) / rect.width) * 100;
             const y = ((e.clientY - rect.top) / rect.height) * 100;
             
             img.style.transformOrigin = `${x}% ${y}%`;
-            img.style.transform = 'scale(2.2)'; // Aumenta 2.2 veces su tamaño original
-            img.classList.remove('p-4', 'md:p-8'); // Quitamos el margen interno para que llene la caja
+            img.style.transform = 'scale(2.2)'; 
+            img.classList.remove('p-4', 'md:p-8'); 
         }
 
         window.handleTouchZoom = function(e) {
@@ -1617,7 +1626,6 @@
             const x = ((touch.clientX - rect.left) / rect.width) * 100;
             const y = ((touch.clientY - rect.top) / rect.height) * 100;
             
-            // Limitamos para que la cámara no se salga del borde en móviles
             const boundedX = Math.max(0, Math.min(100, x));
             const boundedY = Math.max(0, Math.min(100, y));
 
@@ -1631,7 +1639,7 @@
             if(img) {
                 img.style.transformOrigin = 'center center';
                 img.style.transform = 'scale(1)';
-                img.classList.add('p-4', 'md:p-8'); // Devolvemos el margen interno original
+                img.classList.add('p-4', 'md:p-8'); 
             }
         }
 
@@ -1641,6 +1649,10 @@
             
             const select = document.getElementById('detail-variant'); const val = select.value;
             let price = prod.price; let name = prod.name; let variantId = 'full'; const barcode = prod.barcode || '';
+
+            if(val === 'full' && window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price) {
+                price = prod.wholesalePrice;
+            }
 
             if(val.startsWith('decant_')) {
                 const idx = parseInt(val.split('_')[1]); const decant = prod.decants[idx];
@@ -1703,7 +1715,9 @@
             const brandVal = prod.brand || '';
             if (brandVal && !window.siteBrands.includes(brandVal)) { window.siteBrands.push(brandVal); window.siteBrands.sort(); window.renderBrandsAdminUI(); saveBrandsToDB(); }
             document.getElementById('admin-prod-brand').value = brandVal; document.getElementById('admin-prod-barcode').value = prod.barcode || '';
-            document.getElementById('admin-prod-cat').value = prod.category; document.getElementById('admin-prod-price').value = prod.price;
+            document.getElementById('admin-prod-cat').value = prod.category; 
+            document.getElementById('admin-prod-price').value = prod.price;
+            document.getElementById('admin-prod-wholesale').value = prod.wholesalePrice || ''; // <-- CARGAR PRECIO MAYORISTA
             document.getElementById('admin-prod-desc').value = prod.description || ''; document.getElementById('admin-prod-img').value = prod.img;
             
             const useInvCheckbox = document.getElementById('admin-prod-use-inv'); const stockInput = document.getElementById('admin-prod-stock');
@@ -1741,7 +1755,9 @@
 
             const editId = document.getElementById('admin-prod-id').value; const name = document.getElementById('admin-prod-name').value;
             const brand = document.getElementById('admin-prod-brand').value.trim(); const barcode = document.getElementById('admin-prod-barcode').value.trim();
-            const category = document.getElementById('admin-prod-cat').value; const price = parseFloat(document.getElementById('admin-prod-price').value);
+            const category = document.getElementById('admin-prod-cat').value; 
+            const price = parseFloat(document.getElementById('admin-prod-price').value);
+            const wholesalePrice = parseFloat(document.getElementById('admin-prod-wholesale').value) || null; // <-- GUARDAR PRECIO MAYORISTA
             const description = document.getElementById('admin-prod-desc').value; const imgUrl = document.getElementById('admin-prod-img').value;
             const useInv = document.getElementById('admin-prod-use-inv').checked; const stock = useInv ? (parseInt(document.getElementById('admin-prod-stock').value) || 0) : null;
             const onSale = document.getElementById('admin-prod-sale').checked; const isAgotado = document.getElementById('admin-prod-agotado').checked;
@@ -1749,7 +1765,7 @@
 
             try {
                 if(!imgUrl) throw new Error("Debes proporcionar una URL de imagen.");
-                const dataObj = { name, brand, barcode, category, price, stock, onSale, isAgotado, description, img: imgUrl, decants: validDecants };
+                const dataObj = { name, brand, barcode, category, price, wholesalePrice, stock, onSale, isAgotado, description, img: imgUrl, decants: validDecants };
 
                 if(editId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', editId), dataObj); window.showToast("Producto actualizado exitosamente."); } 
                 else { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'productos'), dataObj); window.showToast("Producto agregado correctamente."); }
@@ -1795,13 +1811,15 @@
             filtered.forEach(prod => {
                 const brandLabel = prod.brand ? `${prod.brand} • ` : '';
                 const decantBadge = prod.decants && prod.decants.length > 0 ? '<span class="bg-gray-200 text-gray-800 text-[9px] px-1.5 py-0.5 rounded font-bold ml-1">D</span>' : '';
+                const wholesaleBadge = prod.wholesalePrice ? `<span class="bg-yellow-100 text-yellow-800 text-[9px] px-1.5 py-0.5 rounded font-bold ml-1 border border-yellow-200">Mayor: $${prod.wholesalePrice.toLocaleString()}</span>` : '';
+                
                 let stockStatus = '';
                 if (prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0)) { stockStatus = `<span class="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-red-200 tracking-wider">AGOTADO</span>`; } else if (typeof prod.stock === 'number') { stockStatus = `<span class="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-green-200 tracking-wider">Stock: ${prod.stock}</span>`; } else { stockStatus = `<span class="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-blue-200 tracking-wider">Stock: Infinito</span>`; }
                 const saleBadge = prod.onSale ? `<span class="bg-yellow-100 text-yellow-700 text-[10px] font-bold px-2 py-0.5 rounded shadow-sm border border-yellow-200 ml-1 tracking-wider">OFERTA</span>` : '';
 
                 listDiv.innerHTML += `
                 <div class="flex items-center justify-between bg-white border border-gray-200 p-3 rounded-lg shadow-sm hover:border-perfume-magenta hover:shadow-md transition">
-                    <div class="flex items-center gap-3"><img src="${prod.img}" class="w-10 h-10 object-cover rounded bg-gray-100 mix-blend-multiply"><div><p class="font-bold text-sm text-perfume-dark">${prod.name} ${decantBadge}</p><p class="text-xs text-gray-500">${brandLabel}${prod.category} • RD$ ${prod.price.toLocaleString('en-US')}</p><div class="flex mt-1 items-center">${stockStatus} ${saleBadge}</div>${prod.barcode ? `<p class="text-[9px] text-gray-400 font-mono mt-0.5">ID: ${prod.barcode}</p>` : ''}</div></div>
+                    <div class="flex items-center gap-3"><img src="${prod.img}" class="w-10 h-10 object-cover rounded bg-gray-100 mix-blend-multiply"><div><p class="font-bold text-sm text-perfume-dark">${prod.name} ${decantBadge} ${wholesaleBadge}</p><p class="text-xs text-gray-500">${brandLabel}${prod.category} • RD$ ${prod.price.toLocaleString('en-US')}</p><div class="flex mt-1 items-center">${stockStatus} ${saleBadge}</div>${prod.barcode ? `<p class="text-[9px] text-gray-400 font-mono mt-0.5">ID: ${prod.barcode}</p>` : ''}</div></div>
                     <div class="flex gap-2"><button onclick="editProduct('${prod.id}')" class="text-gray-500 hover:text-perfume-magenta p-1 text-lg transition" title="Editar">⚙️</button><button onclick="deleteDynamicProduct('${prod.id}')" class="text-red-400 hover:text-red-600 p-1 text-lg transition" title="Eliminar">🗑️</button></div>
                 </div>`;
             });
@@ -1849,7 +1867,7 @@
             const form = document.getElementById('add-item-form-' + orderId); 
             const shipForm = document.getElementById('add-shipping-form-' + orderId);
             if(form) form.classList.toggle('hidden'); 
-            if(shipForm) shipForm.classList.add('hidden'); // Oculta el otro si está abierto
+            if(shipForm) shipForm.classList.add('hidden'); 
         }
 
         window.toggleAddShippingForm = function(orderId) { 
@@ -1857,9 +1875,8 @@
             const itemForm = document.getElementById('add-item-form-' + orderId);
             if(form) {
                 form.classList.toggle('hidden');
-                if(itemForm) itemForm.classList.add('hidden'); // Oculta el otro si está abierto
+                if(itemForm) itemForm.classList.add('hidden'); 
 
-                // Si abrimos el formulario y ya había un envío aplicado, pre-llenar la caja
                 if (!form.classList.contains('hidden')) {
                     const order = window.adminOrders.find(o => o.id === orderId);
                     if (order) {
@@ -2019,7 +2036,6 @@
                 let needsStockUpdate = false;
                 let stockDeducted = order.stockDeducted || false;
 
-                // LÓGICA DE STOCK: Si se marca como completado y NO se había descontado el stock
                 if (newStatus === 'Completado' && !stockDeducted) {
                     needsStockUpdate = true; stockDeducted = true;
                     for(let item of order.items) {
@@ -2032,7 +2048,6 @@
                         }
                     }
                 } 
-                // LÓGICA DE DEVOLUCIÓN: Si se cancela o devuelve a procesando, y el stock YA se había descontado
                 else if (newStatus !== 'Completado' && stockDeducted) {
                     needsStockUpdate = true; stockDeducted = false;
                     for(let item of order.items) {
@@ -2046,13 +2061,11 @@
                     }
                 }
 
-                // Aplicar los cambios en la base de datos de los productos
                 if (needsStockUpdate) {
                     for (let update of stockUpdates) { await updateDoc(update.ref, { stock: update.newStock }); }
-                    window.loadDynamicProducts(); // Refresca el catálogo visualmente
+                    window.loadDynamicProducts(); 
                 }
 
-                // Guardar el nuevo estado del pedido
                 await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: newStatus, stockDeducted: stockDeducted }); 
                 if(newStatus !== 'Eliminado') window.showToast("✅ Estado del pedido guardado: " + newStatus); 
                 window.loadAdminOrders(); 
@@ -2061,7 +2074,6 @@
             } 
         }
 
-        // NUEVA FUNCIÓN: Generador de Recibos PDF (MEJORADO CON LOGO Y ESTILO)
         window.generateInvoicePDF = async function(orderId) {
             const order = window.adminOrders.find(o => o.id === orderId);
             if(!order) return window.showToast("❌ Pedido no encontrado.");
@@ -2071,17 +2083,15 @@
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
-            // Limpieza de textos y valores por defecto seguros
             const storeName = "FamlyFragrancerd";
             
             let rawPhone = window.siteConfig?.fPhone || "";
             let storePhone = rawPhone.replace(/[^\x20-\x7E\xC0-\xFF]/g, '').trim();
-            if (storePhone.length < 5) storePhone = "+1 (849) 516-1973"; // Si está vacío o tiene caracteres raros, usa el oficial
+            if (storePhone.length < 5) storePhone = "+1 (849) 516-1973";
 
             let rawEmail = window.siteConfig?.fEmail || "";
             let storeEmail = rawEmail;
             
-            // TRADUCTOR DE FUENTES ESPECIALES: Si detecta la fuente "ꜰᴀᴍʟʏ", la pasa a texto normal para el PDF
             if (rawEmail.includes('ꜰᴀᴍʟʏ') || rawEmail.includes('ʜᴏᴛᴍᴀɪʟ') || rawEmail.includes('ᴄᴏᴍ')) {
                 storeEmail = "famlyfragrancerd@hotmail.com";
             } else {
@@ -2092,11 +2102,9 @@
 
             const primaryColorHex = window.siteConfig?.colorPrimary || '#000000';
             
-            // 1. Cabecera Decorativa (Banda superior)
             doc.setFillColor(primaryColorHex);
             doc.rect(0, 0, 210, 8, 'F'); 
 
-            // Intentar cargar y dibujar el Logo Dinámicamente
             try {
                 const logoUrl = window.siteConfig?.logoUrl || "https://raw.githubusercontent.com/famlyfragrancerd-byte/famlyfragrancerd-web/54362eb6b882b258af2a8d6f066984c090a95436/logo%20png%20famly.png";
                 const img = new Image();
@@ -2111,7 +2119,6 @@
                 doc.addImage(canvas.toDataURL('image/png'), 'PNG', 14, 12, 28, 28);
             } catch(e) { console.log("Logo PDF no cargado"); }
 
-            // Info de la Tienda (desplazada a la derecha del logo)
             doc.setFontSize(20);
             doc.setTextColor(primaryColorHex);
             doc.setFont("helvetica", "bold");
@@ -2123,7 +2130,6 @@
             doc.text(`Tel. Tienda: ${storePhone}`, 46, 29);
             doc.text(`Email Tienda: ${storeEmail}`, 46, 34);
 
-            // Info de la Factura (A la derecha)
             doc.setFontSize(14);
             doc.setTextColor(0, 0, 0);
             doc.setFont("helvetica", "bold");
@@ -2136,7 +2142,6 @@
             doc.text(`Orden: ${order.orderId}`, 196, 30, { align: "right" });
             doc.text(`Fecha: ${dateStr}`, 196, 35, { align: "right" });
             
-            // Estado con color
             doc.setFont("helvetica", "bold");
             let statusColor = [100, 100, 100];
             if(order.status === 'Completado') statusColor = [0, 150, 0];
@@ -2146,11 +2151,9 @@
             const displayStatus = window.statusDisplayNames[order.status] || order.status;
             doc.text(`Estado: ${displayStatus.toUpperCase()}`, 196, 40, { align: "right" });
 
-            // 2. Línea divisoria
             doc.setDrawColor(220, 220, 220);
             doc.line(14, 46, 196, 46);
 
-            // 3. Información del Cliente (En una caja sombreada)
             doc.setFillColor(250, 250, 250);
             doc.rect(14, 50, 182, 22, 'F');
             
@@ -2173,7 +2176,6 @@
             doc.text(`WhatsApp: ${cleanPhone}`, 18, 67);
             doc.text(`Email: ${cleanEmail}`, 100, 62);
 
-            // 4. Tabla de Artículos (Estilo Grid Profesional)
             const tableColumn = ["Cant", "Descripción", "SKU", "P. Unitario", "Subtotal"];
             const tableRows = [];
             let subtotalCalc = 0;
@@ -2207,7 +2209,6 @@
                 }
             });
 
-            // 5. Totales (Alineados profesionalmente)
             const finalY = doc.lastAutoTable.finalY + 10;
             const diff = subtotalCalc - order.total;
 
@@ -2230,18 +2231,15 @@
                 nextY += 6;
             }
 
-            // Línea superior del total
             doc.setDrawColor(200, 200, 200);
             doc.line(140, nextY - 2, 196, nextY - 2);
 
-            // Total Final
             doc.setFontSize(14);
             doc.setTextColor(primaryColorHex);
             doc.setFont("helvetica", "bold");
             doc.text(`TOTAL:`, 140, nextY + 5);
             doc.text(`RD$ ${order.total.toLocaleString('en-US')}`, 196, nextY + 5, { align: "right" });
 
-            // 6. Pie de página decorativo
             const pageHeight = doc.internal.pageSize.height;
             doc.setFillColor(primaryColorHex);
             doc.rect(0, pageHeight - 15, 210, 15, 'F');
@@ -2251,12 +2249,10 @@
             doc.setTextColor(255, 255, 255);
             doc.text("¡Gracias por su compra en FamlyFragrancerd!", 105, pageHeight - 6, { align: "center" });
 
-            // 7. Guardar y descargar
             doc.save(`Recibo_Famly_${order.orderId.replace('#', '')}.pdf`);
             window.showToast("✅ PDF generado y descargado.");
         }
 
-        // FUNCIÓN MEJORADA: Notificar WhatsApp usando los mensajes personalizados
         window.notifyCustomerWhatsApp = function(docId) {
             const order = window.adminOrders.find(o => o.id === docId); if(!order || !order.customerPhone) return window.showToast("Número de cliente no disponible.");
             let phone = order.customerPhone.replace(/\D/g,''); if(phone.length === 10) phone = '1' + phone; 
@@ -2328,7 +2324,28 @@
         onAuthStateChanged(auth, async (user) => {
             if (user) {
                 window.isLoggedIn = true; window.userId = user.uid;
-                const fullName = user.displayName || "Cliente"; document.getElementById('nav-login-text').innerText = fullName.split(' ')[0]; document.getElementById('profile-name').innerText = fullName; document.getElementById('profile-email').innerText = user.email || ""; document.getElementById('profile-initial').innerText = fullName.charAt(0).toUpperCase();
+                const fullName = user.displayName || "Cliente"; 
+                
+                // LÓGICA DE MAYORISTA
+                let badgeHTML = '';
+                if (window.siteConfig && window.siteConfig.wholesaleEmails) {
+                    const wholesaleList = window.siteConfig.wholesaleEmails.split(',').map(e=>e.trim().toLowerCase());
+                    window.isWholesaler = wholesaleList.includes(user.email.toLowerCase());
+                    badgeHTML = window.isWholesaler ? '<span class="bg-yellow-400 text-black text-[10px] font-bold px-2 py-0.5 rounded-full ml-2 uppercase tracking-wide shadow-sm border border-yellow-500">VIP Mayorista</span>' : '';
+                } else {
+                    window.isWholesaler = false;
+                }
+
+                document.getElementById('nav-login-text').innerText = fullName.split(' ')[0]; 
+                document.getElementById('profile-name').innerHTML = fullName + badgeHTML; 
+                document.getElementById('profile-email').innerText = user.email || ""; 
+                document.getElementById('profile-initial').innerText = fullName.charAt(0).toUpperCase();
+
+                // Actualizar Catálogo con los nuevos precios de Mayorista si aplican
+                if(window.catalogProducts.length > 0) { 
+                    window.renderCatalog(window.catalogProducts); 
+                    window.filterCatalog(); 
+                }
 
                 try { const infoSnap = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info')); if (infoSnap.exists() && infoSnap.data().phone) { const userPhone = infoSnap.data().phone; document.getElementById('profile-phone-input').value = userPhone; if(document.getElementById('checkout-phone')) document.getElementById('checkout-phone').value = userPhone; } } catch(e) {}
 
@@ -2339,11 +2356,14 @@
                     if (isSuperAdmin) { document.getElementById('btn-admin-panel').classList.remove('hidden'); } else { document.getElementById('btn-admin-panel').classList.add('hidden'); }
                     if(window.location.hash === '#admin' || window.location.hash === '#pedidos') { setTimeout(() => { openOrdersDashboard(); }, 800); history.replaceState(null, null, ' '); }
                     
-                    // INICIAR EL RADAR DE PEDIDOS EN VIVO PARA EL ADMIN
                     window.listenForNewOrders();
                 }
             } else {
-                window.isLoggedIn = false; window.userId = null; document.getElementById('nav-login-text').innerText = "Ingresar"; document.getElementById('btn-admin-panel').classList.add('hidden'); document.getElementById('btn-orders-dashboard').classList.add('hidden'); document.getElementById('btn-push-notifications').classList.add('hidden'); document.getElementById('profile-name').innerText = "Cargando..."; document.getElementById('profile-email').innerText = "..."; document.getElementById('profile-initial').innerText = "?";
+                window.isLoggedIn = false; window.userId = null; window.isWholesaler = false;
+                
+                if(window.catalogProducts.length > 0) { window.renderCatalog(window.catalogProducts); window.filterCatalog(); }
+
+                document.getElementById('nav-login-text').innerText = "Ingresar"; document.getElementById('btn-admin-panel').classList.add('hidden'); document.getElementById('btn-orders-dashboard').classList.add('hidden'); document.getElementById('btn-push-notifications').classList.add('hidden'); document.getElementById('profile-name').innerText = "Cargando..."; document.getElementById('profile-email').innerText = "..."; document.getElementById('profile-initial').innerText = "?";
             }
         });
 
@@ -2433,8 +2453,6 @@
             const orderIdHex = Math.random().toString(36).substring(2, 7).toUpperCase(); const orderId = `#PED-${orderIdHex}`;
 
             try {
-                // El stock ya no se descuenta aquí para evitar secuestros de inventario por clientes que no pagan.
-                // Se descontará de forma inteligente solo cuando el Admin marque el pedido como "Completado".
                 await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), { orderId: orderId, userId: window.userId, customerName: auth.currentUser.displayName || "Cliente", customerPhone: customerPhone, customerEmail: auth.currentUser.email || "", items: window.cart, total: total, date: new Date().toISOString(), status: "Recibido", stockDeducted: false });
 
                 const firstName = auth.currentUser.displayName ? auth.currentUser.displayName.split(' ')[0] : "Cliente";
@@ -2444,12 +2462,19 @@
                 
                 if (auth.currentUser && !auth.currentUser.isAnonymous) { await setDoc(doc(db, 'artifacts', appId, 'users', window.userId, 'profile', 'info'), { phone: customerPhone }, { merge: true }).catch(e=>{}); }
 
-                // Se eliminó la línea que borraba el número del carrito
                 window.cart=[]; window.updateCartUI(); window.toggleCart(); window.showToast("¡Pedido registrado exitosamente!");
                 
-                let adminPhone = window.siteConfig?.fPhone || "18495161973";
-                adminPhone = adminPhone.replace(/\D/g, '');
-                if (adminPhone.length === 10) adminPhone = '1' + adminPhone;
+                let adminPhone = "18495161973"; 
+                if (window.siteConfig) {
+                    if (window.siteConfig.sWa && window.siteConfig.sWa.length > 5) {
+                        adminPhone = window.siteConfig.sWa.replace(/\D/g, ''); 
+                    } else if (window.siteConfig.fPhone && window.siteConfig.fPhone.length > 5) {
+                        adminPhone = window.siteConfig.fPhone.replace(/\D/g, ''); 
+                    }
+                }
+                
+                if (adminPhone.length === 10) adminPhone = '1' + adminPhone; 
+                if (adminPhone.length < 10) adminPhone = "18495161973"; 
 
                 window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(text)}`, '_blank');
                 setTimeout(() => { btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false; }, 3000);
