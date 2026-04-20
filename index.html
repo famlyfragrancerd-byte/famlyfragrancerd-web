@@ -132,15 +132,25 @@
                 <a href="#contacto" class="nav-link text-gray-700 hover:text-perfume-magenta font-semibold transition">Contacto</a>
             </nav>
             
-            <div class="flex items-center space-x-3 md:space-x-6">
-                <button id="nav-cart-btn" onclick="toggleCart()" class="relative text-gray-800 hover:text-perfume-magenta transition cursor-pointer p-2 hover:scale-110 transform duration-200">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 md:h-7 md:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            <div class="flex items-center space-x-2 md:space-x-4">
+                <button onclick="openTrackingModal()" class="flex flex-col items-center justify-center text-gray-700 hover:text-perfume-magenta transition cursor-pointer p-1.5 hover:scale-105 transform duration-200 group" title="Rastrear Pedido">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
                     </svg>
-                    <span id="cart-badge" class="absolute top-0 right-0 bg-perfume-magenta text-white text-[10px] font-bold w-4 h-4 md:w-5 md:h-5 flex items-center justify-center rounded-full hidden border-2 border-white">0</span>
+                    <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider group-hover:text-perfume-magenta">Rastrear</span>
                 </button>
 
-                <button id="nav-login-btn" onclick="handleProfileClick()" class="flex items-center gap-1 md:gap-2 bg-perfume-magenta text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full hover:bg-perfume-dark transition duration-300 font-semibold text-xs md:text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5">
+                <button id="nav-cart-btn" onclick="toggleCart()" class="flex flex-col items-center justify-center text-gray-700 hover:text-perfume-magenta transition cursor-pointer p-1.5 hover:scale-105 transform duration-200 group">
+                    <div class="relative mb-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 md:h-6 md:w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                        <span id="cart-badge" class="absolute -top-1.5 -right-2 bg-perfume-magenta text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full hidden border border-white">0</span>
+                    </div>
+                    <span class="text-[9px] md:text-[10px] font-bold uppercase tracking-wider group-hover:text-perfume-magenta">Carrito</span>
+                </button>
+
+                <button id="nav-login-btn" onclick="handleProfileClick()" class="flex items-center gap-1 md:gap-2 bg-perfume-magenta text-white px-3 py-1.5 md:px-5 md:py-2 rounded-full hover:bg-perfume-dark transition duration-300 font-semibold text-xs md:text-sm shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ml-1 md:ml-2">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 hidden md:block" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
                     <span id="nav-login-text">Ingresar</span>
                 </button>
@@ -249,11 +259,11 @@
             <button onclick="closeProductModal()" class="absolute top-2 right-2 md:top-3 md:right-3 bg-white/90 md:bg-black/50 text-black md:text-white border border-gray-200 md:border-none rounded-full w-8 h-8 flex items-center justify-center hover:bg-black hover:text-white z-50 transition shadow-md backdrop-blur-sm">&times;</button>
             
             <div id="detail-img-container" class="w-full md:w-1/2 bg-gray-50 flex items-center justify-center relative h-64 md:h-auto shrink-0 border-b border-gray-100 md:border-none overflow-hidden cursor-crosshair group" onmousemove="handleZoom(event)" onmouseleave="resetZoom()" ontouchmove="handleTouchZoom(event)" ontouchend="resetZoom()">
-                <img id="detail-img" src="" alt="Perfume" class="w-full h-full object-contain mix-blend-multiply transition-all duration-200 p-4 md:p-8">
+                <img id="detail-img" src="" alt="Perfume" fetchpriority="high" decoding="async" class="w-full h-full object-contain mix-blend-multiply transition-all duration-200 p-4 md:p-8">
                 
-                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-[10px] font-bold px-3 py-1.5 rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity z-20 flex items-center gap-1.5 shadow-md pointer-events-none">
+                <div class="hidden md:flex absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white text-[10px] font-bold px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-20 items-center gap-1.5 shadow-md pointer-events-none">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path></svg>
-                    Pasa el dedo o mouse para explorar
+                    Pasa el mouse para explorar
                 </div>
 
                 <div id="detail-barcode-badge" class="absolute top-4 left-4 bg-white/90 backdrop-blur text-gray-800 text-[10px] font-mono px-2 py-1 rounded hidden border border-gray-300 shadow-sm z-10">
@@ -359,6 +369,41 @@
             
             <h3 class="text-lg font-bold text-perfume-dark mb-4">Mis Pedidos Anteriores</h3>
             <div id="orders-list" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <!-- PANEL DE RASTREO (GUEST TRACKING) -->
+    <div id="tracking-modal" class="fixed inset-0 bg-gray-900/80 z-[160] hidden flex justify-center items-center opacity-0 transition-opacity duration-300 backdrop-blur-sm p-4">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg relative transform scale-95 transition-transform duration-300 overflow-hidden flex flex-col max-h-[90vh]" id="tracking-box">
+            <button onclick="closeTrackingModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800 text-3xl leading-none z-50">&times;</button>
+            <div class="p-6 md:p-8 flex-1 overflow-y-auto no-scrollbar">
+                <div class="text-center mb-6">
+                    <div class="w-16 h-16 bg-perfume-light rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-perfume-magenta text-perfume-magenta">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>
+                    </div>
+                    <h2 class="text-2xl font-extrabold text-perfume-dark">Rastrea tu Pedido</h2>
+                    <p class="text-gray-500 text-sm mt-1">Ingresa el código de tu pedido para ver su progreso.</p>
+                </div>
+                
+                <div id="tracking-form-container">
+                    <div class="space-y-4 mb-6">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Código de Orden</label>
+                            <input type="text" id="track-order-id" placeholder="Ej: #PED-A1B2C" class="w-full border border-gray-300 px-4 py-3.5 rounded-xl text-sm focus:outline-none focus:border-perfume-magenta uppercase font-mono bg-gray-50 shadow-sm transition">
+                        </div>
+                        <button onclick="searchGuestOrder()" id="btn-track-order" class="w-full bg-perfume-dark text-white py-3.5 rounded-xl font-bold hover:bg-black transition shadow-lg flex items-center justify-center gap-2">
+                            🔍 Localizar Paquete
+                        </button>
+                    </div>
+                </div>
+
+                <div id="tracking-result-container" class="hidden border-t border-gray-100 pt-6">
+                    <!-- Resultados del progreso de la barra se pintan aquí -->
+                </div>
+            </div>
+            <div class="bg-gray-50 p-4 border-t border-gray-100 text-center shrink-0">
+                <p class="text-xs text-gray-500">¿Tienes cuenta? <button onclick="closeTrackingModal(); handleProfileClick();" class="font-bold text-perfume-magenta hover:underline">Inicia sesión aquí</button></p>
+            </div>
         </div>
     </div>
 
@@ -917,7 +962,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, updatePassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, setDoc, getDoc, updateDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, setDoc, getDoc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
         const firebaseConfig = {
@@ -2101,15 +2146,42 @@
             window.renderAdminOrdersList(term); 
         }
 
-        window.extractClientsFromOrders = function() {
+        window.extractClientsFromOrders = async function() {
+            const listDiv = document.getElementById('admin-clients-list');
+            if (listDiv && (!window.adminClients || window.adminClients.length === 0)) {
+                listDiv.innerHTML = '<p class="text-sm text-gray-500 py-8 text-center animate-pulse">Cargando base de datos de clientes...</p>';
+            }
+
             const clientsMap = new Map();
+            
+            // 1. Cargar todos los clientes registrados desde la colección global
+            try {
+                const clientsSnap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'clientes'));
+                clientsSnap.forEach(doc => {
+                    const data = doc.data();
+                    if (data.email) {
+                        clientsMap.set(data.email.toLowerCase(), { 
+                            id: data.uid ? window.generateNumericId(data.uid) : 'N/A', 
+                            name: data.name || 'Cliente', 
+                            email: data.email, 
+                            phone: data.phone || '', 
+                            orderCount: 0, 
+                            totalSpent: 0 
+                        });
+                    }
+                });
+            } catch(e) { console.error("Error cargando directorio de clientes", e); }
+
+            // 2. Fusionar con el historial de compras para obtener estadísticas
             window.adminOrders.forEach(o => {
                 if (o.customerEmail && o.customerEmail !== '@' && o.customerEmail !== 'Sin correo registrado') {
-                    if (!clientsMap.has(o.customerEmail)) {
-                        clientsMap.set(o.customerEmail, { id: o.userId ? window.generateNumericId(o.userId) : 'N/A', name: o.customerName || 'Cliente', email: o.customerEmail, phone: o.customerPhone || '', orderCount: 1, totalSpent: o.total || 0 });
+                    const email = o.customerEmail.toLowerCase();
+                    if (!clientsMap.has(email)) {
+                        clientsMap.set(email, { id: o.userId ? window.generateNumericId(o.userId) : 'N/A', name: o.customerName || 'Cliente', email: o.customerEmail, phone: o.customerPhone || '', orderCount: 1, totalSpent: o.total || 0 });
                     } else {
-                        let c = clientsMap.get(o.customerEmail); c.orderCount++; c.totalSpent += (o.total || 0);
-                        if(o.userId && (c.id === 'Sin ID' || c.id === 'N/A')) c.id = window.generateNumericId(o.userId); 
+                        let c = clientsMap.get(email); c.orderCount++; c.totalSpent += (o.total || 0);
+                        if (o.customerPhone && !c.phone) c.phone = o.customerPhone;
+                        if (o.userId && (c.id === 'Sin ID' || c.id === 'N/A')) c.id = window.generateNumericId(o.userId); 
                     }
                 }
             });
@@ -2144,8 +2216,8 @@
             if (filtered.length === 0) { 
                 listDiv.innerHTML = `
                     <div class="text-center py-8">
-                        <p class="text-sm text-gray-500 font-bold mb-1">No se encontraron clientes con esa búsqueda.</p>
-                        <p class="text-[11px] text-gray-400 max-w-sm mx-auto mt-2">Nota: Los clientes solo aparecen en este radar <strong>después de realizar su primer pedido</strong>. Si es una cuenta nueva sin compras, aún no existirá en el registro del CRM.</p>
+                        <p class="text-sm text-gray-500 font-bold mb-1">No se encontraron clientes.</p>
+                        <p class="text-[11px] text-gray-400 max-w-sm mx-auto mt-2">Nota: El sistema ahora muestra <strong>todos los usuarios registrados</strong> en la tienda, incluso si aún no han comprado.</p>
                     </div>`;
                 return;
             }
@@ -2385,7 +2457,11 @@
         }
 
         window.generateInvoicePDF = async function(orderId) {
-            const order = window.adminOrders.find(o => o.id === orderId);
+            // Buscamos el pedido en la lista de Admin o en la lista del Cliente
+            let order = window.adminOrders.find(o => o.id === orderId);
+            if (!order && window.userOrdersList) {
+                order = window.userOrdersList.find(o => o.id === orderId);
+            }
             if(!order) return window.showToast("❌ Pedido no encontrado.");
 
             window.showToast("Generando PDF... ⏳");
@@ -2673,7 +2749,12 @@
 
         window.updateUserPhone = async function() {
             if (!auth.currentUser) return; const phone = document.getElementById('profile-phone-input').value.trim(); if(!phone) return window.showToast("Ingresa un número válido.");
-            try { await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'profile', 'info'), { phone: phone }, { merge: true }); if(document.getElementById('checkout-phone')) document.getElementById('checkout-phone').value = phone; window.showToast("✅ Teléfono actualizado correctamente."); } catch(e) { window.showToast("❌ Error al actualizar el teléfono."); }
+            try { 
+                await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'profile', 'info'), { phone: phone }, { merge: true }); 
+                await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clientes', auth.currentUser.uid), { phone: phone }, { merge: true });
+                if(document.getElementById('checkout-phone')) document.getElementById('checkout-phone').value = phone; 
+                window.showToast("✅ Teléfono actualizado correctamente."); 
+            } catch(e) { window.showToast("❌ Error al actualizar el teléfono."); }
         }
 
         onAuthStateChanged(auth, async (user) => {
@@ -2697,12 +2778,50 @@
                 if (profileIdEl) profileIdEl.innerText = window.generateNumericId(user.uid);
                 document.getElementById('profile-initial').innerText = fullName.charAt(0).toUpperCase();
 
+                // --- NUEVO: Actualizar carrito a precio mayorista al iniciar sesión ---
+                if (window.isWholesaler && window.cart && window.cart.length > 0) {
+                    let cartUpdated = false;
+                    window.cart.forEach(item => {
+                        if (item.variant === 'full') {
+                            const prod = window.catalogProducts.find(p => p.id === item.id);
+                            if (prod && prod.wholesalePrice && prod.wholesalePrice < prod.price) {
+                                if (item.price !== prod.wholesalePrice) {
+                                    item.price = prod.wholesalePrice;
+                                    cartUpdated = true;
+                                }
+                            }
+                        }
+                    });
+                    if (cartUpdated) {
+                        window.updateCartUI();
+                        window.showToast("✨ Precios de mayorista aplicados a tu carrito.");
+                    }
+                }
+                // -------------------------------------------------------------
+
                 if(window.catalogProducts.length > 0) { 
                     window.renderCatalog(window.catalogProducts); 
                     window.filterCatalog(); 
                 }
 
-                try { const infoSnap = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info')); if (infoSnap.exists() && infoSnap.data().phone) { const userPhone = infoSnap.data().phone; document.getElementById('profile-phone-input').value = userPhone; if(document.getElementById('checkout-phone')) document.getElementById('checkout-phone').value = userPhone; } } catch(e) {}
+                try { 
+                    const infoSnap = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info')); 
+                    let userPhone = "";
+                    if (infoSnap.exists() && infoSnap.data().phone) { 
+                        userPhone = infoSnap.data().phone; 
+                        document.getElementById('profile-phone-input').value = userPhone; 
+                        if(document.getElementById('checkout-phone')) document.getElementById('checkout-phone').value = userPhone; 
+                    } 
+                    
+                    // Sincronizar usuario con la base global de clientes (CRM)
+                    await setDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clientes', user.uid), {
+                        uid: user.uid,
+                        name: fullName,
+                        email: user.email || "",
+                        phone: userPhone,
+                        lastLogin: new Date().toISOString()
+                    }, { merge: true });
+                } catch(e) { console.error("Error sincronizando CRM", e); }
 
                 const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(user.email); const isStaff = STAFF_EMAILS.includes(user.email);
                 if (isSuperAdmin || isStaff) {
@@ -2767,29 +2886,306 @@
                 window.closeLoginModal();
             } catch (error) {
                 console.error("Error de autenticación con Google:", error);
-                window.showToast("❌ Error al iniciar sesión con Google.");
+                if (error.code === 'auth/account-exists-with-different-credential') {
+                    window.showToast("⚠️ Ve a Firebase -> Authentication -> Configuración -> Vinculación de Cuentas, y activa 'Vincular cuentas que usan el mismo correo'.");
+                } else {
+                    window.showToast("❌ Error al iniciar sesión con Google.");
+                }
             }
         };
 
         window.logout = async () => { await signOut(auth); window.closeProfileModal(); window.showToast("Sesión cerrada."); }
 
-        async function fetchUserOrders() {
-            if (!window.userId) return; const listDiv = document.getElementById('orders-list'); listDiv.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Buscando historial...</p>';
-            try {
-                const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'); const querySnapshot = await getDocs(ordersRef); let orders = []; 
-                querySnapshot.forEach((doc) => { const data = doc.data(); if(data.userId === window.userId) orders.push({ id: doc.id, ...data }); }); orders.sort((a, b) => new Date(b.date) - new Date(a.date));
-                if (orders.length === 0) { listDiv.innerHTML = '<div class="bg-white border border-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Aún no tienes pedidos.</p></div>'; return; }
+        // --- INICIO LÓGICA DE BARRAS DE PROGRESO DE PEDIDOS ---
+        window.generateStepperHTML = function(status) {
+            if(status === 'Cancelado' || status === 'Eliminado') {
+                return `<div class="bg-red-50 text-red-600 p-3 rounded-lg text-center font-bold text-sm border border-red-100">🚫 Pedido ${status}</div>`;
+            }
+            
+            const steps = ['Recibido', 'Procesando', 'Enviado', 'Completado'];
+            let currentStepIdx = steps.indexOf(status);
+            if(currentStepIdx === -1) currentStepIdx = 0; 
 
-                let html = '';
-                orders.forEach(order => {
-                    const dateStr = new Date(order.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-                    let statusColor = "text-yellow-600 bg-yellow-50"; if(order.status === "Completado") statusColor = "text-green-600 bg-green-50"; if(order.status === "Cancelado") statusColor = "text-red-600 bg-red-50"; if(order.status === "Procesando") statusColor = "text-blue-600 bg-blue-50";
-                    const displayStatus = window.statusDisplayNames[order.status] || order.status || 'Recibido';
-                    html += `<div class="bg-white border border-gray-100 p-4 rounded-xl shadow-sm"><div class="flex justify-between items-start mb-2"><span class="text-xs text-gray-500 font-mono font-bold bg-gray-100 px-2 py-0.5 rounded">${order.orderId || '#PED-XXX'}</span><span class="text-[10px] font-bold px-2 py-1 rounded-full ${statusColor}">${displayStatus}</span></div><p class="text-xs text-gray-500 mb-2">📅 ${dateStr}</p><div class="space-y-1 mb-3">${order.items.map(item => { const skuText = item.barcode ? ` <span class="text-[9px] text-gray-400 font-mono">[SKU: ${item.barcode}]</span>` : ''; return `<p class="text-sm text-gray-800">• ${item.qty}x ${item.name}${skuText}</p>`; }).join('')}</div><div class="border-t border-gray-50 pt-2 text-right"><span class="font-bold text-perfume-dark">Total: RD$ ${order.total.toLocaleString('en-US')}</span></div></div>`;
-                });
-                listDiv.innerHTML = html;
-            } catch (error) { listDiv.innerHTML = '<p class="text-sm text-red-500 text-center py-4">Error al cargar historial.</p>'; }
+            let html = `<div class="flex items-center justify-between w-full my-6 relative">`;
+            html += `<div class="absolute left-[10%] right-[10%] top-1/2 transform -translate-y-1/2 h-1 bg-gray-200 z-0 rounded-full"></div>`;
+            
+            const progressWidth = currentStepIdx === 0 ? 0 : (currentStepIdx / (steps.length - 1)) * 100;
+            html += `<div class="absolute left-[10%] top-1/2 transform -translate-y-1/2 h-1 bg-perfume-magenta z-0 rounded-full transition-all duration-700 ease-out" style="width: ${progressWidth === 0 ? 0 : progressWidth - 10}%;"></div>`;
+
+            steps.forEach((step, idx) => {
+                const isCompleted = idx <= currentStepIdx;
+                const isActive = idx === currentStepIdx;
+                const bgColor = isCompleted ? 'bg-perfume-magenta text-white' : 'bg-gray-200 text-gray-400';
+                const ringColor = isActive ? 'ring-4 ring-perfume-magenta/20 shadow-lg scale-110' : '';
+                const checkMark = isCompleted ? '✓' : (idx + 1);
+                
+                html += `
+                <div class="flex flex-col items-center relative z-10 w-1/4">
+                    <div class="w-6 h-6 md:w-8 md:h-8 rounded-full ${bgColor} ${ringColor} flex items-center justify-center text-[10px] md:text-xs font-bold transition-all duration-500 border-2 border-white">
+                        ${checkMark}
+                    </div>
+                    <span class="text-[9px] md:text-[10px] mt-1.5 font-bold ${isCompleted ? 'text-perfume-dark' : 'text-gray-400'} uppercase tracking-wide text-center">${step}</span>
+                </div>`;
+            });
+            html += `</div>`;
+            
+            const statusMsg = window.statusMessages[status] || '';
+            if(statusMsg) {
+                html += `<div class="bg-perfume-light p-3 rounded-lg text-xs text-gray-600 text-center italic border border-gray-100 shadow-sm animate-pulse">"${statusMsg}"</div>`;
+            }
+            return html;
         }
+
+        window.openTrackingModal = () => { 
+            if(window.isLoggedIn) {
+                window.handleProfileClick(); 
+            } else {
+                const m = document.getElementById('tracking-modal'); const b = document.getElementById('tracking-box');
+                document.getElementById('tracking-result-container').innerHTML = ''; document.getElementById('tracking-result-container').classList.add('hidden');
+                document.getElementById('track-order-id').value = '';
+                m.classList.remove('hidden'); setTimeout(() => { m.classList.remove('opacity-0'); b.classList.remove('scale-95'); }, 10);
+            }
+        }
+        
+        window.closeTrackingModal = () => { 
+            const m = document.getElementById('tracking-modal'); const b = document.getElementById('tracking-box');
+            m.classList.add('opacity-0'); b.classList.add('scale-95'); setTimeout(() => m.classList.add('hidden'), 300); 
+        }
+
+        window.searchGuestOrder = async () => {
+            const trackIdInput = document.getElementById('track-order-id');
+            let trackId = trackIdInput.value.trim().toUpperCase();
+            if(!trackId) return window.showToast("Ingresa el ID de tu pedido.");
+            if(!trackId.startsWith('#PED-')) trackId = '#PED-' + trackId.replace('#PED-', '');
+
+            const btn = document.getElementById('btn-track-order');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<span class="animate-spin inline-block mr-2">⏳</span> Rastrando...`;
+            btn.disabled = true;
+
+            try {
+                const q = query(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), where("orderId", "==", trackId));
+                const querySnapshot = await getDocs(q);
+                const resultContainer = document.getElementById('tracking-result-container');
+                
+                if (querySnapshot.empty) {
+                    resultContainer.innerHTML = `<div class="text-center p-4 bg-red-50 rounded-xl border border-red-100"><p class="text-red-500 font-bold">❌ Pedido no encontrado</p><p class="text-xs text-gray-500 mt-1">Verifica tu código de orden.</p></div>`;
+                    resultContainer.classList.remove('hidden');
+                } else {
+                    const orderData = querySnapshot.docs[0].data();
+                    const dateStr = new Date(orderData.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                    
+                    let resultHtml = `
+                        <div class="bg-gray-50 rounded-2xl p-4 md:p-6 border border-gray-200 shadow-inner">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="font-mono font-bold text-perfume-dark bg-white px-2.5 py-1 rounded shadow-sm border border-gray-100">${orderData.orderId}</span>
+                                <span class="text-xs text-gray-500 font-medium bg-white px-2 py-1 rounded shadow-sm">📅 ${dateStr}</span>
+                            </div>
+                            
+                            ${window.generateStepperHTML(orderData.status)}
+
+                            <div class="mt-6 border-t border-gray-200 pt-5">
+                                <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-3">Tus Productos:</h4>
+                                <ul class="space-y-2 mb-4">`;
+                    
+                    orderData.items.forEach(item => {
+                        resultHtml += `<li class="text-sm text-gray-700 flex justify-between bg-white p-2 rounded-lg border border-gray-100 shadow-sm"><span>${item.qty}x <span class="font-bold">${item.name}</span></span> <span class="font-medium text-perfume-dark">RD$ ${(item.price * item.qty).toLocaleString()}</span></li>`;
+                    });
+
+                    resultHtml += `</ul>
+                                <div class="flex justify-between items-center bg-white p-3 rounded-xl border border-gray-200 shadow-sm">
+                                    <span class="font-black text-gray-800 text-sm uppercase tracking-widest">Total a Pagar</span>
+                                    <span class="font-extrabold text-perfume-magenta text-xl">RD$ ${orderData.total.toLocaleString()}</span>
+                                </div>
+                            </div>
+                        </div>`;
+                    
+                    resultContainer.innerHTML = resultHtml;
+                    resultContainer.classList.remove('hidden');
+                }
+            } catch (error) {
+                window.showToast("Error al conectar con la base de datos.");
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+        // --- FIN LÓGICA DE BARRAS DE PROGRESO ---
+
+        // --- INICIO LÓGICA HISTORIAL DE PEDIDOS DEL CLIENTE ---
+        window.userOrdersList = [];
+        window.userOrdersPage = 1;
+        window.ordersPerPage = 2; // REDUCIDO A 2 PARA QUE EL BOTÓN SE MUESTRE MÁS FÁCILMENTE
+
+        async function fetchUserOrders() {
+            if (!window.userId) return; 
+            const listDiv = document.getElementById('orders-list'); 
+            const pagDiv = document.getElementById('orders-pagination');
+            listDiv.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Buscando historial...</p>';
+            if(pagDiv) pagDiv.innerHTML = '';
+
+            try {
+                const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'); 
+                const querySnapshot = await getDocs(ordersRef); 
+                let orders = []; 
+                querySnapshot.forEach((doc) => { const data = doc.data(); if(data.userId === window.userId) orders.push({ id: doc.id, ...data }); }); 
+                
+                // Guardamos en memoria y ordenamos de más reciente a más viejo
+                window.userOrdersList = orders.sort((a, b) => new Date(b.date) - new Date(a.date));
+                window.userOrdersPage = 1;
+                window.renderUserOrdersPage();
+            } catch (error) { 
+                listDiv.innerHTML = '<p class="text-sm text-red-500 text-center py-4">Error al cargar historial.</p>'; 
+            }
+        }
+
+        window.renderUserOrdersPage = function() {
+            const listDiv = document.getElementById('orders-list'); 
+            const pagDiv = document.getElementById('orders-pagination');
+            const toggleBtn = document.getElementById('btn-toggle-all-orders');
+            
+            if (window.userOrdersList.length === 0) { 
+                listDiv.innerHTML = '<div class="bg-white border border-gray-100 p-4 rounded-lg text-center"><p class="text-sm text-gray-500">Aún no tienes pedidos.</p></div>'; 
+                if(pagDiv) pagDiv.innerHTML = '';
+                if(toggleBtn) { toggleBtn.classList.add('hidden'); toggleBtn.style.display = 'none'; }
+                return; 
+            }
+
+            // Lógica para mostrar/ocultar el botón "Ver Todos" debajo de "Activar Alertas"
+            if (window.userOrdersList.length > 2) {
+                if(toggleBtn) {
+                    toggleBtn.classList.remove('hidden');
+                    toggleBtn.style.display = 'flex'; // Fuerza a mostrarse ignorando conflictos de CSS
+                    toggleBtn.innerHTML = window.ordersPerPage === 2 
+                        ? `Ver todos mis pedidos (${window.userOrdersList.length})` 
+                        : `Mostrar menos (Paginado)`;
+                }
+            } else {
+                if(toggleBtn) {
+                    toggleBtn.classList.add('hidden');
+                    toggleBtn.style.display = 'none';
+                }
+            }
+
+            const totalPages = Math.ceil(window.userOrdersList.length / window.ordersPerPage);
+            if (window.userOrdersPage > totalPages) window.userOrdersPage = totalPages;
+
+            const startIdx = (window.userOrdersPage - 1) * window.ordersPerPage;
+            const endIdx = startIdx + window.ordersPerPage;
+            const ordersToShow = window.userOrdersList.slice(startIdx, endIdx);
+
+            let html = '';
+            ordersToShow.forEach(order => {
+                const dateStr = new Date(order.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+                
+                // PANEL DE ACCIONES RÁPIDAS (Soporte / Descargar PDF / Cancelar)
+                let actionButtons = `<div class="grid grid-cols-2 gap-2 mt-4 pt-4 border-t border-gray-100">`;
+                
+                // Botón de Modificar/Ayuda
+                actionButtons += `
+                    <button onclick="contactSupportForOrder('${order.orderId || order.id}')" class="bg-[#25D366]/10 text-[#25D366] py-2 rounded-xl text-[10px] md:text-xs font-bold hover:bg-[#25D366]/20 transition flex items-center justify-center gap-1 shadow-sm border border-[#25D366]/20">
+                        💬 Ayuda
+                    </button>`;
+
+                // Botón para Descargar Factura PDF
+                actionButtons += `
+                    <button onclick="generateInvoicePDF('${order.id}')" class="bg-gray-100 text-gray-700 py-2 rounded-xl text-[10px] md:text-xs font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1 shadow-sm border border-gray-200">
+                        📄 Bajar PDF
+                    </button>`;
+                
+                // Botón de Cancelar (Solo si está Recibido)
+                if(order.status === 'Recibido') {
+                    actionButtons += `
+                    <button onclick="cancelCustomerOrder('${order.id}')" class="col-span-2 bg-red-50 text-red-500 py-2 rounded-xl text-[10px] md:text-xs font-bold hover:bg-red-100 transition flex items-center justify-center gap-1 shadow-sm border border-red-100 mt-1">
+                        🚫 Cancelar Pedido
+                    </button>`;
+                }
+                
+                actionButtons += `</div>`;
+                
+                html += `
+                <div class="bg-white border border-gray-200 p-4 md:p-5 rounded-2xl shadow-sm hover:shadow-lg transition duration-300">
+                    <div class="flex justify-between items-start mb-2">
+                        <span class="text-sm text-perfume-dark font-mono font-black bg-gray-50 px-2.5 py-1 rounded-lg border border-gray-100">${order.orderId || '#PED-XXX'}</span>
+                        <span class="text-xs text-gray-500 font-bold bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">📅 ${dateStr}</span>
+                    </div>
+                    
+                    ${window.generateStepperHTML(order.status)}
+
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <div class="space-y-2 mb-4">
+                            ${order.items.map(item => { 
+                                const skuText = item.barcode ? ` <span class="text-[9px] text-gray-400 font-mono bg-gray-100 px-1 rounded">[${item.barcode}]</span>` : ''; 
+                                return `<p class="text-sm text-gray-700 flex justify-between bg-gray-50 p-2 rounded-lg"><span><span class="font-bold text-perfume-dark">${item.qty}x</span> ${item.name}${skuText}</span> <span class="font-bold text-gray-600">RD$ ${(item.price * item.qty).toLocaleString()}</span></p>`; 
+                            }).join('')}
+                        </div>
+                        <div class="flex justify-between items-center bg-perfume-light border border-perfume-magenta/20 p-3 rounded-xl">
+                            <span class="font-bold text-perfume-dark text-sm uppercase tracking-wide">Monto Final:</span>
+                            <span class="font-extrabold text-perfume-magenta text-xl">RD$ ${order.total.toLocaleString('en-US')}</span>
+                        </div>
+                        ${actionButtons}
+                    </div>
+                </div>`;
+            });
+            listDiv.innerHTML = html;
+
+            // Renderizar Paginación (Números)
+            if (pagDiv) {
+                let pHTML = '';
+                if (totalPages > 1) {
+                    pHTML += `<div class="flex gap-2 justify-center w-full flex-wrap">`;
+                    pHTML += `<button onclick="changeUserOrdersPage(${window.userOrdersPage - 1})" class="px-3 py-1.5 rounded-lg border ${window.userOrdersPage === 1 ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-perfume-magenta text-perfume-magenta'} text-xs font-bold" ${window.userOrdersPage === 1 ? 'disabled' : ''}>Ant</button>`;
+                    for(let i=1; i<=totalPages; i++) {
+                        pHTML += `<button onclick="changeUserOrdersPage(${i})" class="w-8 h-8 rounded-lg border ${i === window.userOrdersPage ? 'bg-perfume-magenta text-white border-perfume-magenta' : 'border-gray-300 text-gray-600'} text-xs font-bold transition-all">${i}</button>`;
+                    }
+                    pHTML += `<button onclick="changeUserOrdersPage(${window.userOrdersPage + 1})" class="px-3 py-1.5 rounded-lg border ${window.userOrdersPage === totalPages ? 'border-gray-200 text-gray-300 cursor-not-allowed' : 'border-perfume-magenta text-perfume-magenta'} text-xs font-bold" ${window.userOrdersPage === totalPages ? 'disabled' : ''}>Sig</button>`;
+                    pHTML += `</div>`;
+                }
+                pagDiv.innerHTML = pHTML;
+            }
+        }
+
+        window.changeUserOrdersPage = function(page) {
+            window.userOrdersPage = page;
+            window.renderUserOrdersPage();
+            document.getElementById('profile-modal').scrollTo({top: 0, behavior: 'smooth'});
+        }
+        
+        window.toggleAllUserOrders = function() {
+            window.ordersPerPage = (window.ordersPerPage === 2) ? 9999 : 2;
+            window.userOrdersPage = 1;
+            window.renderUserOrdersPage();
+            document.getElementById('profile-modal').scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // --- ACCIONES RÁPIDAS DEL CLIENTE ---
+        window.cancelCustomerOrder = async function(docId) {
+            window.openCustomConfirm("Cancelar Pedido", "Si te arrepentiste, podemos cancelar tu pedido ahora. Esta acción es definitiva.", async () => {
+                try {
+                    await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: 'Cancelado' });
+                    window.showToast("✅ Tu pedido ha sido cancelado exitosamente.");
+                    fetchUserOrders(); // FIX: Corregido el llamado que causaba el falso "Error de conexión"
+                } catch(e) { 
+                    console.error("Error al cancelar pedido:", e);
+                    window.showToast("❌ Error al cancelar. Intenta de nuevo."); 
+                }
+            });
+        }
+
+        window.contactSupportForOrder = function(orderId) {
+            let adminPhone = "18495161973";
+            if (window.siteConfig) {
+                if (window.siteConfig.sWa && window.siteConfig.sWa.length > 5) adminPhone = window.siteConfig.sWa.replace(/\D/g, ''); 
+                else if (window.siteConfig.fPhone && window.siteConfig.fPhone.length > 5) adminPhone = window.siteConfig.fPhone.replace(/\D/g, ''); 
+            }
+            if (adminPhone.length === 10) adminPhone = '1' + adminPhone; 
+            if (adminPhone.length < 10) adminPhone = "18495161973"; 
+            
+            const text = `Hola FamlyFragrancerd 👋,\nQuisiera hacerles una consulta o modificación respecto a mi pedido *${orderId}*.`;
+            // Usamos window.open y la API universal de WhatsApp para asegurar que abra en todas las plataformas
+            window.open(`https://api.whatsapp.com/send?phone=${adminPhone}&text=${encodeURIComponent(text)}`, '_blank');
+        }
+        // --- FIN LÓGICA HISTORIAL ---
         
         window.updateQty = (id, delta) => { let v = parseInt(document.getElementById('qty-'+id).innerText)+delta; document.getElementById('qty-'+id).innerText = v<1?1:v; }
         
@@ -2807,11 +3203,64 @@
         window.removeFromCart = (i) => { window.cart.splice(i,1); window.updateCartUI(); }
         window.toggleCart = () => { document.getElementById('cart-modal').classList.add('cart-opened-by-user'); document.getElementById('cart-modal').classList.toggle('translate-x-full'); }
         
+        window.updateCartItemQty = (idx, delta) => {
+            if (!window.cart[idx]) return;
+            const item = window.cart[idx];
+            const newQty = item.qty + delta;
+            
+            // Si intenta bajar de 1, eliminamos el artículo del carrito
+            if (newQty < 1) {
+                window.removeFromCart(idx);
+                return;
+            }
+
+            // Validar inventario antes de sumar
+            const prodData = window.catalogProducts.find(p => p.id === item.id);
+            if (delta > 0 && prodData && typeof prodData.stock === 'number') {
+                const totalInCart = window.cart.filter(i => i.id === item.id).reduce((s, i) => s + i.qty, 0);
+                if ((totalInCart + delta) > prodData.stock) {
+                    return window.showToast(`Solo quedan ${prodData.stock} unidades en stock.`);
+                }
+            }
+
+            item.qty = newQty;
+            window.updateCartUI();
+        };
+
         window.updateCartUI = () => {
-            const sum = window.cart.reduce((s,i)=>s+i.qty,0); document.getElementById('cart-badge').innerText=sum; document.getElementById('cart-badge').classList.toggle('hidden', sum===0);
+            const sum = window.cart.reduce((s,i)=>s+i.qty,0); 
+            document.getElementById('cart-badge').innerText=sum; 
+            document.getElementById('cart-badge').classList.toggle('hidden', sum===0);
+            
             let html='', total=0;
-            window.cart.forEach((i,idx)=>{ total+=i.price*i.qty; const skuText = i.barcode ? `<span class="text-[9px] text-gray-400 font-mono block">SKU: ${i.barcode}</span>` : ''; html+=`<div class="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm"><img src="${i.img}" class="w-12 h-12 object-cover rounded-md"><div class="flex-1"><p class="text-sm font-bold text-perfume-dark leading-tight">${i.name}</p>${skuText}<p class="text-xs text-gray-500 mt-0.5">${i.qty} x RD$ ${i.price.toLocaleString('en-US')}</p></div><button onclick="removeFromCart(${idx})" class="text-red-400 hover:text-red-600 font-bold px-2">&times;</button></div>`; });
-            document.getElementById('cart-items').innerHTML = html || '<p class="text-center text-gray-500 py-10">Tu carrito está vacío.</p>'; document.getElementById('cart-total').innerText = `RD$ ${total.toLocaleString('en-US')}`;
+            window.cart.forEach((i,idx)=>{ 
+                total+=i.price*i.qty; 
+                const skuText = i.barcode ? `<span class="text-[9px] text-gray-400 font-mono block mt-0.5">SKU: ${i.barcode}</span>` : ''; 
+                
+                // NUEVO DISEÑO CON BOTONES DE + Y -
+                html+=`
+                <div class="flex gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm relative group transition hover:border-gray-300">
+                    <img src="${i.img}" class="w-16 h-16 object-cover rounded-lg border border-gray-50 mix-blend-multiply bg-gray-50 shrink-0">
+                    <div class="flex-1 flex flex-col justify-between">
+                        <div class="pr-5">
+                            <p class="text-sm font-bold text-perfume-dark leading-tight">${i.name}</p>
+                            ${skuText}
+                        </div>
+                        <div class="flex items-center justify-between mt-2">
+                            <div class="flex items-center bg-gray-100 rounded-lg p-0.5 border border-gray-200">
+                                <button onclick="updateCartItemQty(${idx}, -1)" class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white hover:text-black rounded hover:shadow-sm transition">-</button>
+                                <span class="w-6 text-center text-xs font-bold text-gray-800">${i.qty}</span>
+                                <button onclick="updateCartItemQty(${idx}, 1)" class="w-7 h-7 flex items-center justify-center font-bold text-gray-600 hover:bg-white hover:text-black rounded hover:shadow-sm transition">+</button>
+                            </div>
+                            <p class="text-sm font-extrabold text-perfume-magenta">RD$ ${(i.price * i.qty).toLocaleString('en-US')}</p>
+                        </div>
+                    </div>
+                    <button onclick="removeFromCart(${idx})" class="absolute top-2 right-2 w-6 h-6 bg-red-50 text-red-400 hover:bg-red-500 hover:text-white rounded-full flex items-center justify-center transition shadow-sm opacity-100 md:opacity-0 group-hover:opacity-100" title="Quitar">&times;</button>
+                </div>`; 
+            });
+            
+            document.getElementById('cart-items').innerHTML = html || '<div class="flex flex-col items-center justify-center h-full text-center py-10"><span class="text-4xl mb-3">🛒</span><p class="text-gray-500 font-bold">Tu carrito está vacío</p></div>'; 
+            document.getElementById('cart-total').innerText = `RD$ ${total.toLocaleString('en-US')}`;
         }
         
         window.checkoutWhatsApp = async () => {
