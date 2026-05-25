@@ -2787,11 +2787,40 @@
                 const response = await fetch(url, { mode: 'cors' });
                 if (!response.ok) throw new Error('No image');
                 const blob = await response.blob();
-                return await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onloadend = () => resolve(reader.result);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(blob);
+
+                const imageUrl = URL.createObjectURL(blob);
+                const image = new Image();
+                image.src = imageUrl;
+
+                return await new Promise((resolve) => {
+                    image.onload = () => {
+                        try {
+                            const maxWidth = 300;
+                            const scale = Math.min(1, maxWidth / image.width);
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.max(1, Math.round(image.width * scale));
+                            canvas.height = Math.max(1, Math.round(image.height * scale));
+
+                            const ctx = canvas.getContext('2d');
+                            if (ctx) {
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                            }
+
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                            URL.revokeObjectURL(imageUrl);
+                            resolve(compressedBase64);
+                        } catch (innerError) {
+                            URL.revokeObjectURL(imageUrl);
+                            resolve(null);
+                        }
+                    };
+
+                    image.onerror = () => {
+                        URL.revokeObjectURL(imageUrl);
+                        resolve(null);
+                    };
                 });
             } catch (error) {
                 return null;
@@ -2829,7 +2858,7 @@
                 };
             });
 
-            const imageCache = {};
+            let imageCache = {};
             await Promise.all(window.catalogProducts.map(async (prod, index) => {
                 const key = prod.id || `row_${index}`;
                 if (!prod.img) {
@@ -2871,8 +2900,7 @@
                             const x = data.cell.x + (data.cell.width - maxWidth) / 2;
                             const y = data.cell.y + (data.cell.height - maxHeight) / 2;
                             try {
-                                const imageType = base64.startsWith('data:image/png') ? 'PNG' : base64.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
-                                doc.addImage(base64, imageType, x, y, maxWidth, maxHeight);
+                                doc.addImage(base64, 'JPEG', x, y, maxWidth, maxHeight);
                             } catch (err) {
                                 doc.setFontSize(7);
                                 doc.setTextColor(120, 120, 120);
@@ -2895,6 +2923,12 @@
 
             doc.save(fileName);
             window.showToast(`✅ Catálogo PDF (${priceType === 'wholesale' ? 'Mayorista' : 'Retail'}) listo.`);
+
+            // Clear large image base64 data after PDF generation for memory cleanup
+            if (imageCache) {
+                Object.keys(imageCache).forEach(key => { imageCache[key] = null; });
+                imageCache = null;
+            }
         };
 
         window.notifyCustomerWhatsApp = function(docId) {
