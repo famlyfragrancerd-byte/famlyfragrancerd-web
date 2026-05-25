@@ -224,6 +224,7 @@
                     <p class="text-gray-500">Cargando catálogo...</p>
                 </div>
             </div>
+            <div id="catalog-pagination" class="flex flex-wrap justify-center items-center gap-2 mt-6"></div>
             <p id="catalog-empty-msg" class="text-center text-gray-500 py-10 font-medium hidden">No se encontraron perfumes con esa búsqueda.</p>
         </div>
     </section>
@@ -501,14 +502,24 @@
                     </div>
                 </div>
 
-                <div class="flex flex-col md:flex-row justify-between items-center mb-4 gap-4">
-                    <h3 class="font-bold text-perfume-dark">📦 Productos en Catálogo</h3>
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 gap-4">
+                    <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+                        <h3 class="font-bold text-perfume-dark">📦 Productos en Catálogo</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <button onclick="exportCatalogPDF('retail')" class="bg-perfume-magenta text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-perfume-dark transition shadow-sm">
+                                📄 PDF (Retail)
+                            </button>
+                            <button onclick="exportCatalogPDF('wholesale')" class="bg-yellow-400 text-gray-900 px-3 py-2 rounded-lg text-xs font-bold hover:bg-yellow-300 transition shadow-sm">
+                                📄 PDF (Wholesale)
+                            </button>
+                        </div>
+                    </div>
                     <div class="relative w-full md:w-64">
                         <input type="text" id="admin-search" oninput="filterAdminProducts()" placeholder="🔍 Buscar perfume o SKU..." class="w-full border border-gray-300 px-3 py-1.5 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                     </div>
                 </div>
                 
-                <div id="admin-products-list" class="space-y-3 max-h-72 overflow-y-auto pr-2"></div>
+                <div id="admin-products-list" class="space-y-3 h-auto pr-2"></div>
             </div>
 
             <!-- PESTAÑA: CATEGORÍAS Y MARCAS -->
@@ -790,6 +801,28 @@
                         </div>
                     </div>
 
+                    <div class="bg-blue-50 p-6 rounded-xl border border-blue-200">
+                        <h3 class="font-bold text-blue-900 mb-4 border-b border-blue-200 pb-2">🎯 Ventana Promocional (Pop-up)</h3>
+                        <p class="text-xs text-blue-800 mb-4">Muestra una imagen promocional emergente 2 segundos después de que los clientes carguen la página. Haz clic en la imagen para ir al enlace.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label class="block text-xs text-blue-900 font-bold mb-1">URL de la Imagen Promocional</label>
+                                <input type="url" id="cfg-promo-img" class="w-full border border-blue-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-500" placeholder="https://example.com/promo.jpg">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-blue-900 font-bold mb-1">Enlace de Destino (Click en la imagen)</label>
+                                <input type="url" id="cfg-promo-link" class="w-full border border-blue-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-500" placeholder="https://example.com/oferta">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-blue-900 font-bold mb-2">Estado</label>
+                            <select id="cfg-promo-active" class="w-full border border-blue-300 px-3 py-2 rounded-lg text-sm bg-white focus:outline-none focus:border-blue-500">
+                                <option value="true">✅ Activo (Mostrar Pop-up)</option>
+                                <option value="false">❌ Inactivo (Ocultar)</option>
+                            </select>
+                        </div>
+                    </div>
+
                     <div class="bg-gray-50 p-6 rounded-xl border border-gray-200">
                         <h3 class="font-bold text-perfume-dark mb-2 border-b border-gray-200 pb-2">☁️ Almacenamiento (GitHub)</h3>
                         <p class="text-[10px] text-gray-500 mb-3">Para poder subir imágenes directamente desde tu PC/Móvil, debes ingresar tu repositorio de Github y tu Token de Acceso Personal (PAT).</p>
@@ -1021,6 +1054,9 @@
 
         window.isLoggedIn = false; window.userId = null; window.cart = [];
         window.catalogProducts = [];
+        window.filteredCatalogProducts = [];
+        window.currentPage = 1;
+        window.itemsPerPage = 20;
         window.adminOrders = []; 
         window.adminClients = [];
         window.siteCategories = ['Damas', 'Caballeros', 'Unisex'];
@@ -1028,6 +1064,25 @@
         window.siteAppearance = {}; 
         window.currentDecants = []; 
         window.isWholesaler = false; 
+
+        window.loadCartFromStorage = function() {
+            try {
+                const stored = localStorage.getItem('famly_cart');
+                window.cart = stored ? JSON.parse(stored) : [];
+                if (!Array.isArray(window.cart)) window.cart = [];
+            } catch (e) {
+                console.warn('Error cargando carrito desde localStorage:', e);
+                window.cart = [];
+            }
+        }
+
+        window.saveCartToStorage = function() {
+            try {
+                localStorage.setItem('famly_cart', JSON.stringify(window.cart));
+            } catch (e) {
+                console.warn('Error guardando carrito en localStorage:', e);
+            }
+        }
 
         const SUPER_ADMIN_EMAILS = [ "geudri98@hotmail.com", "mrochelindachelle@gmail.com" ]; 
         const STAFF_EMAILS = [ "admin2@famlyfragrancerd.com", "famlyfragrancerd@hotmail.com", "gmarmol51@gmail.com", "espinalleily@gmail.com" ];
@@ -1080,7 +1135,10 @@
             { key: 'showWaBtn', id: 'cfg-show-wa-btn', type: 'checkbox' },
             { key: 'waBtnPos', id: 'cfg-wa-btn-pos', type: 'select' },
             { key: 'ghRepo', id: 'cfg-gh-repo', type: 'text' },
-            { key: 'ghToken', id: 'cfg-gh-token', type: 'password' }
+            { key: 'ghToken', id: 'cfg-gh-token', type: 'password' },
+            { key: 'promoImg', id: 'cfg-promo-img', type: 'url' },
+            { key: 'promoLink', id: 'cfg-promo-link', type: 'url' },
+            { key: 'promoActive', id: 'cfg-promo-active', type: 'select' }
         ];
 
         // FUNCIÓN SEGURA PARA ESCAPAR TEXTOS EN HTML ATTRIBUTES
@@ -1380,6 +1438,30 @@
                     else { waContainer.classList.add('right-6'); waTooltip.classList.add('right-full', 'mr-3'); }
                 } else { waContainer.classList.add('hidden'); }
 
+                window.triggerPromoModal = function() {
+                    const promoImg = data.promoImg;
+                    const promoLink = data.promoLink;
+                    const promoActive = data.promoActive === true || data.promoActive === 'true';
+                    
+                    if (!promoActive || !promoImg) return;
+                    
+                    const modal = document.getElementById('promo-modal');
+                    const imgEl = document.getElementById('promo-img');
+                    const linkEl = document.getElementById('promo-link');
+                    
+                    if (!modal || !imgEl) return;
+                    
+                    imgEl.src = promoImg;
+                    if (promoLink) linkEl.href = promoLink;
+                    
+                    setTimeout(() => {
+                        modal.classList.remove('hidden');
+                        modal.classList.add('flex');
+                    }, 2000);
+                }
+                
+                window.triggerPromoModal();
+
                 CONFIG_FIELDS.forEach(field => {
                     const el = document.getElementById(field.id);
                     if(el) {
@@ -1417,9 +1499,23 @@
 
         window.renderCatalog = function(productsList) {
             const grid = document.getElementById('products-grid');
-            grid.innerHTML = ''; 
-            
-            if(productsList.length === 0) return;
+            grid.innerHTML = '';
+            const emptyMsg = document.getElementById('catalog-empty-msg');
+
+            if (!Array.isArray(productsList) || productsList.length === 0) {
+                if (emptyMsg) emptyMsg.classList.remove('hidden');
+                window.renderPagination(0);
+                return;
+            }
+
+            const startIndex = (window.currentPage - 1) * window.itemsPerPage;
+            const paginatedProducts = productsList.slice(startIndex, startIndex + window.itemsPerPage);
+            if (paginatedProducts.length === 0 && window.currentPage > 1) {
+                window.currentPage = 1;
+                return window.renderCatalog(productsList);
+            }
+
+            if (emptyMsg) emptyMsg.classList.add('hidden');
 
             const vConfig = window.siteAppearance || {};
             const cardRadius = vConfig.cardRadius || 'rounded-2xl';
@@ -1429,7 +1525,7 @@
             const priceSize = vConfig.priceSize || 'text-base md:text-lg';
 
             let htmlFull = '';
-            productsList.forEach((prod) => {
+            paginatedProducts.forEach((prod) => {
                 let activePrice = prod.price;
                 let isWholesaleActive = window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price;
                 if (isWholesaleActive) activePrice = prod.wholesalePrice;
@@ -1459,7 +1555,7 @@
                     ${isWholesaleActive ? `<div class="absolute top-2 right-2 bg-green-500 text-white text-[10px] font-black px-2 py-1 rounded-full z-10 shadow-md tracking-wider">MAYORISTA</div>` : (prod.decants && prod.decants.length > 0 ? '<div class="absolute top-2 right-2 bg-gray-200 text-gray-800 text-[9px] font-bold px-2 py-1 rounded-full z-10">Con Decants</div>' : '')}
                     <div class="relative overflow-hidden rounded-xl mb-4 bg-white flex items-center justify-center aspect-[4/5] cursor-pointer" onclick="openProductModal('${prod.id}')">
                         ${agotadoOverlay}
-                        <img src="${prod.img}" class="w-full h-full ${imgFit} p-2 md:p-4 group-hover:scale-110 transition duration-700 mix-blend-multiply">
+                        <img src="${prod.img}" loading="lazy" class="w-full h-full ${imgFit} p-2 md:p-4 group-hover:scale-110 transition duration-700 mix-blend-multiply">
                         <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition flex items-center justify-center">
                             <span class="bg-white text-perfume-magenta px-3 py-1 md:px-4 md:py-1.5 rounded-full text-[10px] md:text-xs font-bold shadow">Ver Detalles</span>
                         </div>
@@ -1487,33 +1583,62 @@
                 </div>`;
             });
             grid.innerHTML = htmlFull;
+            window.renderPagination(productsList.length);
+        }
+
+        window.renderPagination = function(totalItems) {
+            const container = document.getElementById('catalog-pagination');
+            if (!container) return;
+
+            const totalPages = Math.ceil(totalItems / window.itemsPerPage);
+            if (totalItems === 0 || totalPages <= 1) {
+                container.innerHTML = '';
+                return;
+            }
+
+            let html = '';
+            html += `<button onclick="window.setCatalogPage(${window.currentPage - 1})" class="px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold transition ${window.currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}" ${window.currentPage === 1 ? 'disabled' : ''}>Anterior</button>`;
+
+            for (let page = 1; page <= totalPages; page++) {
+                html += `<button onclick="window.setCatalogPage(${page})" class="px-3 py-2 rounded-xl border ${page === window.currentPage ? 'bg-perfume-magenta text-white border-perfume-magenta' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'} font-semibold transition">${page}</button>`;
+            }
+
+            html += `<button onclick="window.setCatalogPage(${window.currentPage + 1})" class="px-3 py-2 rounded-xl border border-gray-200 bg-white text-gray-700 font-semibold transition ${window.currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'}" ${window.currentPage === totalPages ? 'disabled' : ''}>Siguiente</button>`;
+            container.innerHTML = html;
+        }
+
+        window.setCatalogPage = function(page) {
+            const totalItems = window.filteredCatalogProducts.length || window.catalogProducts.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / window.itemsPerPage));
+            const newPage = Math.min(Math.max(1, page), totalPages);
+            if (newPage === window.currentPage) return;
+            window.currentPage = newPage;
+            window.renderCatalog(window.filteredCatalogProducts.length ? window.filteredCatalogProducts : window.catalogProducts);
+            const catalogSection = document.getElementById('catalogo');
+            if (catalogSection) {
+                window.scrollTo({ top: catalogSection.offsetTop - 120, behavior: 'smooth' });
+            }
         }
 
         window.filterCatalog = function() {
             const searchTerm = (document.getElementById('catalog-search').value || '').toLowerCase();
-            const cards = document.querySelectorAll('.product-card-item');
-            let visibleCount = 0;
+            const category = window.currentCategoryFilter;
+            const brand = window.currentBrandFilter;
 
-            cards.forEach(card => {
-                const cat = card.getAttribute('data-category');
-                const brand = card.getAttribute('data-brand');
-                const searchStr = card.getAttribute('data-search');
-
-                const matchCat = window.currentCategoryFilter === 'Todos' || cat === window.currentCategoryFilter;
-                const matchBrand = window.currentBrandFilter === 'Todas' || brand === window.currentBrandFilter;
-                const matchSearch = !searchTerm || searchStr.includes(searchTerm);
-
-                if (matchCat && matchBrand && matchSearch) {
-                    card.classList.remove('card-hidden');
-                    visibleCount++;
-                } else {
-                    card.classList.add('card-hidden');
-                }
+            window.currentPage = 1;
+            window.filteredCatalogProducts = window.catalogProducts.filter(p => {
+                const matchCat = category === 'Todos' || p.category === category;
+                const matchBrand = brand === 'Todas' || p.brand === brand;
+                const searchString = `${p.name || ''} ${p.category || ''} ${p.brand || ''} ${p.description || ''} ${p.barcode || ''}`.toLowerCase();
+                const matchSearch = !searchTerm || searchString.includes(searchTerm);
+                return matchCat && matchBrand && matchSearch;
             });
+
+            window.renderCatalog(window.filteredCatalogProducts);
 
             const emptyMsg = document.getElementById('catalog-empty-msg');
             if (emptyMsg) {
-                if (visibleCount === 0) emptyMsg.classList.remove('hidden');
+                if (window.filteredCatalogProducts.length === 0) emptyMsg.classList.remove('hidden');
                 else emptyMsg.classList.add('hidden');
             }
 
@@ -1524,7 +1649,7 @@
                     (p.brand && p.brand.toLowerCase().includes(searchTerm)) ||
                     (p.category && p.category.toLowerCase().includes(searchTerm)) ||
                     (p.barcode && p.barcode.toLowerCase().includes(searchTerm))
-                ).slice(0, 5); 
+                ).slice(0, 5);
 
                 if (matches.length > 0) {
                     let suggestionsHTML = '<div class="px-4 py-2 text-[10px] font-bold text-gray-400 uppercase tracking-widest bg-gray-50/50 rounded-t-xl">Resultados rápidos</div>';
@@ -2656,6 +2781,122 @@
             window.showToast("✅ PDF generado y descargado.");
         }
 
+        window.getImageBase64FromUrl = async function(url) {
+            if (!url) return null;
+            try {
+                const response = await fetch(url, { mode: 'cors' });
+                if (!response.ok) throw new Error('No image');
+                const blob = await response.blob();
+                return await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(blob);
+                });
+            } catch (error) {
+                return null;
+            }
+        };
+
+        window.exportCatalogPDF = async function(priceType) {
+            if (!window.catalogProducts || !Array.isArray(window.catalogProducts) || window.catalogProducts.length === 0) {
+                return window.showToast("No hay productos para exportar.");
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ compress: true });
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const titleText = priceType === 'wholesale' ? 'Catálogo Mayorista' : 'Catálogo Minorista';
+            const fileName = `Catalogo_Famly_${priceType === 'wholesale' ? 'Mayorista' : 'Retail'}.pdf`;
+
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(18);
+            doc.text('FamlyFragrancerd', pageWidth / 2, 18, { align: 'center' });
+            doc.setFontSize(12);
+            doc.setFont('helvetica', 'normal');
+            doc.setTextColor(120, 120, 120);
+            doc.text(titleText, pageWidth / 2, 26, { align: 'center' });
+            doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, 32, { align: 'center' });
+
+            const rows = window.catalogProducts.map((prod, index) => {
+                const price = priceType === 'wholesale' && prod.wholesalePrice && prod.wholesalePrice > 0 ? prod.wholesalePrice : prod.price;
+                return {
+                    photoKey: prod.id || `row_${index}`,
+                    name: prod.name || '',
+                    brand: prod.brand || '',
+                    sku: prod.barcode || '-',
+                    price: window.formatMoney(price)
+                };
+            });
+
+            const imageCache = {};
+            await Promise.all(window.catalogProducts.map(async (prod, index) => {
+                const key = prod.id || `row_${index}`;
+                if (!prod.img) {
+                    imageCache[key] = null;
+                    return;
+                }
+                imageCache[key] = await window.getImageBase64FromUrl(prod.img);
+            }));
+
+            const tableBody = rows.map(row => [row.photoKey, row.name, row.brand, row.sku, row.price]);
+
+            doc.autoTable({
+                startY: 45,
+                head: [['Foto', 'Nombre', 'Marca', 'SKU', 'Precio']],
+                body: tableBody,
+                theme: 'grid',
+                headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255], fontSize: 10, halign: 'center' },
+                styles: { fontSize: 9, cellPadding: 4, textColor: [40, 40, 40], valign: 'middle' },
+                rowPageBreak: 'avoid',
+                columnStyles: {
+                    0: { cellWidth: 22, halign: 'center', valign: 'middle' },
+                    1: { cellWidth: 60 },
+                    2: { cellWidth: 40 },
+                    3: { cellWidth: 30 },
+                    4: { cellWidth: 30, halign: 'right' }
+                },
+                didParseCell: function(data) {
+                    if (data.section === 'body' && data.column.index === 0) {
+                        data.cell.text = [''];
+                    }
+                },
+                didDrawCell: function(data) {
+                    if (data.section === 'body' && data.column.index === 0) {
+                        const key = data.row.raw[0];
+                        const base64 = imageCache[key];
+                        if (base64) {
+                            const maxWidth = Math.min(18, data.cell.width - 4);
+                            const maxHeight = Math.min(18, data.cell.height - 4);
+                            const x = data.cell.x + (data.cell.width - maxWidth) / 2;
+                            const y = data.cell.y + (data.cell.height - maxHeight) / 2;
+                            try {
+                                const imageType = base64.startsWith('data:image/png') ? 'PNG' : base64.startsWith('data:image/jpeg') ? 'JPEG' : 'PNG';
+                                doc.addImage(base64, imageType, x, y, maxWidth, maxHeight);
+                            } catch (err) {
+                                doc.setFontSize(7);
+                                doc.setTextColor(120, 120, 120);
+                                doc.text('No photo', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center', baseline: 'middle' });
+                            }
+                        } else {
+                            doc.setFontSize(7);
+                            doc.setTextColor(120, 120, 120);
+                            doc.text('No photo', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center', baseline: 'middle' });
+                        }
+                    }
+                },
+                didDrawPage: function() {
+                    const pageNumber = doc.internal.getNumberOfPages();
+                    doc.setFontSize(8);
+                    doc.setTextColor(150, 150, 150);
+                    doc.text(`Página ${pageNumber}`, pageWidth - 14, doc.internal.pageSize.height - 10, { align: 'right' });
+                }
+            });
+
+            doc.save(fileName);
+            window.showToast(`✅ Catálogo PDF (${priceType === 'wholesale' ? 'Mayorista' : 'Retail'}) listo.`);
+        };
+
         window.notifyCustomerWhatsApp = function(docId) {
             const order = window.adminOrders.find(o => o.id === docId); if(!order || !order.customerPhone) return window.showToast("Número de cliente no disponible.");
             let phone = order.customerPhone.replace(/\D/g,''); if(phone.length === 10) phone = '1' + phone; 
@@ -3261,7 +3502,11 @@
             
             document.getElementById('cart-items').innerHTML = html || '<div class="flex flex-col items-center justify-center h-full text-center py-10"><span class="text-4xl mb-3">🛒</span><p class="text-gray-500 font-bold">Tu carrito está vacío</p></div>'; 
             document.getElementById('cart-total').innerText = `RD$ ${total.toLocaleString('en-US')}`;
+            window.saveCartToStorage();
         }
+        
+        window.loadCartFromStorage();
+        window.updateCartUI();
         
         window.checkoutWhatsApp = async () => {
             if(!window.cart.length) return window.showToast("Tu carrito está vacío.");
@@ -3300,5 +3545,16 @@
             } catch (error) { console.error(error); window.showToast("Error al procesar el pedido."); btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false; }
         }
     </script>
+
+    <!-- VENTANA PROMOCIONAL (POP-UP) -->
+    <div id="promo-modal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-[150] flex items-center justify-center p-4" onclick="if(event.target.id === 'promo-modal') { this.classList.add('hidden'); this.classList.remove('flex'); }">
+        <div class="relative max-w-2xl w-full">
+            <a id="promo-link" href="#" target="_blank" class="block">
+                <img id="promo-img" src="" alt="Promoción" class="w-full h-auto rounded-2xl shadow-2xl max-h-[80vh] object-contain">
+            </a>
+            <button onclick="document.getElementById('promo-modal').classList.add('hidden'); document.getElementById('promo-modal').classList.remove('flex');" class="absolute top-4 right-4 bg-white/90 hover:bg-white text-black font-bold w-10 h-10 rounded-full flex items-center justify-center shadow-lg transition text-xl leading-none">&times;</button>
+        </div>
+    </div>
+
 </body>
 </html>
