@@ -2895,13 +2895,16 @@
 
             const rows = sortedProducts.map((prod, index) => {
                 const price = priceType === 'wholesale' && prod.wholesalePrice && prod.wholesalePrice > 0 ? prod.wholesalePrice : prod.price;
+                const currentBrand = (prod.brand || '').toLowerCase().trim();
+                const previousBrand = index === 0 ? '' : (sortedProducts[index - 1].brand || '').toLowerCase().trim();
+
                 return {
                     photoKey: prod.id || `row_${index}`,
                     name: prod.name || '',
                     brand: prod.brand || '',
                     sku: prod.barcode || '-',
                     price: window.formatMoney(price),
-                    isNewBrand: index === 0 || sortedProducts[index - 1].brand !== prod.brand
+                    isNewBrand: index === 0 || previousBrand !== currentBrand
                 };
             });
 
@@ -2945,8 +2948,12 @@
                 },
                 didDrawCell: function(data) {
                     if (data.section === 'body' && data.column.index === 0) {
-                        const key = data.row.raw[0];
-                        const base64 = imageCache[key];
+                        const rowIndex = data.row.index;
+                        const key = rows[rowIndex] ? rows[rowIndex].photoKey : null;
+                        const base64 = key ? imageCache[key] : null;
+                        const centerX = data.cell.x + data.cell.width / 2;
+                        const centerY = data.cell.y + data.cell.height / 2 + 1;
+
                         if (base64) {
                             const maxWidth = Math.min(18, data.cell.width - 4);
                             const maxHeight = Math.min(18, data.cell.height - 4);
@@ -2954,16 +2961,15 @@
                             const y = data.cell.y + (data.cell.height - maxHeight) / 2;
                             try {
                                 doc.addImage(base64, 'JPEG', x, y, maxWidth, maxHeight);
+                                return;
                             } catch (err) {
-                                doc.setFontSize(7);
-                                doc.setTextColor(120, 120, 120);
-                                doc.text('No photo', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center', baseline: 'middle' });
+                                console.warn('PDF image draw failed for row', rowIndex, key, err);
                             }
-                        } else {
-                            doc.setFontSize(7);
-                            doc.setTextColor(120, 120, 120);
-                            doc.text('No photo', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center', baseline: 'middle' });
                         }
+
+                        doc.setFontSize(7);
+                        doc.setTextColor(120, 120, 120);
+                        doc.text('No photo', centerX, centerY, { align: 'center', baseline: 'middle' });
                     }
                 },
                 didDrawPage: function() {
