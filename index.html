@@ -98,6 +98,25 @@
         .swatch-circle.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
         .swatch-circle img { width: 100%; height: 100%; object-fit: contain; mix-blend-multiply; }
 
+        #detail-swatches-list {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05);
+        }
+        #detail-swatches-list::-webkit-scrollbar {
+            height: 6px;
+        }
+        #detail-swatches-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 10px;
+        }
+        #detail-swatches-list::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        #detail-swatches-list::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+
         #contacto { background-color: var(--footer-bg); }
         .card-hidden { display: none !important; }
     </style>
@@ -285,7 +304,7 @@
                     
                     <div id="detail-swatches-container" class="mb-4 hidden">
                         <p class="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Modelos de esta colección:</p>
-                        <div id="detail-swatches-list" class="flex flex-wrap gap-2"></div>
+                        <div id="detail-swatches-list" class="flex flex-row flex-nowrap gap-2 overflow-x-auto pb-2"></div>
                     </div>
 
                     <div class="mb-4">
@@ -2783,48 +2802,68 @@
 
         window.getImageBase64FromUrl = async function(url) {
             if (!url) return null;
-            try {
-                const response = await fetch(url, { mode: 'cors' });
-                if (!response.ok) throw new Error('No image');
-                const blob = await response.blob();
-
-                const imageUrl = URL.createObjectURL(blob);
-                const image = new Image();
-                image.src = imageUrl;
-
-                return await new Promise((resolve) => {
-                    image.onload = () => {
-                        try {
-                            const maxWidth = 300;
-                            const scale = Math.min(1, maxWidth / image.width);
-                            const canvas = document.createElement('canvas');
-                            canvas.width = Math.max(1, Math.round(image.width * scale));
-                            canvas.height = Math.max(1, Math.round(image.height * scale));
-
-                            const ctx = canvas.getContext('2d');
-                            if (ctx) {
-                                ctx.fillStyle = '#ffffff';
-                                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                            }
-
-                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                            URL.revokeObjectURL(imageUrl);
-                            resolve(compressedBase64);
-                        } catch (innerError) {
-                            URL.revokeObjectURL(imageUrl);
-                            resolve(null);
-                        }
-                    };
-
-                    image.onerror = () => {
-                        URL.revokeObjectURL(imageUrl);
-                        resolve(null);
-                    };
-                });
-            } catch (error) {
-                return null;
+            
+            // Check if URL is AVIF and try fallback formats
+            const isAvif = url.toLowerCase().endsWith('.avif');
+            const urlsToTry = [];
+            
+            if (isAvif) {
+                // For AVIF, try JPG and PNG alternatives first
+                const baseUrl = url.substring(0, url.lastIndexOf('.'));
+                urlsToTry.push(baseUrl + '.jpg');
+                urlsToTry.push(baseUrl + '.png');
+                urlsToTry.push(url); // Fall back to original AVIF
+            } else {
+                urlsToTry.push(url);
             }
+
+            for (const imgUrl of urlsToTry) {
+                try {
+                    return await new Promise((resolve) => {
+                        const image = new Image();
+                        image.crossOrigin = 'Anonymous';
+                        
+                        const timeout = setTimeout(() => {
+                            resolve(null);
+                        }, 8000); // 8 second timeout per image attempt
+                        
+                        image.onload = () => {
+                            clearTimeout(timeout);
+                            try {
+                                const maxWidth = 300;
+                                const scale = Math.min(1, maxWidth / image.width);
+                                const canvas = document.createElement('canvas');
+                                canvas.width = Math.max(1, Math.round(image.width * scale));
+                                canvas.height = Math.max(1, Math.round(image.height * scale));
+
+                                const ctx = canvas.getContext('2d');
+                                if (ctx) {
+                                    ctx.fillStyle = '#ffffff';
+                                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+                                }
+
+                                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                                resolve(compressedBase64);
+                            } catch (innerError) {
+                                resolve(null);
+                            }
+                        };
+
+                        image.onerror = () => {
+                            clearTimeout(timeout);
+                            resolve(null);
+                        };
+                        
+                        image.src = imgUrl;
+                    });
+                } catch (error) {
+                    // Try next format in the list
+                    continue;
+                }
+            }
+            
+            return null;
         };
 
         window.exportCatalogPDF = async function(priceType) {
@@ -2847,19 +2886,27 @@
             doc.text(titleText, pageWidth / 2, 26, { align: 'center' });
             doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, 32, { align: 'center' });
 
-            const rows = window.catalogProducts.map((prod, index) => {
+            // Sort products by brand alphabetically
+            const sortedProducts = [...window.catalogProducts].sort((a, b) => {
+                const brandA = (a.brand || '').toLowerCase().trim();
+                const brandB = (b.brand || '').toLowerCase().trim();
+                return brandA.localeCompare(brandB);
+            });
+
+            const rows = sortedProducts.map((prod, index) => {
                 const price = priceType === 'wholesale' && prod.wholesalePrice && prod.wholesalePrice > 0 ? prod.wholesalePrice : prod.price;
                 return {
                     photoKey: prod.id || `row_${index}`,
                     name: prod.name || '',
                     brand: prod.brand || '',
                     sku: prod.barcode || '-',
-                    price: window.formatMoney(price)
+                    price: window.formatMoney(price),
+                    isNewBrand: index === 0 || sortedProducts[index - 1].brand !== prod.brand
                 };
             });
 
             let imageCache = {};
-            await Promise.all(window.catalogProducts.map(async (prod, index) => {
+            await Promise.all(sortedProducts.map(async (prod, index) => {
                 const key = prod.id || `row_${index}`;
                 if (!prod.img) {
                     imageCache[key] = null;
@@ -2888,6 +2935,12 @@
                 didParseCell: function(data) {
                     if (data.section === 'body' && data.column.index === 0) {
                         data.cell.text = [''];
+                    }
+                    // Add visual separator when brand changes
+                    if (data.section === 'body' && rows[data.row.index] && rows[data.row.index].isNewBrand) {
+                        data.cell.styles.fillColor = [245, 245, 245];
+                        data.cell.styles.lineWidth({ top: 0.75 });
+                        data.cell.styles.lineColor = [200, 200, 200];
                     }
                 },
                 didDrawCell: function(data) {
