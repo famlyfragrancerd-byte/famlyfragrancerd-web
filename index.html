@@ -1732,16 +1732,20 @@
 
         window.getDetailBaseName = function(name, brand) {
             if (!name) return '';
-            const words = name.trim().split(/\s+/);
+            const ignoreWords = new Set(['fire', 'malibu', 'ice', 'noir', 'pour', 'homme', 'femme', 'pink']);
+            let words = name.trim().split(/\s+/);
+
             if (brand) {
                 const brandWords = brand.trim().split(/\s+/);
                 const namePrefix = words.slice(0, brandWords.length).map(w => w.toLowerCase()).join(' ');
                 const brandPrefix = brandWords.map(w => w.toLowerCase()).join(' ');
                 if (namePrefix === brandPrefix && words.length > brandWords.length) {
-                    return words[brandWords.length];
+                    words = words.slice(brandWords.length);
                 }
             }
-            return words[0] || '';
+
+            const familyWords = words.filter(word => !ignoreWords.has(word.toLowerCase()));
+            return familyWords.length > 0 ? familyWords.join(' ') : words[0] || '';
         };
 
         window.renderProductDetailSwatches = function(prod) {
