@@ -99,19 +99,18 @@
         .swatch-circle img { width: 100%; height: 100%; object-fit: cover; }
 
         #detail-swatches-list {
-            display: flex !important;
-            flex-wrap: nowrap !important;
-            overflow-x: auto !important;
-            width: 100% !important;
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             scroll-behavior: smooth;
             -webkit-overflow-scrolling: touch;
-            gap: 1rem !important;
-            padding-bottom: 10px !important;
-            pointer-events: auto;
+            gap: 1rem;
+            padding-bottom: 10px;
+            min-width: 100%;
         }
 
         #detail-swatches-list > div {
-            flex: 0 0 auto !important;
+            flex: 0 0 auto;
         }
 
         #contacto { background-color: var(--footer-bg); }
@@ -1732,20 +1731,16 @@
 
         window.getDetailBaseName = function(name, brand) {
             if (!name) return '';
-            const ignoreWords = new Set(['fire', 'malibu', 'ice', 'noir', 'pour', 'homme', 'femme', 'pink']);
-            let words = name.trim().split(/\s+/);
-
+            const words = name.trim().split(/\s+/);
             if (brand) {
                 const brandWords = brand.trim().split(/\s+/);
                 const namePrefix = words.slice(0, brandWords.length).map(w => w.toLowerCase()).join(' ');
                 const brandPrefix = brandWords.map(w => w.toLowerCase()).join(' ');
                 if (namePrefix === brandPrefix && words.length > brandWords.length) {
-                    words = words.slice(brandWords.length);
+                    return words[brandWords.length];
                 }
             }
-
-            const familyWords = words.filter(word => !ignoreWords.has(word.toLowerCase()));
-            return familyWords.length > 0 ? familyWords.join(' ') : words[0] || '';
+            return words[0] || '';
         };
 
         window.renderProductDetailSwatches = function(prod) {
