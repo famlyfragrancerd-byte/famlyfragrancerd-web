@@ -90,31 +90,28 @@
         .animate-pop { animation: pop 0.3s ease-out; }
 
         .swatch-circle {
-            width: 44px; height: 44px; border-radius: 50%; border: 2px solid #e5e7eb;
+            width: 80px; height: 80px; border-radius: 50%; border: 2px solid #e5e7eb;
             overflow: hidden; cursor: pointer; transition: all 0.2s ease;
             background-color: white; padding: 2px; flex-shrink: 0;
         }
-        .swatch-circle:hover { transform: scale(1.1); border-color: var(--primary); }
+        .swatch-circle:hover { transform: scale(1.05); border-color: var(--primary); }
         .swatch-circle.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
-        .swatch-circle img { width: 100%; height: 100%; object-fit: contain; mix-blend-multiply; }
+        .swatch-circle img { width: 100%; height: 100%; object-fit: cover; }
 
         #detail-swatches-list {
-            scrollbar-width: thin;
-            scrollbar-color: rgba(0, 0, 0, 0.3) rgba(0, 0, 0, 0.05);
+            display: flex !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            width: 100% !important;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            gap: 1rem !important;
+            padding-bottom: 10px !important;
+            pointer-events: auto;
         }
-        #detail-swatches-list::-webkit-scrollbar {
-            height: 6px;
-        }
-        #detail-swatches-list::-webkit-scrollbar-track {
-            background: rgba(0, 0, 0, 0.05);
-            border-radius: 10px;
-        }
-        #detail-swatches-list::-webkit-scrollbar-thumb {
-            background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
-        }
-        #detail-swatches-list::-webkit-scrollbar-thumb:hover {
-            background: rgba(0, 0, 0, 0.5);
+
+        #detail-swatches-list > div {
+            flex: 0 0 auto !important;
         }
 
         #contacto { background-color: var(--footer-bg); }
@@ -303,8 +300,8 @@
                     </div>
                     
                     <div id="detail-swatches-container" class="mb-4 hidden">
-                        <p class="text-[10px] font-bold text-gray-400 uppercase mb-2 tracking-widest">Modelos de esta colección:</p>
-                        <div id="detail-swatches-list" class="flex flex-row flex-nowrap gap-2 overflow-x-auto pb-2"></div>
+                        <h3 id="detail-swatches-title" class="text-sm font-bold text-gray-700 mb-2 hidden"></h3>
+                        <div id="detail-swatches-list" class="overflow-x-auto no-scrollbar"></div>
                     </div>
 
                     <div class="mb-4">
@@ -525,10 +522,10 @@
                     <div class="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
                         <h3 class="font-bold text-perfume-dark">📦 Productos en Catálogo</h3>
                         <div class="flex flex-wrap gap-2">
-                            <button id="btn-pdf-retail" class="bg-perfume-magenta text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-perfume-dark transition shadow-sm">
+                            <button onclick="exportCatalogPDF('retail')" class="bg-perfume-magenta text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-perfume-dark transition shadow-sm">
                                 📄 PDF (Retail)
                             </button>
-                            <button id="btn-pdf-wholesale" class="bg-yellow-400 text-gray-900 px-3 py-2 rounded-lg text-xs font-bold hover:bg-yellow-300 transition shadow-sm">
+                            <button onclick="exportCatalogPDF('wholesale')" class="bg-yellow-400 text-gray-900 px-3 py-2 rounded-lg text-xs font-bold hover:bg-yellow-300 transition shadow-sm">
                                 📄 PDF (Wholesale)
                             </button>
                         </div>
@@ -1733,6 +1730,45 @@
         loadSiteConfig();
         window.loadDynamicProducts();
 
+        window.getDetailBaseName = function(name, brand) {
+            if (!name) return '';
+            const words = name.trim().split(/\s+/);
+            if (brand) {
+                const brandWords = brand.trim().split(/\s+/);
+                const namePrefix = words.slice(0, brandWords.length).map(w => w.toLowerCase()).join(' ');
+                const brandPrefix = brandWords.map(w => w.toLowerCase()).join(' ');
+                if (namePrefix === brandPrefix && words.length > brandWords.length) {
+                    return words[brandWords.length];
+                }
+            }
+            return words[0] || '';
+        };
+
+        window.renderProductDetailSwatches = function(prod) {
+            const swatchesContainer = document.getElementById('detail-swatches-container');
+            const swatchesTitle = document.getElementById('detail-swatches-title');
+            const swatchesList = document.getElementById('detail-swatches-list');
+            const baseName = window.getDetailBaseName(prod.name, prod.brand);
+
+            if (prod.brand && prod.brand.trim() !== '' && baseName) {
+                const related = window.catalogProducts.filter(p => p.brand === prod.brand && p.name.toLowerCase().includes(baseName.toLowerCase()));
+                if (related.length > 1) {
+                    swatchesTitle.innerText = `Otras versiones de ${baseName}`;
+                    swatchesTitle.classList.remove('hidden');
+                    swatchesContainer.classList.remove('hidden');
+                    swatchesList.innerHTML = related.map(r => {
+                        const isActive = r.id === prod.id ? 'active' : '';
+                        return `<div class="swatch-circle ${isActive}" title="${r.name}" onclick="openProductModal('${r.id}')"><img src="${r.img}" alt="${r.name}"></div>`;
+                    }).join('');
+                    return;
+                }
+            }
+
+            swatchesTitle.classList.add('hidden');
+            swatchesContainer.classList.add('hidden');
+            swatchesList.innerHTML = '';
+        };
+
         window.openProductModal = function(id) {
             const prod = window.catalogProducts.find(p => p.id === id);
             if(!prod) return;
@@ -1752,16 +1788,7 @@
                 document.getElementById('detail-barcode-text').innerText = "SKU: " + prod.barcode; barcodeBadge.classList.remove('hidden');
             } else { barcodeBadge.classList.add('hidden'); }
 
-            const swatchesContainer = document.getElementById('detail-swatches-container');
-            const swatchesList = document.getElementById('detail-swatches-list');
-            if (prod.brand && prod.brand.trim() !== '') {
-                const related = window.catalogProducts.filter(p => p.brand === prod.brand);
-                if(related.length > 1) { 
-                    swatchesContainer.classList.remove('hidden'); let swatchesHtml = '';
-                    related.forEach(r => { const isActive = r.id === prod.id ? 'active' : ''; swatchesHtml += `<div class="swatch-circle ${isActive}" title="${r.name}" onclick="openProductModal('${r.id}')"><img src="${r.img}"></div>`; });
-                    swatchesList.innerHTML = swatchesHtml;
-                } else { swatchesContainer.classList.add('hidden'); }
-            } else { swatchesContainer.classList.add('hidden'); }
+            window.renderProductDetailSwatches(prod);
 
             let activePrice = prod.price;
             let isWholesaleActive = window.isWholesaler && prod.wholesalePrice && prod.wholesalePrice < prod.price;
@@ -2802,68 +2829,48 @@
 
         window.getImageBase64FromUrl = async function(url) {
             if (!url) return null;
-            
-            // Check if URL is AVIF and try fallback formats
-            const isAvif = url.toLowerCase().endsWith('.avif');
-            const urlsToTry = [];
-            
-            if (isAvif) {
-                // For AVIF, try JPG and PNG alternatives first
-                const baseUrl = url.substring(0, url.lastIndexOf('.'));
-                urlsToTry.push(baseUrl + '.jpg');
-                urlsToTry.push(baseUrl + '.png');
-                urlsToTry.push(url); // Fall back to original AVIF
-            } else {
-                urlsToTry.push(url);
-            }
+            try {
+                const response = await fetch(url, { mode: 'cors' });
+                if (!response.ok) throw new Error('No image');
+                const blob = await response.blob();
 
-            for (const imgUrl of urlsToTry) {
-                try {
-                    return await new Promise((resolve) => {
-                        const image = new Image();
-                        image.crossOrigin = 'Anonymous';
-                        
-                        const timeout = setTimeout(() => {
-                            resolve(null);
-                        }, 8000); // 8 second timeout per image attempt
-                        
-                        image.onload = () => {
-                            clearTimeout(timeout);
-                            try {
-                                const maxWidth = 300;
-                                const scale = Math.min(1, maxWidth / image.width);
-                                const canvas = document.createElement('canvas');
-                                canvas.width = Math.max(1, Math.round(image.width * scale));
-                                canvas.height = Math.max(1, Math.round(image.height * scale));
+                const imageUrl = URL.createObjectURL(blob);
+                const image = new Image();
+                image.src = imageUrl;
 
-                                const ctx = canvas.getContext('2d');
-                                if (ctx) {
-                                    ctx.fillStyle = '#ffffff';
-                                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                                    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
-                                }
+                return await new Promise((resolve) => {
+                    image.onload = () => {
+                        try {
+                            const maxWidth = 300;
+                            const scale = Math.min(1, maxWidth / image.width);
+                            const canvas = document.createElement('canvas');
+                            canvas.width = Math.max(1, Math.round(image.width * scale));
+                            canvas.height = Math.max(1, Math.round(image.height * scale));
 
-                                const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-                                resolve(compressedBase64);
-                            } catch (innerError) {
-                                resolve(null);
+                            const ctx = canvas.getContext('2d');
+                            if (ctx) {
+                                ctx.fillStyle = '#ffffff';
+                                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                                ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
                             }
-                        };
 
-                        image.onerror = () => {
-                            clearTimeout(timeout);
+                            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                            URL.revokeObjectURL(imageUrl);
+                            resolve(compressedBase64);
+                        } catch (innerError) {
+                            URL.revokeObjectURL(imageUrl);
                             resolve(null);
-                        };
-                        
-                        image.src = imgUrl;
-                    });
-                } catch (error) {
-                    // Try next format in the list
-                    continue;
-                }
+                        }
+                    };
+
+                    image.onerror = () => {
+                        URL.revokeObjectURL(imageUrl);
+                        resolve(null);
+                    };
+                });
+            } catch (error) {
+                return null;
             }
-            
-            return null;
         };
 
         window.exportCatalogPDF = async function(priceType) {
@@ -2886,30 +2893,19 @@
             doc.text(titleText, pageWidth / 2, 26, { align: 'center' });
             doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, 32, { align: 'center' });
 
-            // Sort products by brand alphabetically
-            const sortedProducts = [...window.catalogProducts].sort((a, b) => {
-                const brandA = (a.brand || '').toLowerCase().trim();
-                const brandB = (b.brand || '').toLowerCase().trim();
-                return brandA.localeCompare(brandB);
-            });
-
-            const rows = sortedProducts.map((prod, index) => {
+            const rows = window.catalogProducts.map((prod, index) => {
                 const price = priceType === 'wholesale' && prod.wholesalePrice && prod.wholesalePrice > 0 ? prod.wholesalePrice : prod.price;
-                const currentBrand = (prod.brand || '').toLowerCase().trim();
-                const previousBrand = index === 0 ? '' : (sortedProducts[index - 1].brand || '').toLowerCase().trim();
-
                 return {
                     photoKey: prod.id || `row_${index}`,
                     name: prod.name || '',
                     brand: prod.brand || '',
                     sku: prod.barcode || '-',
-                    price: window.formatMoney(price),
-                    isNewBrand: index === 0 || previousBrand !== currentBrand
+                    price: window.formatMoney(price)
                 };
             });
 
             let imageCache = {};
-            await Promise.all(sortedProducts.map(async (prod, index) => {
+            await Promise.all(window.catalogProducts.map(async (prod, index) => {
                 const key = prod.id || `row_${index}`;
                 if (!prod.img) {
                     imageCache[key] = null;
@@ -2939,21 +2935,11 @@
                     if (data.section === 'body' && data.column.index === 0) {
                         data.cell.text = [''];
                     }
-                    // Add visual separator when brand changes
-                    if (data.section === 'body' && rows[data.row.index] && rows[data.row.index].isNewBrand) {
-                        data.cell.styles.fillColor = [245, 245, 245];
-                        data.cell.styles.lineWidth({ top: 0.75 });
-                        data.cell.styles.lineColor = [200, 200, 200];
-                    }
                 },
                 didDrawCell: function(data) {
                     if (data.section === 'body' && data.column.index === 0) {
-                        const rowIndex = data.row.index;
-                        const key = rows[rowIndex] ? rows[rowIndex].photoKey : null;
-                        const base64 = key ? imageCache[key] : null;
-                        const centerX = data.cell.x + data.cell.width / 2;
-                        const centerY = data.cell.y + data.cell.height / 2 + 1;
-
+                        const key = data.row.raw[0];
+                        const base64 = imageCache[key];
                         if (base64) {
                             const maxWidth = Math.min(18, data.cell.width - 4);
                             const maxHeight = Math.min(18, data.cell.height - 4);
@@ -2961,15 +2947,16 @@
                             const y = data.cell.y + (data.cell.height - maxHeight) / 2;
                             try {
                                 doc.addImage(base64, 'JPEG', x, y, maxWidth, maxHeight);
-                                return;
                             } catch (err) {
-                                console.warn('PDF image draw failed for row', rowIndex, key, err);
+                                doc.setFontSize(7);
+                                doc.setTextColor(120, 120, 120);
+                                doc.text('No photo', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center', baseline: 'middle' });
                             }
+                        } else {
+                            doc.setFontSize(7);
+                            doc.setTextColor(120, 120, 120);
+                            doc.text('No photo', data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 1, { align: 'center', baseline: 'middle' });
                         }
-
-                        doc.setFontSize(7);
-                        doc.setTextColor(120, 120, 120);
-                        doc.text('No photo', centerX, centerY, { align: 'center', baseline: 'middle' });
                     }
                 },
                 didDrawPage: function() {
@@ -3636,22 +3623,6 @@
                 window.open(`https://wa.me/${adminPhone}?text=${encodeURIComponent(text)}`, '_blank');
                 setTimeout(() => { btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false; }, 3000);
             } catch (error) { console.error(error); window.showToast("Error al procesar el pedido."); btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false; }
-        }
-
-        // PDF Export Button Event Listeners (Direct Execution - DOM Already Loaded in Module)
-        const pdfRetailBtn = document.getElementById('btn-pdf-retail');
-        const pdfWholesaleBtn = document.getElementById('btn-pdf-wholesale');
-
-        if (pdfRetailBtn) {
-            pdfRetailBtn.addEventListener('click', () => {
-                window.exportCatalogPDF('retail');
-            });
-        }
-
-        if (pdfWholesaleBtn) {
-            pdfWholesaleBtn.addEventListener('click', () => {
-                window.exportCatalogPDF('wholesale');
-            });
         }
     </script>
 
