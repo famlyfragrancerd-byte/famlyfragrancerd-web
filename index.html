@@ -89,6 +89,14 @@
         }
         .animate-pop { animation: pop 0.3s ease-out; }
 
+        @keyframes fadeInSlideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeInSlideUp 0.4s ease-out forwards;
+        }
+
         .swatch-circle {
             width: 44px; height: 44px; border-radius: 50%; border: 2px solid #e5e7eb;
             overflow: hidden; cursor: pointer; transition: all 0.2s ease;
@@ -191,14 +199,16 @@
                         <span class="absolute inset-y-0 left-0 flex items-center pl-4 text-gray-400">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                         </span>
-                        <input type="text" id="catalog-search" oninput="filterCatalog()" placeholder="Buscar por marca, nombre, SKU o género..." class="w-full pl-12 pr-4 py-3.5 rounded-xl border border-gray-200 shadow-sm text-sm focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta bg-white transition-all font-medium">
-                        
+                        <input type="text" id="catalog-search" oninput="filterCatalog()" placeholder="Buscar por marca, nombre, SKU o género..." class="w-full pl-12 pr-12 py-3.5 rounded-xl border border-gray-200 shadow-sm text-sm focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta bg-white transition-all font-medium">
+                        <button id="catalog-search-clear-btn" type="button" class="hidden text-gray-400 hover:text-gray-700 absolute right-3 top-1/2 transform -translate-y-1/2 focus:outline-none">
+                            ✕
+                        </button>
                         <div id="search-suggestions" class="absolute top-full left-0 w-full bg-white mt-2 rounded-xl shadow-2xl border border-gray-100 z-50 hidden max-h-80 overflow-y-auto divide-y divide-gray-50 transition-all duration-300"></div>
                     </div>
                     
                     <div class="flex flex-col md:flex-row gap-4 mt-4">
                         <div class="relative w-full md:w-1/2">
-                            <select id="cat-select" onchange="setCategoryFilter(this.value)" class="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3.5 pl-5 pr-10 rounded-xl shadow-sm text-sm font-bold focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta transition cursor-pointer">
+                            <select id="cat-select" onchange="setCategoryFilter(this.value)" class="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3.5 pl-5 pr-10 rounded-xl shadow-sm text-sm font-bold focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta hover:bg-gray-100 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer">
                                 <option value="Todos">Todas las Categorías</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
@@ -207,7 +217,7 @@
                         </div>
 
                         <div class="relative w-full md:w-1/2">
-                            <select id="brand-select" onchange="setBrandFilter(this.value)" class="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3.5 pl-5 pr-10 rounded-xl shadow-sm text-sm font-bold focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta transition cursor-pointer">
+                            <select id="brand-select" onchange="setBrandFilter(this.value)" class="w-full appearance-none bg-white border border-gray-200 text-gray-700 py-3.5 pl-5 pr-10 rounded-xl shadow-sm text-sm font-bold focus:outline-none focus:border-perfume-magenta focus:ring-1 focus:ring-perfume-magenta hover:bg-gray-100 active:scale-95 transition-all duration-300 ease-in-out cursor-pointer">
                                 <option value="Todas">Todas las Marcas</option>
                             </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-400">
@@ -285,7 +295,7 @@
                     
                     <div id="detail-swatches-container" class="mb-4 hidden">
                         <h3 id="detail-swatches-title" class="text-sm font-bold text-gray-700 mb-2 hidden"></h3>
-                        <div id="detail-swatches-list" class="flex flex-nowrap items-center gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+                        <div id="detail-swatches-list" class="grid grid-cols-4 md:grid-cols-6 gap-3 pt-2"></div>
                     </div>
 
                     <div class="mb-4">
@@ -511,6 +521,12 @@
                             </button>
                             <button onclick="exportCatalogPDF('wholesale')" class="bg-yellow-400 text-gray-900 px-3 py-2 rounded-lg text-xs font-bold hover:bg-yellow-300 transition shadow-sm">
                                 📄 PDF (Wholesale)
+                            </button>
+                            <button id="btn-copy-txt-retail" class="bg-blue-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-blue-700 transition shadow-sm">
+                                📋 Copiar TXT (Retail)
+                            </button>
+                            <button id="btn-copy-txt-wholesale" class="bg-green-600 text-white px-3 py-2 rounded-lg text-xs font-bold hover:bg-green-700 transition shadow-sm">
+                                📋 Copiar TXT (Mayor)
                             </button>
                         </div>
                     </div>
@@ -1549,7 +1565,7 @@
                 const searchString = `${prod.name || ''} ${prod.category || ''} ${prod.brand || ''} ${prod.description || ''} ${prod.barcode || ''}`.toLowerCase();
 
                 htmlFull += `
-                <div class="product-card-item flex flex-col h-full bg-white p-3 md:p-5 ${cardRadius} ${cardBorder} ${cardShadow} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group relative overflow-hidden" 
+                <div class="product-card-item flex flex-col h-full bg-white p-3 md:p-5 ${cardRadius} ${cardBorder} ${cardShadow} hover:-translate-y-1 hover:shadow-xl transition-all duration-300 group relative overflow-hidden animate-fade-in" 
                      data-category="${prod.category || ''}" data-brand="${prod.brand || ''}" data-search="${searchString}">
                     ${offerBadge}
                     ${isWholesaleActive ? `<div class="absolute top-2 right-2 bg-green-500 text-white text-[10px] font-black px-2 py-1 rounded-full z-10 shadow-md tracking-wider">MAYORISTA</div>` : (prod.decants && prod.decants.length > 0 ? '<div class="absolute top-2 right-2 bg-gray-200 text-gray-800 text-[9px] font-bold px-2 py-1 rounded-full z-10">Con Decants</div>' : '')}
@@ -1683,6 +1699,25 @@
             }
         });
 
+        const catalogSearchInput = document.getElementById('catalog-search');
+        const catalogClearBtn = document.getElementById('catalog-search-clear-btn');
+        if (catalogSearchInput && catalogClearBtn) {
+            catalogSearchInput.addEventListener('input', function() {
+                if (this.value.length > 0) {
+                    catalogClearBtn.classList.remove('hidden');
+                } else {
+                    catalogClearBtn.classList.add('hidden');
+                }
+            });
+
+            catalogClearBtn.addEventListener('click', function() {
+                catalogSearchInput.value = '';
+                catalogClearBtn.classList.add('hidden');
+                catalogSearchInput.focus();
+                window.filterCatalog();
+            });
+        }
+
         window.loadDynamicProducts = async function() {
             const grid = document.getElementById('products-grid');
             try {
@@ -1714,38 +1749,66 @@
         loadSiteConfig();
         window.loadDynamicProducts();
 
-        window.getDetailBaseName = function(name, brand) {
+        window.getDetailBaseName = function(name, brand, index = 0) {
             if (!name) return '';
             const words = name.trim().split(/\s+/);
+            if (index < 0 || index >= words.length) return '';
             if (brand) {
                 const brandWords = brand.trim().split(/\s+/);
                 const namePrefix = words.slice(0, brandWords.length).map(w => w.toLowerCase()).join(' ');
                 const brandPrefix = brandWords.map(w => w.toLowerCase()).join(' ');
                 if (namePrefix === brandPrefix && words.length > brandWords.length) {
-                    return words[brandWords.length];
+                    const fallbackIndex = brandWords.length + index;
+                    return words[fallbackIndex] || '';
                 }
             }
-            return words[0] || '';
+            return words[index] || '';
         };
 
         window.renderProductDetailSwatches = function(prod) {
             const swatchesContainer = document.getElementById('detail-swatches-container');
             const swatchesTitle = document.getElementById('detail-swatches-title');
             const swatchesList = document.getElementById('detail-swatches-list');
-            const baseName = window.getDetailBaseName(prod.name, prod.brand);
+            const productBrand = (prod.brand || '').trim();
+            const productName = (prod.name || '').trim();
 
-            if (prod.brand && prod.brand.trim() !== '' && baseName) {
-                const related = window.catalogProducts.filter(p => p.brand === prod.brand && p.name.toLowerCase().includes(baseName.toLowerCase()));
-                if (related.length > 1) {
-                    swatchesTitle.innerText = `Otras versiones de ${baseName}`;
-                    swatchesTitle.classList.remove('hidden');
-                    swatchesContainer.classList.remove('hidden');
-                    swatchesList.innerHTML = related.map(r => {
-                        const isActive = r.id === prod.id ? 'active' : '';
-                        return `<div class="swatch-circle ${isActive}" title="${r.name}" onclick="openProductModal('${r.id}')"><img src="${r.img}" alt="${r.name}"></div>`;
-                    }).join('');
-                    return;
-                }
+            if (!productBrand || !productName) {
+                swatchesTitle.classList.add('hidden');
+                swatchesContainer.classList.add('hidden');
+                swatchesList.innerHTML = '';
+                return;
+            }
+
+            const sameBrandProducts = window.catalogProducts.filter(p => p.brand === productBrand);
+            const words = productName.split(/\s+/).filter(Boolean);
+            let familyWord = words[0] ? words[0].toLowerCase() : '';
+            const brandLower = productBrand.toLowerCase();
+
+            if (familyWord && brandLower.includes(familyWord) && words.length > 1) {
+                familyWord = words[1].toLowerCase();
+            }
+
+            let related = familyWord
+                ? sameBrandProducts.filter(p => p.name && p.name.toLowerCase().includes(familyWord))
+                : [];
+
+            let titleText = '';
+            if (related.length <= 1) {
+                related = sameBrandProducts;
+                titleText = `Otros modelos de ${productBrand}`;
+            } else {
+                titleText = `Otras versiones de ${familyWord.charAt(0).toUpperCase() + familyWord.slice(1)}`;
+            }
+
+            if (related.length > 1) {
+                swatchesTitle.innerText = titleText;
+                swatchesTitle.classList.remove('hidden');
+                swatchesContainer.classList.remove('hidden');
+                swatchesList.innerHTML = related.map(r => {
+                    const isActive = r.id === prod.id ? 'active' : '';
+                    return `<div class="swatch-circle ${isActive}" title="${r.name}" onclick="openProductModal('${r.id}')"><img src="${r.img}" alt="${r.name}"></div>`;
+                }).join('');
+                return;
             }
 
             swatchesTitle.classList.add('hidden');
@@ -1790,10 +1853,15 @@
             else {
                 actionsContainer.innerHTML = `
                     <div class="flex items-center justify-between bg-gray-100 rounded-lg p-1 w-32"><button onclick="updateQty('detail', -1)" class="w-8 h-8 text-gray-600 hover:text-black font-bold text-xl rounded-md hover:bg-white transition">-</button><span id="qty-detail" class="font-bold text-gray-800">1</span><button onclick="updateQty('detail', 1)" class="w-8 h-8 text-gray-600 hover:text-black font-bold text-xl rounded-md hover:bg-white transition">+</button></div>
-                    <button onclick="addDetailToCart()" class="flex-1 bg-perfume-magenta text-white py-3 rounded-lg font-bold hover:bg-perfume-dark transition shadow-md">Agregar al Carrito</button>`;
+                    <button id="detail-add-to-cart-btn" class="flex-1 bg-perfume-magenta text-white py-3 rounded-lg font-bold hover:bg-perfume-dark transition-all duration-200 shadow-md">Agregar al Carrito</button>`;
+                const detailAddToCartBtn = document.getElementById('detail-add-to-cart-btn');
+                if (detailAddToCartBtn) {
+                    detailAddToCartBtn.addEventListener('click', window.addDetailToCart);
+                }
             }
 
             const modal = document.getElementById('product-details-modal'); const box = document.getElementById('product-details-box');
+            document.body.classList.add('overflow-hidden');
             modal.classList.remove('hidden'); setTimeout(() => { modal.classList.remove('opacity-0'); box.classList.remove('scale-95'); box.classList.add('scale-100'); }, 10);
         }
 
@@ -1821,7 +1889,7 @@
             const modal = document.getElementById('product-details-modal'); const box = document.getElementById('product-details-box');
             modal.classList.add('opacity-0'); box.classList.remove('scale-100'); box.classList.add('scale-95'); setTimeout(() => { modal.classList.add('hidden'); }, 300);
             window.resetZoom(); 
-            
+            document.body.classList.remove('overflow-hidden');
             if(window.location.search.includes('?p=')) {
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
@@ -1898,7 +1966,15 @@
             }
         }
 
-        window.addDetailToCart = function() {
+        window.addDetailToCart = function(event) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+
+            const button = event?.currentTarget || document.getElementById('detail-add-to-cart-btn');
+            const originalText = button ? button.innerText : 'Agregar al Carrito';
+
             const id = document.getElementById('detail-id').value; const prod = window.catalogProducts.find(p => p.id === id);
             const qtyStr = document.getElementById('qty-detail'); if(!qtyStr) return; const qty = parseInt(qtyStr.innerText);
             
@@ -1922,10 +1998,23 @@
             if(ex) ex.qty += qty; else window.cart.push({ cartId: cartId, id: prod.id, name: name, price: price, qty: qty, img: prod.img, variant: variantId, barcode: barcode }); 
             
             const catQty = document.getElementById('qty-'+id); if(catQty) catQty.innerText = 1;
-            
-            window.updateCartUI(); window.showToast("¡Agregado al carrito! 🛒"); window.closeProductModal();
+
+            if (button) {
+                button.classList.add('scale-95', 'bg-green-600');
+                button.innerText = '¡Agregado! ✓';
+            }
+
+            window.updateCartUI(); window.showToast("¡Agregado al carrito! 🛒");
             const cartBtn = document.getElementById('nav-cart-btn');
             if(cartBtn) { cartBtn.classList.add('animate-pop', 'text-perfume-magenta'); setTimeout(() => cartBtn.classList.remove('animate-pop', 'text-perfume-magenta'), 300); }
+
+            setTimeout(() => {
+                if (button) {
+                    button.classList.remove('scale-95', 'bg-green-600');
+                    button.classList.add('bg-perfume-magenta');
+                    button.innerText = originalText;
+                }
+            }, 800);
         }
 
         window.renderAdminDecants = function() {
@@ -2877,7 +2966,19 @@
             doc.text(titleText, pageWidth / 2, 26, { align: 'center' });
             doc.text(`Generado: ${new Date().toLocaleDateString('es-ES')}`, pageWidth / 2, 32, { align: 'center' });
 
-            const rows = window.catalogProducts.map((prod, index) => {
+            const sortedProducts = [...window.catalogProducts].sort((a, b) => {
+                const brandA = (a.brand || 'Z_Sin Marca').toLowerCase().trim();
+                const brandB = (b.brand || 'Z_Sin Marca').toLowerCase().trim();
+
+                if (brandA < brandB) return -1;
+                if (brandA > brandB) return 1;
+
+                const nameA = (a.name || '').toLowerCase().trim();
+                const nameB = (b.name || '').toLowerCase().trim();
+                return nameA.localeCompare(nameB);
+            });
+
+            const rows = sortedProducts.map((prod, index) => {
                 const price = priceType === 'wholesale' && prod.wholesalePrice && prod.wholesalePrice > 0 ? prod.wholesalePrice : prod.price;
                 return {
                     photoKey: prod.id || `row_${index}`,
@@ -2889,7 +2990,7 @@
             });
 
             let imageCache = {};
-            await Promise.all(window.catalogProducts.map(async (prod, index) => {
+            await Promise.all(sortedProducts.map(async (prod, index) => {
                 const key = prod.id || `row_${index}`;
                 if (!prod.img) {
                     imageCache[key] = null;
@@ -2960,6 +3061,66 @@
                 imageCache = null;
             }
         };
+
+        window.copyCatalogTXT = async function(priceType) {
+            if (!window.catalogProducts || !Array.isArray(window.catalogProducts) || window.catalogProducts.length === 0) {
+                return window.showToast("No hay productos para copiar.");
+            }
+
+            const sortedProducts = [...window.catalogProducts].sort((a, b) => {
+                const brandA = (a.brand || 'Z_Sin Marca').toLowerCase().trim();
+                const brandB = (b.brand || 'Z_Sin Marca').toLowerCase().trim();
+
+                if (brandA < brandB) return -1;
+                if (brandA > brandB) return 1;
+
+                const nameA = (a.name || '').toLowerCase().trim();
+                const nameB = (b.name || '').toLowerCase().trim();
+                return nameA.localeCompare(nameB);
+            });
+
+            const header = `CATÁLOGO ${priceType === 'wholesale' ? 'MAYORISTA' : 'RETAIL'}\n====================\n\n`;
+            const lines = [header];
+            let currentBrand = '';
+
+            sortedProducts.forEach(prod => {
+                const brand = (prod.brand || '').trim() || 'Sin Marca';
+                const name = (prod.name || '').trim() || 'Sin Nombre';
+                const price = priceType === 'wholesale' && prod.wholesalePrice && prod.wholesalePrice > 0 ? prod.wholesalePrice : prod.price || 0;
+                const formattedPrice = window.formatMoney(price);
+
+                if (brand !== currentBrand) {
+                    if (currentBrand) lines.push('');
+                    currentBrand = brand;
+                    lines.push(brand);
+                    lines.push('--------------------');
+                }
+
+                lines.push(`${brand} - ${name}: ${formattedPrice}`);
+            });
+
+            const textToCopy = lines.join('\n');
+
+            try {
+                await navigator.clipboard.writeText(textToCopy);
+                window.showToast("Catálogo copiado al portapapeles");
+            } catch (err) {
+                console.error(err);
+                window.showToast("No se pudo copiar el catálogo.");
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const copyRetailBtn = document.getElementById('btn-copy-txt-retail');
+            const copyWholesaleBtn = document.getElementById('btn-copy-txt-wholesale');
+
+            if (copyRetailBtn) {
+                copyRetailBtn.addEventListener('click', () => window.copyCatalogTXT('retail'));
+            }
+            if (copyWholesaleBtn) {
+                copyWholesaleBtn.addEventListener('click', () => window.copyCatalogTXT('wholesale'));
+            }
+        });
 
         window.notifyCustomerWhatsApp = function(docId) {
             const order = window.adminOrders.find(o => o.id === docId); if(!order || !order.customerPhone) return window.showToast("Número de cliente no disponible.");
