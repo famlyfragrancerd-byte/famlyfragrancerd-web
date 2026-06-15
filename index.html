@@ -344,19 +344,24 @@
     </div>
 
     <!-- PANEL DE CLIENTE -->
-    <div id="profile-modal" class="fixed top-0 right-0 h-full w-full md:w-[450px] bg-white border-l border-gray-200 z-[110] transform translate-x-full transition-transform duration-300 shadow-2xl flex flex-col">
-        <div class="flex items-center justify-between p-6 border-b border-gray-100 bg-perfume-magenta text-white">
-            <h2 class="text-xl font-bold flex items-center gap-2">👤 Mi Cuenta</h2>
-            <button onclick="closeProfileModal()" class="text-white/80 hover:text-white transition text-3xl leading-none">&times;</button>
+    <div id="profile-modal" class="fixed top-0 right-0 w-[400px] max-w-full h-screen bg-white shadow-2xl flex flex-col z-50 transition-transform transform translate-x-full duration-300">
+        <!-- Close Button Bar (static) -->
+        <div class="flex-shrink-0 p-4 border-b border-gray-200">
+            <div class="flex items-center justify-between">
+                <h2 class="text-xl font-bold">👤 Mi Cuenta</h2>
+                <button onclick="closeProfileModal()" class="text-gray-600 hover:text-gray-900 transition text-3xl leading-none">&times;</button>
+            </div>
         </div>
-        <div class="flex-1 overflow-y-auto bg-perfume-light p-6 no-scrollbar">
-            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm mb-6 text-center relative">
+
+        <!-- Single Scrollable Body (profile, actions, orders) -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-6 no-scrollbar">
+            <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm text-center relative">
                 <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center text-perfume-magenta text-2xl font-bold mx-auto mb-3"><span id="profile-initial">?</span></div>
                 <h3 id="profile-name" class="text-lg font-bold text-perfume-dark flex items-center justify-center">Cargando...</h3>
                 <p id="profile-email" class="text-sm text-gray-500 mb-1">...</p>
                 <p class="text-[10px] text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded inline-block mb-3 border border-gray-100">ID: <span id="profile-id">...</span></p>
                 <button onclick="logout()" class="text-xs text-red-500 font-semibold hover:underline block mx-auto">Cerrar Sesión</button>
-                
+
                 <div class="mt-4 pt-4 border-t border-gray-100 text-left">
                     <p class="text-xs font-bold text-gray-500 mb-2">Seguridad de la cuenta</p>
                     <div class="flex gap-2">
@@ -373,13 +378,21 @@
                     </div>
                 </div>
             </div>
-            
-            <button id="btn-admin-panel" onclick="openAdminModal()" class="hidden w-full mb-3 bg-perfume-dark text-white py-3 rounded-xl font-bold shadow-md hover:bg-black transition flex items-center justify-center gap-2">⚙️ Panel de Administrador</button>
-            <button id="btn-orders-dashboard" onclick="openOrdersDashboard()" class="hidden w-full mb-3 bg-perfume-magenta text-white py-3 rounded-xl font-bold shadow-md hover:bg-perfume-dark transition flex items-center justify-center gap-2">🧾 Monitor de Pedidos (En Vivo)</button>
-            <button id="btn-push-notifications" onclick="requestPushNotifications()" class="hidden w-full mb-6 bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 transition flex items-center justify-center gap-2">🔔 Activar Alertas Push</button>
-            
-            <h3 class="text-lg font-bold text-perfume-dark mb-4">Mis Pedidos Anteriores</h3>
-            <div id="orders-list" class="space-y-4"></div>
+
+            <div class="space-y-3">
+                <button id="btn-admin-panel" onclick="openAdminModal()" class="hidden w-full bg-perfume-dark text-white py-3 rounded-xl font-bold shadow-md hover:bg-black transition flex items-center justify-center gap-2">⚙️ Panel de Administrador</button>
+                <button id="btn-orders-dashboard" onclick="openOrdersDashboard()" class="hidden w-full bg-perfume-magenta text-white py-3 rounded-xl font-bold shadow-md hover:bg-perfume-dark transition flex items-center justify-center gap-2">🧾 Monitor de Pedidos (En Vivo)</button>
+                <button id="btn-push-notifications" onclick="requestPushNotifications()" class="hidden w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 transition flex items-center justify-center gap-2">🔔 Activar Alertas Push</button>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-perfume-dark mb-3">Mis Pedidos Anteriores</h3>
+                <div id="orders-list" class="space-y-4"></div>
+                <div id="orders-pagination" class="mt-3"></div>
+                <div class="mt-4">
+                    <button id="btn-toggle-all-orders" onclick="toggleAllUserOrders()" class="hidden w-full bg-white border border-gray-200 text-gray-700 py-2 rounded-lg font-bold shadow-sm">Ver todos mis pedidos</button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -593,6 +606,25 @@
             <!-- PESTAÑA: CONFIGURACIÓN AVANZADA -->
             <div id="admin-tab-settings" class="hidden space-y-6 max-w-6xl mx-auto w-full">
                 <form onsubmit="saveSiteConfig(event)" class="space-y-6">
+
+                    <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6">
+                        <h3 class="font-bold text-perfume-dark mb-2 border-b border-gray-200 pb-2 flex items-center gap-2">🚚 Gestión de Agencias de Envío</h3>
+                        <p class="text-sm text-gray-500 mb-4">Administra las agencias disponibles para rastreo de pedidos y sus URLs de seguimiento.</p>
+
+                        <div id="shipping-agencies-list" class="space-y-3 mb-4"></div>
+
+                        <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">Nombre de la Agencia</label>
+                                <input id="shipping-agency-name" type="text" placeholder="Ej: CaribePack" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-600 mb-1">URL de Rastreo</label>
+                                <input id="shipping-agency-url" type="url" placeholder="Ej: https://...&guia=" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                            </div>
+                        </div>
+                        <button type="button" onclick="addShippingAgencyFromForm()" class="mt-3 bg-perfume-magenta text-white px-4 py-2 rounded-lg font-bold hover:bg-perfume-dark transition shadow-sm">Añadir Agencia</button>
+                    </div>
 
                     <div class="bg-yellow-50 p-6 rounded-xl border border-yellow-200 mb-6">
                         <h3 class="font-bold text-yellow-900 mb-2 border-b border-yellow-200 pb-2 flex items-center gap-2">💼 Clientes VIP / Mayoristas</h3>
@@ -2194,11 +2226,28 @@
             try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { attendedBy: adminName }); window.showToast("👋 Te has asignado este pedido."); window.loadAdminOrders(); } catch(e) { window.showToast("❌ Error al asignar el pedido."); }
         }
 
-        window.deleteAdminOrder = function(docId) { 
-            window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas mover este pedido a la papelera?", async () => { 
-                await window.updateOrderStatus(docId, 'Eliminado'); 
-                window.showToast("🗑️ Pedido movido a eliminados."); 
-            }); 
+        window.deleteAdminOrder = function(docId) {
+            window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas eliminar este pedido permanentemente? Esta acción no se puede deshacer.", async () => {
+                try {
+                    // Delete from Firestore
+                    await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId));
+
+                    // Remove locally and re-render
+                    window.adminOrders = window.adminOrders.filter(o => o.id !== docId);
+                    window.renderAdminOrdersList();
+
+                    // If user orders list contains it, remove as well
+                    if (Array.isArray(window.userOrdersList) && window.userOrdersList.findIndex(o => o.id === docId) !== -1) {
+                        window.userOrdersList = window.userOrdersList.filter(o => o.id !== docId);
+                        window.renderUserOrdersPage();
+                    }
+
+                    window.showToast("✅ Pedido eliminado permanentemente.");
+                } catch (e) {
+                    console.error('Error eliminando pedido:', e);
+                    window.showToast("❌ Error al eliminar el pedido. Revisa la consola.");
+                }
+            });
         }
 
         window.recalculateOrderFinancials = async function(orderId, modifications = {}) {
@@ -2225,6 +2274,112 @@
                 });
                 window.loadAdminOrders();
             } catch(e) { window.showToast("Error al actualizar montos."); }
+        }
+
+        // Save shipping agency for an order
+        window.updateOrderShippingAgency = async function(orderId, agency) {
+            try {
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { shippingAgency: agency });
+                const o = window.adminOrders.find(o=>o.id===orderId);
+                if(o) o.shippingAgency = agency;
+                window.showToast('✅ Agencia guardada.');
+                window.renderAdminOrdersList();
+            } catch(e) { console.error('Error saving agency', e); window.showToast('❌ Error al guardar agencia'); }
+        }
+
+        // Save tracking number for an order
+        window.updateOrderTrackingNumber = async function(orderId, trackingNumber) {
+            try {
+                const val = trackingNumber && trackingNumber.trim().length ? trackingNumber.trim() : '';
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', orderId), { trackingNumber: val });
+                const o = window.adminOrders.find(o=>o.id===orderId);
+                if(o) o.trackingNumber = val;
+                window.showToast('✅ Número de guía guardado.');
+                window.renderAdminOrdersList();
+            } catch(e) { console.error('Error saving tracking number', e); window.showToast('❌ Error al guardar número de guía'); }
+        }
+
+        window.getShippingAgencies = function() {
+            const defaults = [
+                { name: 'CaribePack', url: 'https://caribepack-erp.iplus.app/fe/lg-es/ut/Estatus.aspx?guia=' },
+                { name: 'Vimenpaq', url: 'https://vimenpaq.do/rastreo/?guia=' }
+            ];
+            try {
+                const raw = localStorage.getItem('shippingAgencies');
+                if (!raw) {
+                    localStorage.setItem('shippingAgencies', JSON.stringify(defaults));
+                    return defaults;
+                }
+                const parsed = JSON.parse(raw);
+                if (Array.isArray(parsed) && parsed.every(item => item && item.name && item.url)) {
+                    return parsed;
+                }
+            } catch (e) {
+                console.warn('Error leyendo shippingAgencies desde localStorage', e);
+            }
+            localStorage.setItem('shippingAgencies', JSON.stringify(defaults));
+            return defaults;
+        }
+
+        window.saveShippingAgencies = function(agencies) {
+            try {
+                localStorage.setItem('shippingAgencies', JSON.stringify(agencies));
+            } catch (e) {
+                console.error('Error guardando shippingAgencies', e);
+            }
+        }
+
+        window.addShippingAgency = function(name, url) {
+            if (!name || !url) return window.showToast('Ingresa nombre y URL de agencia.');
+            const agencies = window.getShippingAgencies();
+            agencies.push({ name: name.trim(), url: url.trim() });
+            window.saveShippingAgencies(agencies);
+            window.renderShippingAgencies();
+            window.showToast('✅ Agencia añadida.');
+        }
+
+        window.deleteShippingAgency = function(index) {
+            const agencies = window.getShippingAgencies();
+            if (index < 0 || index >= agencies.length) return;
+            agencies.splice(index, 1);
+            window.saveShippingAgencies(agencies);
+            window.renderShippingAgencies();
+            window.showToast('🗑️ Agencia eliminada.');
+        }
+
+        window.addShippingAgencyFromForm = function() {
+            const nameInput = document.getElementById('shipping-agency-name');
+            const urlInput = document.getElementById('shipping-agency-url');
+            if (!nameInput || !urlInput) return;
+            const name = nameInput.value.trim();
+            const url = urlInput.value.trim();
+            if (!name || !url) return window.showToast('Completa ambos campos antes de añadir.');
+            window.addShippingAgency(name, url);
+            nameInput.value = '';
+            urlInput.value = '';
+        }
+
+        window.renderShippingAgencies = function() {
+            const container = document.getElementById('shipping-agencies-list');
+            if (!container) return;
+            const agencies = window.getShippingAgencies();
+            if (agencies.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500">No hay agencias registradas.</p>';
+                return;
+            }
+            let html = '';
+            agencies.forEach((agency, idx) => {
+                html += `
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3">
+                        <div class="min-w-0">
+                            <p class="font-bold text-perfume-dark text-sm truncate">${agency.name}</p>
+                            <p class="text-xs text-gray-500 truncate">${agency.url}</p>
+                        </div>
+                        <button type="button" onclick="deleteShippingAgency(${idx})" class="self-start md:self-center bg-red-50 text-red-600 border border-red-100 px-3 py-1.5 rounded-lg text-[11px] font-bold hover:bg-red-100 transition">Borrar</button>
+                    </div>
+                `;
+            });
+            container.innerHTML = html;
         }
 
         window.updateAdminItemQty = function(orderId, itemIdx, delta) {
@@ -2577,6 +2732,20 @@
                                 <option value="Eliminado" ${order.status==='Eliminado'?'selected':''} class="text-gray-400">${window.statusDisplayNames['Eliminado']}</option>
                             </select>
                             ${order.status !== 'Eliminado' ? `<button onclick="deleteAdminOrder('${order.id}')" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition shadow-sm border border-red-100" title="Eliminar Pedido"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
+
+                            <!-- Shipping agency + tracking inputs (visible when order is Enviado) -->
+                            <div class="mt-2">
+                                <label class="text-[10px] text-gray-500 font-bold mb-1 block">Agencia de Envío</label>
+                                <select onchange="updateOrderShippingAgency('${order.id}', this.value)" class="w-full text-sm border border-gray-300 rounded px-2 py-1 bg-white">
+                                    <option value="">Seleccionar agencia</option>
+                                    <option value="CaribePack" ${order.shippingAgency==='CaribePack'?'selected':''}>CaribePack</option>
+                                    <option value="Vimenpaq" ${order.shippingAgency==='Vimenpaq'?'selected':''}>Vimenpaq</option>
+                                    <option value="BM Cargo" ${order.shippingAgency==='BM Cargo'?'selected':''}>BM Cargo</option>
+                                    <option value="Transporte Espinal" ${order.shippingAgency==='Transporte Espinal'?'selected':''}>Transporte Espinal</option>
+                                </select>
+                                <label class="text-[10px] text-gray-500 font-bold mb-1 block mt-2">Número de Guía</label>
+                                <input type="text" value="${order.trackingNumber || ''}" onblur="updateOrderTrackingNumber('${order.id}', this.value)" placeholder="Ej: 123456789" class="w-full text-sm border border-gray-300 rounded px-2 py-1 bg-white">
+                            </div>
                         </div>
                     </div>
                     <div class="mb-4"><p class="text-sm font-bold text-gray-800 flex items-center gap-2">👤 ${order.customerName}</p><p class="text-sm text-gray-500 flex items-center gap-2 mt-1">📞 ${order.customerPhone || 'Sin número'}</p>${attendedBadge}</div>
@@ -3316,10 +3485,21 @@
             try { await updatePassword(auth.currentUser, newPass); window.showToast("✅ Contraseña actualizada exitosamente."); newPassInput.value = ''; } catch (error) { if(error.code === 'auth/requires-recent-login') window.showToast("⚠️ Cierra sesión, vuelve a entrar e intenta de nuevo."); else window.showToast("❌ Error al actualizar la contraseña."); }
         }
 
-        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); }
+        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); window.renderShippingAgencies(); }
         window.closeAdminModal = () => { const m = document.getElementById('admin-modal'); m.classList.add('opacity-0'); setTimeout(()=> { m.classList.remove('flex'); m.classList.add('hidden'); }, 300); }
-        window.handleProfileClick = () => { if(window.isLoggedIn) { document.getElementById('profile-modal').classList.remove('translate-x-full'); fetchUserOrders(); } else { window.openLoginModal(); } }
-        window.closeProfileModal = () => document.getElementById('profile-modal').classList.add('translate-x-full');
+        window.handleProfileClick = () => { 
+            if(window.isLoggedIn) { 
+                document.getElementById('profile-modal').classList.remove('translate-x-full'); 
+                document.body.classList.add('overflow-hidden');
+                fetchUserOrders(); 
+            } else { 
+                window.openLoginModal(); 
+            } 
+        }
+        window.closeProfileModal = () => { 
+            document.getElementById('profile-modal').classList.add('translate-x-full');
+            document.body.classList.remove('overflow-hidden');
+        };
         window.openLoginModal = () => { document.getElementById('login-modal').classList.remove('hidden'); setTimeout(()=>document.getElementById('login-modal').classList.remove('opacity-0'), 10); }
         window.closeLoginModal = () => { document.getElementById('login-modal').classList.add('opacity-0'); setTimeout(()=>document.getElementById('login-modal').classList.add('hidden'), 300); }
         window.toggleAuthMode = () => { window.isRegisterMode = !window.isRegisterMode; document.getElementById('name-field').classList.toggle('hidden'); document.getElementById('phone-field').classList.toggle('hidden'); document.getElementById('auth-title').innerText = window.isRegisterMode ? "Crear Cuenta" : "Iniciar Sesión"; document.getElementById('auth-submit-btn').innerText = window.isRegisterMode ? "Registrarse" : "Ingresar"; document.getElementById('auth-toggle-text').innerText = window.isRegisterMode ? "¿Ya tienes cuenta?" : "¿No tienes cuenta?"; document.getElementById('auth-toggle-btn').innerText = window.isRegisterMode ? "Iniciar sesión" : "Crear cuenta"; }
@@ -3570,6 +3750,43 @@
                 
                 actionButtons += `</div>`;
                 
+                // Tracking accordion (only for shipped/completed orders)
+                let trackingHtml = '';
+                if (order.status === 'Enviado' || order.status === 'Completado' || order.status === 'ENVIADO' || order.status === 'COMPLETADO') {
+                    const trackingLinks = {
+                        'CaribePack': 'https://caribepack-erp.iplus.app/fe/lg-es/ut/Estatus.aspx',
+                        'Vimenpaq': 'https://vimenpaq.do/rastreo/',
+                        'BM Cargo': 'https://www.bmcargo.com/rastreo/',
+                        'Metro': 'https://metroserviciosturisticos.com/paqueteria/'
+                    };
+                    const url = trackingLinks[order.shippingAgency] || null;
+
+                    trackingHtml = `
+                    <button onclick="toggleTracking('${order.id}')" class="w-full flex items-center justify-between bg-blue-50 text-blue-700 font-bold px-4 py-2 rounded-lg hover:bg-blue-100 transition-all text-sm mb-2">
+                        <span>📍 Desplegar Rastreo</span>
+                        <span id="arrow-${order.id}">▼</span>
+                    </button>
+                    <div id="tracking-container-${order.id}" class="hidden transition-all duration-300">
+                    `;
+
+                    if (url) {
+                        const trackingParam = order.trackingNumber ? `?guia=${encodeURIComponent(order.trackingNumber)}` : '';
+                        const fullUrl = `${url}${trackingParam}`;
+                        const trackingNumberHtml = order.trackingNumber ? `<span class="font-mono text-gray-700">${order.trackingNumber}</span><button onclick="navigator.clipboard.writeText('${order.trackingNumber}').then(()=>window.showToast('Número de guía copiado'))" class="ml-2 inline-flex items-center text-gray-400 hover:text-blue-600 transition-all active:scale-90">📋</button>` : `<span class="font-mono text-gray-700">Pendiente</span>`;
+                        trackingHtml += `
+                        <p class="text-sm font-bold mb-2">Guía de ${order.shippingAgency || 'Agencia'}: ${trackingNumberHtml}</p>
+                        <iframe src="${fullUrl}" style="width:100%; height:300px; border:0;" title="Rastreo"></iframe>
+                        <p class="text-xs text-gray-500 mt-2">¿No carga el mapa de ${order.shippingAgency || 'rastreo'}? <a href="${fullUrl}" target="_blank" class="text-perfume-magenta font-bold underline">Rastrear aquí ↗</a></p>
+                        `;
+                    } else {
+                        trackingHtml += `
+                        <div class="text-center text-gray-500 text-sm py-4">Información de rastreo en proceso...</div>
+                        `;
+                    }
+
+                    trackingHtml += `</div>`;
+                }
+
                 html += `
                 <div class="bg-white border border-gray-200 p-4 md:p-5 rounded-2xl shadow-sm hover:shadow-lg transition duration-300">
                     <div class="flex justify-between items-start mb-2">
@@ -3590,6 +3807,7 @@
                             <span class="font-bold text-perfume-dark text-sm uppercase tracking-wide">Monto Final:</span>
                             <span class="font-extrabold text-perfume-magenta text-xl">RD$ ${order.total.toLocaleString('en-US')}</span>
                         </div>
+                        ${trackingHtml}
                         ${actionButtons}
                     </div>
                 </div>`;
@@ -3615,14 +3833,28 @@
         window.changeUserOrdersPage = function(page) {
             window.userOrdersPage = page;
             window.renderUserOrdersPage();
-            document.getElementById('profile-modal').scrollTo({top: 0, behavior: 'smooth'});
+            const _sc = document.querySelector('#profile-modal .flex-1'); if(_sc) _sc.scrollTo({top: 0, behavior: 'smooth'});
         }
         
         window.toggleAllUserOrders = function() {
             window.ordersPerPage = (window.ordersPerPage === 2) ? 9999 : 2;
             window.userOrdersPage = 1;
             window.renderUserOrdersPage();
-            document.getElementById('profile-modal').scrollTo({top: 0, behavior: 'smooth'});
+            const _sc = document.querySelector('#profile-modal .flex-1'); if(_sc) _sc.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Helper: Toggle tracking iframe accordion
+        window.toggleTracking = function(orderId) {
+            const container = document.getElementById(`tracking-container-${orderId}`);
+            const arrow = document.getElementById(`arrow-${orderId}`);
+            if (!container) return;
+            if (container.classList.contains('hidden')) {
+                container.classList.remove('hidden');
+                if (arrow) arrow.innerText = '▲';
+            } else {
+                container.classList.add('hidden');
+                if (arrow) arrow.innerText = '▼';
+            }
         }
 
         // --- ACCIONES RÁPIDAS DEL CLIENTE ---
