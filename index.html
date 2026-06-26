@@ -609,7 +609,7 @@
 
                     <div class="bg-white p-6 rounded-xl border border-gray-200 shadow-sm mb-6">
                         <h3 class="font-bold text-perfume-dark mb-2 border-b border-gray-200 pb-2 flex items-center gap-2">🚚 Gestión de Agencias de Envío</h3>
-                        <p class="text-sm text-gray-500 mb-4">Administra las agencias disponibles para rastreo de pedidos y sus URLs de seguimiento.</p>
+                        <p class="text-sm text-gray-500 mb-4">Administra las agencias disponibles para rastreo de pedidos. Pon solo el link de la página de rastreo de la agencia (sin el número de guía); el número se mostrará aparte para que el cliente lo copie y lo pegue en la web de la agencia.</p>
 
                         <div id="shipping-agencies-list" class="space-y-3 mb-4"></div>
 
@@ -620,7 +620,7 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-600 mb-1">URL de Rastreo</label>
-                                <input id="shipping-agency-url" type="url" placeholder="Ej: https://...&guia=" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                <input id="shipping-agency-url" type="url" placeholder="Ej: https://miagencia.com/rastreo" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                             </div>
                         </div>
                         <button type="button" onclick="addShippingAgencyFromForm()" class="mt-3 bg-perfume-magenta text-white px-4 py-2 rounded-lg font-bold hover:bg-perfume-dark transition shadow-sm">Añadir Agencia</button>
@@ -3779,14 +3779,14 @@
                     `;
 
                     if (url) {
-                        // La URL configurada en Ajustes ya incluye el parámetro de rastreo (ej: "?guia="),
-                        // así que el número de guía se añade directamente al final.
-                        const fullUrl = order.trackingNumber ? `${url}${encodeURIComponent(order.trackingNumber)}` : url;
+                        // Se usa la URL de la agencia tal cual está configurada en Ajustes, sin pegarle
+                        // el número de guía. El número solo se muestra como texto copiable, porque
+                        // muchas agencias requieren que el cliente lo pegue manualmente en su web.
                         const trackingNumberHtml = order.trackingNumber ? `<span class="font-mono text-gray-700">${order.trackingNumber}</span><button onclick="navigator.clipboard.writeText('${order.trackingNumber}').then(()=>window.showToast('Número de guía copiado'))" class="ml-2 inline-flex items-center text-gray-400 hover:text-blue-600 transition-all active:scale-90">📋</button>` : `<span class="font-mono text-gray-700">Pendiente</span>`;
                         trackingHtml += `
                         <p class="text-sm font-bold mb-2">Guía de ${order.shippingAgency || 'Agencia'}: ${trackingNumberHtml}</p>
-                        <iframe src="${fullUrl}" style="width:100%; height:300px; border:0;" title="Rastreo"></iframe>
-                        <p class="text-xs text-gray-500 mt-2">¿No carga el mapa de ${order.shippingAgency || 'rastreo'}? <a href="${fullUrl}" target="_blank" class="text-perfume-magenta font-bold underline">Rastrear aquí ↗</a></p>
+                        <iframe src="${url}" style="width:100%; height:300px; border:0;" title="Rastreo"></iframe>
+                        <p class="text-xs text-gray-500 mt-2">¿No carga el mapa de ${order.shippingAgency || 'rastreo'}? <a href="${url}" target="_blank" class="text-perfume-magenta font-bold underline">Rastrear aquí ↗</a></p>
                         `;
                     } else {
                         trackingHtml += `
