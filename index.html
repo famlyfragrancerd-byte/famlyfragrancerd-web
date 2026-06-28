@@ -382,6 +382,7 @@
             <div class="space-y-3">
                 <button id="btn-admin-panel" onclick="openAdminModal()" class="hidden w-full bg-perfume-dark text-white py-3 rounded-xl font-bold shadow-md hover:bg-black transition flex items-center justify-center gap-2">⚙️ Panel de Administrador</button>
                 <button id="btn-orders-dashboard" onclick="openOrdersDashboard()" class="hidden w-full bg-perfume-magenta text-white py-3 rounded-xl font-bold shadow-md hover:bg-perfume-dark transition flex items-center justify-center gap-2">🧾 Monitor de Pedidos (En Vivo)</button>
+                <button id="btn-billing-panel" onclick="openBillingModal()" class="hidden w-full bg-green-700 text-white py-3 rounded-xl font-bold shadow-md hover:bg-green-800 transition flex items-center justify-center gap-2">💵 Facturación e Inventario</button>
                 <button id="btn-push-notifications" onclick="requestPushNotifications()" class="hidden w-full bg-blue-600 text-white py-3 rounded-xl font-bold shadow-md hover:bg-blue-700 transition flex items-center justify-center gap-2">🔔 Activar Alertas Push</button>
             </div>
 
@@ -722,6 +723,7 @@
                                 <div class="md:col-span-2">
                                     <label class="block text-xs text-gray-500 font-bold mb-1">Enlace (URL directa)</label>
                                     <input type="url" id="cfg-hero-img" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta" placeholder="URL de la imagen o video">
+                                    <p class="text-[10px] text-gray-400 mt-1">⚠️ Si eliges Video, el enlace debe apuntar DIRECTAMENTE a un archivo .mp4 o .webm (no a una página como YouTube, Google Drive o Dropbox), o no se reproducirá.</p>
                                 </div>
                             </div>
                         </div>
@@ -977,6 +979,111 @@
         </div>
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
             <div id="admin-orders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+        </div>
+    </div>
+
+    <!-- DASHBOARD DE FACTURACIÓN E INVENTARIO -->
+    <div id="billing-modal" class="fixed inset-0 bg-gray-100 z-[250] hidden flex-col transition-opacity duration-300 opacity-0">
+        <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col shrink-0">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-extrabold text-perfume-dark">💵 Facturación e Inventario</h2>
+                <button onclick="closeBillingModal()" class="text-gray-400 hover:text-red-500 text-3xl leading-none" title="Cerrar">&times;</button>
+            </div>
+            <div class="flex gap-6 overflow-x-auto no-scrollbar">
+                <button onclick="switchBillingSubTab('invoice')" id="billing-subtab-btn-invoice" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">🧾 Nueva Factura</button>
+                <button onclick="switchBillingSubTab('inventory')" id="billing-subtab-btn-inventory" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">📦 Inventario</button>
+            </div>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-4 md:p-8">
+
+            <!-- SUBPESTAÑA: NUEVA FACTURA -->
+            <div id="billing-subtab-invoice" class="max-w-6xl mx-auto w-full">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+                    <!-- Pedidos en Proceso (seleccionables para facturar) -->
+                    <div class="lg:col-span-1 bg-gray-50 p-4 rounded-xl border border-gray-200 order-2 lg:order-1">
+                        <h3 class="font-bold text-perfume-dark mb-1 flex items-center gap-2">📋 Pedidos en Proceso</h3>
+                        <p class="text-[11px] text-gray-500 mb-3">Toca un pedido para cargarlo en la factura. También puedes agregar/quitar artículos y subir o bajar el precio, igual que en el Monitor de Pedidos. Al facturar, se descuenta del inventario y el pedido se marca como Completado.</p>
+                        <div id="billing-orders-list" class="space-y-2 max-h-[480px] overflow-y-auto pr-1">
+                            <p class="text-xs text-gray-400 text-center py-6">Cargando pedidos...</p>
+                        </div>
+                    </div>
+
+                    <!-- Constructor de Factura -->
+                    <div class="lg:col-span-2 bg-white p-5 rounded-xl border border-gray-200 shadow-sm order-1 lg:order-2">
+                        <div class="flex items-center justify-between mb-4 flex-wrap gap-2">
+                            <h3 class="font-bold text-perfume-dark flex items-center gap-2">🧾 Nueva Factura</h3>
+                            <div id="billing-selected-order-badge" class="hidden bg-perfume-light text-perfume-magenta text-[10px] font-bold px-2.5 py-1 rounded-full border border-perfume-magenta/30 items-center gap-1.5">
+                                <span>Pedido: <span id="billing-selected-order-label"></span></span>
+                                <button onclick="window.clearBillingSelection()" class="text-perfume-magenta hover:text-red-500 font-bold" title="Quitar selección">✕</button>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Cliente</label>
+                            <input type="text" id="billing-customer-name" placeholder="Cliente de Mostrador" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                        </div>
+
+                        <div class="mb-4 relative">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Agregar Producto</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="billing-product-search" oninput="window.filterBillingProductSearch(this.value)" placeholder="Buscar por nombre, marca o código..." class="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                <button type="button" onclick="openScannerModal('billing')" class="bg-gray-800 text-white px-3 rounded-lg hover:bg-black transition flex items-center justify-center" title="Escanear código">📷</button>
+                            </div>
+                            <div id="billing-product-suggestions" class="hidden absolute z-30 bg-white border border-gray-200 rounded-lg shadow-lg w-full mt-1 max-h-64 overflow-y-auto"></div>
+                        </div>
+
+                        <div id="billing-items-list" class="space-y-2 mb-4 max-h-[320px] overflow-y-auto pr-1">
+                            <p class="text-center text-sm text-gray-400 py-6">Aún no has agregado productos a la factura.</p>
+                        </div>
+
+                        <div class="border-t border-gray-100 pt-4 flex flex-col items-end gap-2">
+                            <p class="text-sm text-gray-500">Total: <span id="billing-total" class="text-lg font-extrabold text-perfume-dark">RD$ 0</span></p>
+                            <button onclick="window.generateManualInvoice()" class="bg-perfume-magenta text-white px-6 py-3 rounded-xl font-bold hover:bg-perfume-dark transition shadow-md mt-1 w-full md:w-auto">✅ Generar Factura y Descontar Inventario</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPESTAÑA: INVENTARIO -->
+            <div id="billing-subtab-inventory" class="hidden max-w-6xl mx-auto w-full space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-xs text-gray-500 font-bold uppercase">💰 Valor Total en Inventario</p>
+                        <p id="inventory-total-value" class="text-2xl font-extrabold text-perfume-dark mt-1">RD$ 0</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Suma de (stock × precio) de los productos con inventario controlado.</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-xs text-gray-500 font-bold uppercase">📦 Unidades en Stock</p>
+                        <p id="inventory-total-units" class="text-2xl font-extrabold text-perfume-dark mt-1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-xs text-gray-500 font-bold uppercase">🚫 Productos Agotados</p>
+                        <p id="inventory-total-agotados" class="text-2xl font-extrabold text-red-600 mt-1">0</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-3">
+                        <h3 class="font-bold text-perfume-dark">📋 Detalle de Inventario</h3>
+                        <input type="text" id="inventory-search" oninput="window.renderInventoryTable(this.value)" placeholder="🔍 Buscar producto..." class="w-full md:w-64 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-[10px] text-gray-400 uppercase border-b border-gray-100">
+                                    <th class="py-2 pr-2">Producto</th>
+                                    <th class="py-2 pr-2 text-center">Stock</th>
+                                    <th class="py-2 pr-2 text-right">Precio</th>
+                                    <th class="py-2 pr-2 text-right">Valor en Stock</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inventory-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1281,12 +1388,17 @@
         });
 
         let html5QrCodeScanner = null;
-        window.openScannerModal = function() {
+        window.openScannerModal = function(target = 'product') {
             document.getElementById('barcode-scanner-modal').classList.remove('hidden');
             document.getElementById('barcode-scanner-modal').classList.add('flex');
             html5QrCodeScanner = new Html5Qrcode("scanner-reader");
             html5QrCodeScanner.start({ facingMode: "environment" }, { fps: 10, qrbox: { width: 250, height: 150 } }, (decodedText) => {
-                document.getElementById('admin-prod-barcode').value = decodedText; window.showToast("✅ Código escaneado: " + decodedText); window.closeScannerModal();
+                if (target === 'billing') {
+                    window.closeScannerModal();
+                    window.addBillingItemByBarcode(decodedText);
+                } else {
+                    document.getElementById('admin-prod-barcode').value = decodedText; window.showToast("✅ Código escaneado: " + decodedText); window.closeScannerModal();
+                }
             }).catch(err => { window.showToast("⚠️ La cámara no está disponible. Escribe el código manualmente."); window.closeScannerModal(); });
         }
         window.closeScannerModal = function() {
@@ -1460,8 +1572,29 @@
                 const mediaUrl = data.heroImg || "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
                 const mediaContainer = document.getElementById('hero-media-container');
                 const mediaClasses = "rounded-3xl shadow-xl max-w-full h-auto object-cover max-h-[300px] md:max-h-[500px] hover:scale-105 transition duration-500";
-                if (data.mediaType === "video") { mediaContainer.innerHTML = `<video src="${mediaUrl}" autoplay loop muted playsinline class="${mediaClasses} w-full"></video>`; } 
-                else { mediaContainer.innerHTML = `<img src="${mediaUrl}" alt="Perfume" class="${mediaClasses}">`; }
+                const fallbackImg = "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
+
+                if (data.mediaType === "video") {
+                    mediaContainer.innerHTML = `<video src="${mediaUrl}" poster="${fallbackImg}" autoplay loop muted playsinline webkit-playsinline preload="auto" class="${mediaClasses} w-full"></video>`;
+                    const videoEl = mediaContainer.querySelector('video');
+                    if (videoEl) {
+                        // Forzamos el estado "muted" por JS (no solo el atributo) para que el autoplay
+                        // funcione de forma confiable en navegadores móviles.
+                        videoEl.muted = true;
+                        const playPromise = videoEl.play();
+                        if (playPromise && playPromise.catch) {
+                            playPromise.catch(err => console.warn('No se pudo reproducir el video automáticamente:', err));
+                        }
+                        // Si el link no es un video reproducible (ej: una página y no un archivo .mp4/.webm directo),
+                        // mostramos una imagen en vez de dejar el espacio en blanco.
+                        videoEl.onerror = () => {
+                            console.warn('El enlace de video no se pudo cargar, mostrando imagen de respaldo. Verifica que sea un enlace DIRECTO a un archivo .mp4 o .webm.');
+                            mediaContainer.innerHTML = `<img src="${mediaUrl}" alt="Perfume" class="${mediaClasses}" onerror="this.src='${fallbackImg}'">`;
+                        };
+                    }
+                } else {
+                    mediaContainer.innerHTML = `<img src="${mediaUrl}" alt="Perfume" class="${mediaClasses}" onerror="this.src='${fallbackImg}'">`;
+                }
 
                 document.getElementById('display-catalog-title').innerText = data.catalogTitle || "Colección Exclusiva";
                 document.getElementById('products-grid').className = `grid grid-cols-2 sm:grid-cols-2 ${window.siteAppearance.gridCols} gap-4 md:gap-8 transition-all duration-500`;
@@ -2520,6 +2653,362 @@
             document.getElementById(`new-item-qty-${orderId}`).value = '1';
         }
 
+        // =================================================================
+        // PANEL DE FACTURACIÓN E INVENTARIO (conectado al inventario de la tienda)
+        // =================================================================
+        window.facturaItems = [];
+        window.facturaSelectedOrderId = null;
+
+        window.openBillingModal = async function() {
+            window.closeProfileModal();
+            window.closeAdminModal();
+            window.closeOrdersDashboard();
+            const modal = document.getElementById('billing-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => modal.classList.remove('opacity-0'), 10);
+
+            window.switchBillingSubTab('invoice');
+
+            if (!window.adminOrders || window.adminOrders.length === 0) {
+                await window.loadAdminOrders();
+            }
+            window.renderBillingOrdersList();
+        }
+
+        window.closeBillingModal = function() {
+            const modal = document.getElementById('billing-modal');
+            modal.classList.add('opacity-0');
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        window.switchBillingSubTab = function(tab) {
+            const subtabs = ['invoice', 'inventory'];
+            subtabs.forEach(t => {
+                const el = document.getElementById('billing-subtab-' + t); const btn = document.getElementById('billing-subtab-btn-' + t);
+                if (el) el.classList.add('hidden');
+                if (btn) { btn.classList.replace('text-perfume-magenta', 'text-gray-500'); btn.classList.remove('border-b-2', 'border-perfume-magenta'); }
+            });
+            document.getElementById('billing-subtab-' + tab).classList.remove('hidden');
+            const activeBtn = document.getElementById('billing-subtab-btn-' + tab);
+            activeBtn.classList.replace('text-gray-500', 'text-perfume-magenta'); activeBtn.classList.add('border-b-2', 'border-perfume-magenta');
+
+            if (tab === 'inventory') window.renderInventoryTable();
+        }
+
+        // Lista de pedidos que aún no están Completados/Cancelados/Eliminados, para poder seleccionarlos y facturarlos.
+        window.renderBillingOrdersList = function() {
+            const listDiv = document.getElementById('billing-orders-list'); if (!listDiv) return;
+            const pending = (window.adminOrders || []).filter(o => o.status !== 'Completado' && o.status !== 'Cancelado' && o.status !== 'Eliminado');
+
+            if (pending.length === 0) {
+                listDiv.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">No hay pedidos en proceso por el momento.</p>`;
+                return;
+            }
+
+            let html = '';
+            pending.forEach(order => {
+                const isSelected = window.facturaSelectedOrderId === order.id;
+                const itemCount = (order.items || []).reduce((s, i) => s + i.qty, 0);
+                html += `
+                <div onclick="window.selectBillingOrder('${order.id}')" class="bg-white border ${isSelected ? 'border-perfume-magenta ring-2 ring-perfume-magenta/20' : 'border-gray-200'} p-3 rounded-lg cursor-pointer hover:border-perfume-magenta transition shadow-sm">
+                    <div class="flex justify-between items-start">
+                        <span class="text-xs font-extrabold text-perfume-dark bg-gray-100 px-1.5 py-0.5 rounded">${order.orderId || '#PED-XXX'}</span>
+                        <span class="text-[10px] font-bold text-gray-500">${window.statusDisplayNames[order.status] || order.status}</span>
+                    </div>
+                    <p class="text-xs font-bold text-gray-700 mt-1.5 truncate">${order.customerName || 'Cliente'}</p>
+                    <p class="text-[11px] text-gray-400">${itemCount} artículo(s) • RD$ ${(order.total || 0).toLocaleString('en-US')}</p>
+                </div>`;
+            });
+            listDiv.innerHTML = html;
+        }
+
+        // Selecciona un pedido en proceso y carga sus artículos en el constructor de factura.
+        window.selectBillingOrder = function(orderId) {
+            const order = window.adminOrders.find(o => o.id === orderId);
+            if (!order) return;
+
+            window.facturaSelectedOrderId = orderId;
+            window.facturaItems = (order.items || []).map(i => ({ ...i }));
+
+            document.getElementById('billing-customer-name').value = order.customerName || '';
+            const badge = document.getElementById('billing-selected-order-badge');
+            badge.classList.remove('hidden'); badge.classList.add('flex');
+            document.getElementById('billing-selected-order-label').innerText = order.orderId || '#PED-XXX';
+
+            window.renderBillingOrdersList();
+            window.renderBillingItems();
+            window.showToast("Pedido cargado en la factura.");
+        }
+
+        // Quita el pedido seleccionado y deja el constructor en modo "Venta de Mostrador".
+        window.clearBillingSelection = function() {
+            window.facturaSelectedOrderId = null;
+            window.facturaItems = [];
+            document.getElementById('billing-customer-name').value = '';
+            const badge = document.getElementById('billing-selected-order-badge');
+            badge.classList.add('hidden'); badge.classList.remove('flex');
+            window.renderBillingOrdersList();
+            window.renderBillingItems();
+        }
+
+        // Busca productos del catálogo para agregarlos a la factura.
+        window.filterBillingProductSearch = function(term) {
+            const box = document.getElementById('billing-product-suggestions');
+            const t = term.toLowerCase().trim();
+            if (t.length < 2) { box.classList.add('hidden'); return; }
+
+            const matches = (window.catalogProducts || []).filter(p =>
+                p.name.toLowerCase().includes(t) ||
+                (p.barcode && p.barcode.toLowerCase().includes(t)) ||
+                (p.brand && p.brand.toLowerCase().includes(t))
+            ).slice(0, 10);
+
+            if (matches.length > 0) {
+                let html = '';
+                matches.forEach(m => {
+                    const stockLabel = typeof m.stock === 'number' ? `<span class="text-[9px] ${m.stock > 0 ? 'text-green-600' : 'text-red-500'} font-bold">${m.stock} disp.</span>` : '';
+                    html += `
+                    <div onclick="window.addBillingItem('${m.id}', '${window.safeStr(m.name)}', ${m.price})" class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
+                        <img src="${m.img}" class="w-7 h-7 object-contain rounded border border-gray-100 mix-blend-multiply">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-[11px] font-bold text-gray-800 truncate leading-tight">${m.name}</p>
+                            <div class="flex items-center gap-2">${m.barcode ? `<p class="text-[8px] font-mono text-gray-400">${m.barcode}</p>` : ''} ${stockLabel}</div>
+                        </div>
+                        <span class="text-[11px] font-bold text-perfume-magenta whitespace-nowrap">RD$ ${m.price.toLocaleString()}</span>
+                    </div>`;
+                });
+                box.innerHTML = html;
+                box.classList.remove('hidden');
+            } else {
+                box.innerHTML = `<p class="text-xs text-gray-400 p-3 text-center">Sin resultados.</p>`;
+                box.classList.remove('hidden');
+            }
+        }
+
+        // Agrega (o suma cantidad a) un artículo en la factura, validando stock disponible.
+        window.addBillingItem = function(prodId, name, price) {
+            const prod = window.catalogProducts.find(p => p.id === prodId);
+            const existing = window.facturaItems.find(i => i.id === prodId);
+            const currentQty = existing ? existing.qty : 0;
+
+            if (prod && typeof prod.stock === 'number' && (currentQty + 1) > prod.stock) {
+                window.showToast(`Solo quedan ${prod.stock} unidades en el inventario.`);
+                return;
+            }
+
+            if (existing) {
+                existing.qty += 1;
+            } else {
+                window.facturaItems.push({ id: prodId, name: name, price: price, qty: 1, img: prod ? prod.img : '', barcode: prod ? prod.barcode : '' });
+            }
+
+            document.getElementById('billing-product-search').value = '';
+            document.getElementById('billing-product-suggestions').classList.add('hidden');
+            window.renderBillingItems();
+        }
+
+        // Agrega un artículo a la factura a partir de un código de barras escaneado.
+        window.addBillingItemByBarcode = function(code) {
+            const prod = window.catalogProducts.find(p => p.barcode && p.barcode === code);
+            if (!prod) return window.showToast("⚠️ No se encontró ningún producto con ese código.");
+            window.addBillingItem(prod.id, prod.name, prod.price);
+        }
+
+        window.updateBillingItemQty = function(idx, delta) {
+            const item = window.facturaItems[idx]; if (!item) return;
+            const prod = window.catalogProducts.find(p => p.id === item.id);
+            const newQty = item.qty + delta;
+
+            if (newQty < 1) { return window.removeBillingItem(idx); }
+            if (prod && typeof prod.stock === 'number' && newQty > prod.stock) {
+                return window.showToast(`Solo quedan ${prod.stock} unidades en el inventario.`);
+            }
+            item.qty = newQty;
+            window.renderBillingItems();
+        }
+
+        // Permite subir o bajar el precio de un artículo de la factura, igual que en Monitor de Pedidos.
+        window.updateBillingItemPrice = function(idx, newPriceStr) {
+            const newPrice = parseFloat(newPriceStr);
+            if (isNaN(newPrice) || newPrice < 0) return window.showToast("Precio inválido");
+            window.facturaItems[idx].price = newPrice;
+            window.renderBillingItems();
+        }
+
+        window.removeBillingItem = function(idx) {
+            window.facturaItems.splice(idx, 1);
+            window.renderBillingItems();
+        }
+
+        window.renderBillingItems = function() {
+            const listDiv = document.getElementById('billing-items-list');
+            const totalEl = document.getElementById('billing-total');
+            if (!listDiv || !totalEl) return;
+
+            if (window.facturaItems.length === 0) {
+                listDiv.innerHTML = `<p class="text-center text-sm text-gray-400 py-6">Aún no has agregado productos a la factura.</p>`;
+                totalEl.innerText = 'RD$ 0';
+                return;
+            }
+
+            let total = 0;
+            let html = '';
+            window.facturaItems.forEach((item, idx) => {
+                const sub = item.price * item.qty;
+                total += sub;
+                const prod = window.catalogProducts.find(p => p.id === item.id);
+                const stockLabel = prod && typeof prod.stock === 'number'
+                    ? `<span class="text-[9px] ${prod.stock > 0 ? 'text-green-600' : 'text-red-500 font-bold'}">${prod.stock > 0 ? `Disponible: ${prod.stock}` : 'Sin stock'}</span>`
+                    : '';
+                html += `
+                <div class="bg-gray-50 p-2.5 rounded-lg border border-gray-100">
+                    <div class="flex justify-between items-start gap-2 mb-1.5">
+                        <span class="text-xs font-medium text-gray-800 leading-tight">${item.name}</span>
+                        <button onclick="window.removeBillingItem(${idx})" class="text-red-400 hover:text-red-600 font-bold px-1 text-base shrink-0" title="Quitar">&times;</button>
+                    </div>
+                    <div class="flex items-center justify-between flex-wrap gap-2">
+                        <div class="flex items-center gap-1">
+                            <button onclick="window.updateBillingItemQty(${idx}, -1)" class="bg-gray-200 w-6 h-6 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300 transition">-</button>
+                            <span class="text-xs font-bold w-5 text-center">${item.qty}</span>
+                            <button onclick="window.updateBillingItemQty(${idx}, 1)" class="bg-gray-200 w-6 h-6 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300 transition">+</button>
+                            ${stockLabel}
+                        </div>
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[9px] text-gray-400 font-bold">RD$</span>
+                            <input type="number" value="${item.price}" onchange="window.updateBillingItemPrice(${idx}, this.value)" class="w-16 text-right text-xs border border-gray-300 p-1 rounded outline-none focus:border-perfume-magenta font-bold bg-white" title="Editar precio del artículo">
+                            <span class="text-xs font-bold text-gray-600 w-20 text-right">Sub: ${sub.toLocaleString('en-US')}</span>
+                        </div>
+                    </div>
+                </div>`;
+            });
+
+            listDiv.innerHTML = html;
+            totalEl.innerText = `RD$ ${total.toLocaleString('en-US')}`;
+        }
+
+        // Genera la factura: descuenta el inventario (marcando "Agotado" si llega a 0),
+        // guarda/actualiza el pedido como Completado, y genera el PDF del recibo.
+        window.generateManualInvoice = async function() {
+            if (window.facturaItems.length === 0) return window.showToast("Agrega al menos un producto a la factura.");
+
+            const customerName = document.getElementById('billing-customer-name').value.trim() || 'Cliente de Mostrador';
+            const total = window.facturaItems.reduce((acc, i) => acc + (i.price * i.qty), 0);
+
+            window.showToast("Generando factura... ⏳");
+
+            try {
+                if (window.facturaSelectedOrderId) {
+                    // Caso 1: Se está facturando un pedido ya existente (seleccionado de "Pedidos en Proceso")
+                    const orderRef = doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', window.facturaSelectedOrderId);
+                    await window.deductStockForItems(window.facturaItems);
+                    await updateDoc(orderRef, { items: window.facturaItems, total: total, customerName: customerName, status: 'Completado', stockDeducted: true });
+
+                    await window.loadAdminOrders();
+                    window.loadDynamicProducts();
+                    window.generateInvoicePDF(window.facturaSelectedOrderId);
+                } else {
+                    // Caso 2: Venta de mostrador nueva (no proviene de un pedido web)
+                    const orderIdHex = Math.random().toString(36).substring(2, 7).toUpperCase();
+                    const orderId = `#FAC-${orderIdHex}`;
+                    const adminName = (auth.currentUser && auth.currentUser.displayName) || "Empleado";
+
+                    await window.deductStockForItems(window.facturaItems);
+                    const newDocRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), {
+                        orderId: orderId,
+                        userId: 'mostrador',
+                        customerName: customerName,
+                        customerPhone: '',
+                        customerEmail: '',
+                        items: window.facturaItems,
+                        total: total,
+                        date: new Date().toISOString(),
+                        status: 'Completado',
+                        stockDeducted: true,
+                        source: 'mostrador',
+                        attendedBy: adminName
+                    });
+
+                    await window.loadAdminOrders();
+                    window.loadDynamicProducts();
+                    window.generateInvoicePDF(newDocRef.id);
+                }
+
+                window.showToast("✅ Factura generada y stock actualizado.");
+                window.clearBillingSelection();
+                window.renderInventoryTable();
+            } catch(e) {
+                console.error(e);
+                window.showToast("❌ Error al generar la factura.");
+            }
+        }
+
+        // Calcula y muestra el valor total del inventario, unidades en stock, productos agotados,
+        // y una tabla detallada de cada producto con su stock y valor.
+        window.renderInventoryTable = function(term = "") {
+            const valueEl = document.getElementById('inventory-total-value');
+            const unitsEl = document.getElementById('inventory-total-units');
+            const agotadosEl = document.getElementById('inventory-total-agotados');
+            const tbody = document.getElementById('inventory-table-body');
+            if (!tbody) return;
+
+            const products = window.catalogProducts || [];
+
+            let totalValue = 0, totalUnits = 0, totalAgotados = 0;
+            products.forEach(p => {
+                const isOut = !!p.isAgotado || (typeof p.stock === 'number' && p.stock <= 0);
+                if (isOut) totalAgotados++;
+                if (typeof p.stock === 'number') {
+                    totalValue += p.stock * p.price;
+                    totalUnits += p.stock;
+                }
+            });
+
+            if (valueEl) valueEl.innerText = `RD$ ${totalValue.toLocaleString('en-US')}`;
+            if (unitsEl) unitsEl.innerText = totalUnits.toLocaleString('en-US');
+            if (agotadosEl) agotadosEl.innerText = totalAgotados;
+
+            const t = term.toLowerCase().trim();
+            let list = products.filter(p => typeof p.stock === 'number'); // Solo productos con inventario controlado
+            if (t) {
+                list = list.filter(p =>
+                    p.name.toLowerCase().includes(t) ||
+                    (p.barcode && p.barcode.toLowerCase().includes(t)) ||
+                    (p.brand && p.brand.toLowerCase().includes(t))
+                );
+            }
+            list = [...list].sort((a, b) => (b.stock * b.price) - (a.stock * a.price));
+
+            if (list.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-sm text-gray-400 py-6">No hay productos con inventario controlado.</td></tr>`;
+                return;
+            }
+
+            let html = '';
+            list.forEach(p => {
+                const isOut = !!p.isAgotado || p.stock <= 0;
+                const valueRow = p.stock * p.price;
+                html += `
+                <tr class="border-b border-gray-50 hover:bg-gray-50">
+                    <td class="py-2 pr-2">
+                        <div class="flex items-center gap-2">
+                            <img src="${p.img}" class="w-8 h-8 object-contain rounded border border-gray-100 mix-blend-multiply">
+                            <span class="text-xs font-bold text-gray-700 truncate max-w-[180px]">${p.name}</span>
+                        </div>
+                    </td>
+                    <td class="py-2 pr-2 text-center">
+                        <span class="text-xs font-bold ${isOut ? 'text-red-600' : 'text-green-700'}">${isOut ? 'Agotado' : p.stock}</span>
+                    </td>
+                    <td class="py-2 pr-2 text-right text-xs text-gray-600">RD$ ${p.price.toLocaleString('en-US')}</td>
+                    <td class="py-2 pr-2 text-right text-xs font-bold text-perfume-dark">RD$ ${valueRow.toLocaleString('en-US')}</td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+        }
+
         window.openOrdersDashboard = function() { 
             window.closeProfileModal(); 
             window.closeAdminModal(); 
@@ -2837,42 +3326,59 @@
             listDiv.innerHTML = html;
         }
 
+        // Descuenta el stock de una lista de artículos (pedido o factura) en la base de datos.
+        // Si el stock de un producto llega a 0, lo marca automáticamente como "Agotado".
+        window.deductStockForItems = async function(items) {
+            for (let item of items) {
+                if (item.id && !String(item.id).startsWith('custom_')) {
+                    try {
+                        const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
+                        const pSnap = await getDoc(pRef);
+                        if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
+                            const newStock = Math.max(0, pSnap.data().stock - item.qty);
+                            const updateData = { stock: newStock };
+                            if (newStock <= 0) updateData.isAgotado = true;
+                            await updateDoc(pRef, updateData);
+                        }
+                    } catch(e) { console.error('Error al descontar stock:', e); }
+                }
+            }
+        }
+
+        // Repone el stock de una lista de artículos (usado al revertir un pedido de "Completado" a otro estado).
+        // Si el producto vuelve a tener stock, le quita la marca de "Agotado" automática.
+        window.restoreStockForItems = async function(items) {
+            for (let item of items) {
+                if (item.id && !String(item.id).startsWith('custom_')) {
+                    try {
+                        const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
+                        const pSnap = await getDoc(pRef);
+                        if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
+                            const restoredStock = pSnap.data().stock + item.qty;
+                            const updateData = { stock: restoredStock };
+                            if (restoredStock > 0 && pSnap.data().isAgotado) updateData.isAgotado = false;
+                            await updateDoc(pRef, updateData);
+                        }
+                    } catch(e) { console.error('Error al reponer stock:', e); }
+                }
+            }
+        }
+
         window.updateOrderStatus = async function(docId, newStatus) { 
             try { 
                 const order = window.adminOrders.find(o => o.id === docId);
                 if (!order) return;
 
-                let stockUpdates = [];
-                let needsStockUpdate = false;
                 let stockDeducted = order.stockDeducted || false;
 
                 if (newStatus === 'Completado' && !stockDeducted) {
-                    needsStockUpdate = true; stockDeducted = true;
-                    for(let item of order.items) {
-                        if(!item.id.startsWith('custom_')) {
-                            const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
-                            const pSnap = await getDoc(pRef);
-                            if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
-                                stockUpdates.push({ ref: pRef, newStock: Math.max(0, pSnap.data().stock - item.qty) });
-                            }
-                        }
-                    }
+                    stockDeducted = true;
+                    await window.deductStockForItems(order.items);
+                    window.loadDynamicProducts(); 
                 } 
                 else if (newStatus !== 'Completado' && stockDeducted) {
-                    needsStockUpdate = true; stockDeducted = false;
-                    for(let item of order.items) {
-                        if(!item.id.startsWith('custom_')) {
-                            const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
-                            const pSnap = await getDoc(pRef);
-                            if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
-                                stockUpdates.push({ ref: pRef, newStock: pSnap.data().stock + item.qty });
-                            }
-                        }
-                    }
-                }
-
-                if (needsStockUpdate) {
-                    for (let update of stockUpdates) { await updateDoc(update.ref, { stock: update.newStock }); }
+                    stockDeducted = false;
+                    await window.restoreStockForItems(order.items);
                     window.loadDynamicProducts(); 
                 }
 
@@ -3315,7 +3821,19 @@
             
             let text = `*FamlyFragrancerd* \nHola ${order.customerName.split(' ')[0]}, el estado de tu pedido *${order.orderId}* es: *${displayStatus.toUpperCase()}*\n\n`;
             text += `${customMsg}\n`;
-            text += `\n*Total:* RD$ ${order.total.toLocaleString('en-US')}\n*Ver seguimiento:* ${window.location.origin}${window.location.pathname}#pedidos\n\n¿Dudas? ¡Solo responde este mensaje!`;
+            text += `\n*Total:* RD$ ${order.total.toLocaleString('en-US')}\n`;
+
+            // Si el pedido ya tiene una agencia de envío configurada, se envía SOLO el link de esa
+            // agencia (no el del sitio). El número de guía se muestra como texto aparte, para copiar.
+            const agencyMatch = window.getShippingAgencies().find(a => a.name === order.shippingAgency);
+            if (agencyMatch && agencyMatch.url) {
+                text += `*Rastrear con ${order.shippingAgency}:* ${agencyMatch.url}\n`;
+                if (order.trackingNumber) text += `*Número de guía:* ${order.trackingNumber}\n`;
+            } else {
+                text += `*Ver seguimiento:* ${window.location.origin}${window.location.pathname}#pedidos\n`;
+            }
+
+            text += `\n¿Dudas? ¡Solo responde este mensaje!`;
             
             window.open(`https://wa.me/${phone}?text=${encodeURIComponent(text)}`, '_blank');
         }
@@ -3475,7 +3993,7 @@
 
                 const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(user.email); const isStaff = STAFF_EMAILS.includes(user.email);
                 if (isSuperAdmin || isStaff) {
-                    document.getElementById('btn-orders-dashboard').classList.remove('hidden'); const pushBtn = document.getElementById('btn-push-notifications'); pushBtn.classList.remove('hidden'); 
+                    document.getElementById('btn-orders-dashboard').classList.remove('hidden'); document.getElementById('btn-billing-panel').classList.remove('hidden'); const pushBtn = document.getElementById('btn-push-notifications'); pushBtn.classList.remove('hidden'); 
                     if (Notification.permission === 'granted') { pushBtn.classList.replace('bg-blue-600', 'bg-green-600'); pushBtn.innerText = "✅ Notificaciones Activadas"; }
                     if (isSuperAdmin) { document.getElementById('btn-admin-panel').classList.remove('hidden'); } else { document.getElementById('btn-admin-panel').classList.add('hidden'); }
                     if(window.location.hash === '#admin' || window.location.hash === '#pedidos') { 
@@ -3490,7 +4008,7 @@
                 
                 if(window.catalogProducts.length > 0) { window.renderCatalog(window.catalogProducts); window.filterCatalog(); }
 
-                document.getElementById('nav-login-text').innerText = "Ingresar"; document.getElementById('btn-admin-panel').classList.add('hidden'); document.getElementById('btn-orders-dashboard').classList.add('hidden'); document.getElementById('btn-push-notifications').classList.add('hidden'); document.getElementById('profile-name').innerText = "Cargando..."; document.getElementById('profile-email').innerText = "..."; document.getElementById('profile-initial').innerText = "?";
+                document.getElementById('nav-login-text').innerText = "Ingresar"; document.getElementById('btn-admin-panel').classList.add('hidden'); document.getElementById('btn-orders-dashboard').classList.add('hidden'); document.getElementById('btn-billing-panel').classList.add('hidden'); document.getElementById('btn-push-notifications').classList.add('hidden'); document.getElementById('profile-name').innerText = "Cargando..."; document.getElementById('profile-email').innerText = "..."; document.getElementById('profile-initial').innerText = "?";
             }
         });
 
