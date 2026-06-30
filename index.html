@@ -48,13 +48,12 @@
             transition: opacity 0.8s ease-in-out, visibility 0.8s ease-in-out;
         }
 
-        @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+        @keyframes splashLogoIn {
+            0% { opacity: 0; transform: scale(0.92); }
+            100% { opacity: 1; transform: scale(1); }
         }
-        
-        #splash-logo { animation: pulse 2s infinite; max-width: 80%; max-height: 450px; object-fit: contain; }
+
+        #splash-logo { animation: splashLogoIn 0.6s ease-out forwards; max-width: 80%; max-height: 450px; object-fit: contain; }
         .fade-out { opacity: 0; visibility: hidden; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
@@ -476,6 +475,10 @@
                                 </select>
                                 <input type="number" id="admin-prod-price" required min="1" placeholder="Precio (RD$)" class="w-1/3 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                                 <input type="number" id="admin-prod-wholesale" min="1" placeholder="P. Mayor (RD$)" class="w-1/3 border border-yellow-300 bg-yellow-50 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta" title="Precio especial para mayoristas">
+                            </div>
+
+                            <div>
+                                <input type="number" id="admin-prod-cost" min="0" placeholder="Costo del producto (RD$) - Opcional, para calcular ganancia" class="w-full border border-green-200 bg-green-50 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-green-500" title="Cuánto te cuesta este producto. Se usa solo para los reportes de ganancia, nunca se muestra al cliente.">
                             </div>
                             
                             <div class="flex items-center gap-4 border border-gray-200 p-3 rounded-lg bg-white shadow-sm mt-2">
@@ -992,6 +995,9 @@
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="switchBillingSubTab('invoice')" id="billing-subtab-btn-invoice" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">🧾 Nueva Factura</button>
                 <button onclick="switchBillingSubTab('inventory')" id="billing-subtab-btn-inventory" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">📦 Inventario</button>
+                <button onclick="switchBillingSubTab('movements')" id="billing-subtab-btn-movements" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">🔄 Movimientos</button>
+                <button onclick="switchBillingSubTab('history')" id="billing-subtab-btn-history" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">🗂️ Historial</button>
+                <button onclick="switchBillingSubTab('reports')" id="billing-subtab-btn-reports" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">📊 Reportes</button>
             </div>
         </div>
 
@@ -1023,6 +1029,15 @@
                         <div class="mb-4">
                             <label class="block text-xs font-bold text-gray-500 mb-1">Cliente</label>
                             <input type="text" id="billing-customer-name" placeholder="Cliente de Mostrador" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Método de Pago</label>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="window.setBillingPaymentMethod('Efectivo')" id="billing-pay-btn-efectivo" class="flex-1 border-2 border-perfume-magenta bg-perfume-magenta text-white py-2 rounded-lg text-sm font-bold transition">💵 Efectivo</button>
+                                <button type="button" onclick="window.setBillingPaymentMethod('Transferencia')" id="billing-pay-btn-transferencia" class="flex-1 border-2 border-gray-300 bg-white text-gray-600 py-2 rounded-lg text-sm font-bold transition hover:border-perfume-magenta">🏦 Transferencia</button>
+                            </div>
+                            <input type="text" id="billing-payment-entity" placeholder="Entidad bancaria (Ej: Banreservas, Popular...)" class="hidden w-full mt-2 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                         </div>
 
                         <div class="mb-4 relative">
@@ -1066,6 +1081,17 @@
 
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                     <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-3">
+                        <h3 class="font-bold text-amber-700 flex items-center gap-2">⚠️ Alerta de Stock Bajo</h3>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <span>Avisar cuando el stock sea ≤</span>
+                            <input type="number" id="low-stock-threshold" min="0" onchange="window.renderInventoryTable(document.getElementById('inventory-search').value)" class="w-14 border border-gray-300 px-2 py-1 rounded-lg text-center font-bold">
+                        </div>
+                    </div>
+                    <div id="low-stock-list" class="space-y-1.5"></div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-3 mb-3">
                         <h3 class="font-bold text-perfume-dark">📋 Detalle de Inventario</h3>
                         <input type="text" id="inventory-search" oninput="window.renderInventoryTable(this.value)" placeholder="🔍 Buscar producto..." class="w-full md:w-64 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                     </div>
@@ -1080,6 +1106,108 @@
                                 </tr>
                             </thead>
                             <tbody id="inventory-table-body"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPESTAÑA: MOVIMIENTOS DE INVENTARIO -->
+            <div id="billing-subtab-movements" class="hidden max-w-4xl mx-auto w-full space-y-6">
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-perfume-dark mb-1 flex items-center gap-2">🔄 Registrar Movimiento de Inventario</h3>
+                    <p class="text-[11px] text-gray-500 mb-4">Usa esto para entradas de mercancía nueva, ajustes por conteo físico, devoluciones o pérdidas. Cada movimiento queda registrado con fecha y responsable.</p>
+
+                    <div class="mb-4 relative">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Producto</label>
+                        <input type="text" id="movement-product-search" oninput="window.filterMovementProductSearch(this.value)" placeholder="Buscar producto con inventario controlado..." class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                        <div id="movement-product-suggestions" class="hidden absolute z-30 bg-white border border-gray-200 rounded-lg shadow-lg w-full mt-1 max-h-64 overflow-y-auto"></div>
+                        <div id="movement-selected-product" class="hidden mt-2 bg-perfume-light/40 border border-perfume-magenta/20 rounded-lg p-2 text-xs font-bold text-perfume-dark"></div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Tipo de Movimiento</label>
+                            <select id="movement-type" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                                <option value="Entrada">➕ Entrada (Reabastecimiento)</option>
+                                <option value="Ajuste">⚖️ Ajuste por conteo</option>
+                                <option value="Devolución">↩️ Devolución de cliente</option>
+                                <option value="Pérdida">⚠️ Pérdida / Dañado</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 mb-1">Cantidad (+/-)</label>
+                            <input type="number" id="movement-qty" placeholder="Ej: 10 o -2" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">Nota (Opcional)</label>
+                        <input type="text" id="movement-note" placeholder="Ej: Compra a proveedor X, factura #123" class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                    </div>
+
+                    <button onclick="window.saveInventoryMovement()" class="w-full bg-perfume-magenta text-white py-3 rounded-xl font-bold hover:bg-perfume-dark transition shadow-md">✅ Registrar Movimiento</button>
+                </div>
+
+                <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-perfume-dark mb-3">📜 Movimientos Recientes</h3>
+                    <div id="movements-history-list" class="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+                        <p class="text-xs text-gray-400 text-center py-6">Cargando movimientos...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SUBPESTAÑA: HISTORIAL DE FACTURAS -->
+            <div id="billing-subtab-history" class="hidden max-w-5xl mx-auto w-full space-y-4">
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <input type="text" id="invoice-history-search" oninput="window.renderInvoiceHistory(this.value)" placeholder="🔍 Buscar por cliente o número de orden..." class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                </div>
+                <div id="invoice-history-list" class="space-y-2"></div>
+            </div>
+
+            <!-- SUBPESTAÑA: REPORTES -->
+            <div id="billing-subtab-reports" class="hidden max-w-5xl mx-auto w-full space-y-6">
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-wrap gap-2 items-center">
+                    <span class="text-xs font-bold text-gray-500 mr-1">Período:</span>
+                    <button onclick="window.setReportRange('today')" id="report-range-btn-today" class="px-3 py-1.5 rounded-lg border text-xs font-bold transition">Hoy</button>
+                    <button onclick="window.setReportRange('week')" id="report-range-btn-week" class="px-3 py-1.5 rounded-lg border text-xs font-bold transition">Esta Semana</button>
+                    <button onclick="window.setReportRange('month')" id="report-range-btn-month" class="px-3 py-1.5 rounded-lg border text-xs font-bold transition">Este Mes</button>
+                    <button onclick="window.setReportRange('all')" id="report-range-btn-all" class="px-3 py-1.5 rounded-lg border text-xs font-bold transition">Todo</button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-xs text-gray-500 font-bold uppercase">💰 Ventas Totales</p>
+                        <p id="report-total-sales" class="text-2xl font-extrabold text-perfume-dark mt-1">RD$ 0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-xs text-gray-500 font-bold uppercase">🧾 Facturas</p>
+                        <p id="report-total-orders" class="text-2xl font-extrabold text-perfume-dark mt-1">0</p>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                        <p class="text-xs text-gray-500 font-bold uppercase">📈 Ganancia Estimada</p>
+                        <p id="report-total-profit" class="text-2xl font-extrabold text-green-600 mt-1">RD$ 0</p>
+                        <p class="text-[10px] text-gray-400 mt-1">Solo cuenta productos con costo registrado.</p>
+                    </div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-perfume-dark mb-3">👤 Ventas por Vendedor / Agente</h3>
+                    <div id="report-by-agent" class="space-y-2"></div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+                    <h3 class="font-bold text-perfume-dark mb-3">🏆 Productos Más Vendidos</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm">
+                            <thead>
+                                <tr class="text-left text-[10px] text-gray-400 uppercase border-b border-gray-100">
+                                    <th class="py-2 pr-2">Producto</th>
+                                    <th class="py-2 pr-2 text-center">Unid. Vendidas</th>
+                                    <th class="py-2 pr-2 text-right">Ingresos</th>
+                                    <th class="py-2 pr-2 text-right">Ganancia</th>
+                                </tr>
+                            </thead>
+                            <tbody id="report-top-products"></tbody>
                         </table>
                     </div>
                 </div>
@@ -1657,7 +1785,6 @@
                 });
 
                 if(window.catalogProducts && window.catalogProducts.length > 0) {
-                    window.renderCatalog(window.catalogProducts);
                     window.filterCatalog();
                 }
 
@@ -1916,7 +2043,6 @@
                 }
 
                 window.renderBrandsUI(); 
-                window.renderCatalog(window.catalogProducts);
                 window.filterCatalog();
                 renderAdminProductsList();
 
@@ -2234,7 +2360,7 @@
         }
 
         window.resetAdminForm = function() {
-            document.getElementById('admin-add-form').reset(); document.getElementById('admin-prod-id').value = ''; document.getElementById('admin-prod-barcode').value = '';
+            document.getElementById('admin-add-form').reset(); document.getElementById('admin-prod-id').value = ''; document.getElementById('admin-prod-barcode').value = ''; document.getElementById('admin-prod-cost').value = '';
             document.getElementById('admin-form-title').innerText = "➕ Agregar Perfume"; document.getElementById('admin-submit-btn').innerText = "Guardar Producto"; document.getElementById('admin-cancel-edit').classList.add('hidden');
             window.currentDecants = []; window.renderAdminDecants();
             if(document.getElementById('admin-prod-use-inv')) { document.getElementById('admin-prod-use-inv').checked = false; window.toggleInvInput(); }
@@ -2247,7 +2373,7 @@
             if (brandVal && !window.siteBrands.includes(brandVal)) { window.siteBrands.push(brandVal); window.siteBrands.sort(); window.renderBrandsAdminUI(); saveBrandsToDB(); }
             document.getElementById('admin-prod-brand').value = brandVal; document.getElementById('admin-prod-barcode').value = prod.barcode || '';
             document.getElementById('admin-prod-cat').value = prod.category; 
-            document.getElementById('admin-prod-price').value = prod.price;
+            document.getElementById('admin-prod-price').value = prod.price; document.getElementById('admin-prod-cost').value = prod.cost || '';
             document.getElementById('admin-prod-wholesale').value = prod.wholesalePrice || ''; 
             document.getElementById('admin-prod-desc').value = prod.description || ''; document.getElementById('admin-prod-img').value = prod.img;
             
@@ -2288,6 +2414,7 @@
             const brand = document.getElementById('admin-prod-brand').value.trim(); const barcode = document.getElementById('admin-prod-barcode').value.trim();
             const category = document.getElementById('admin-prod-cat').value; 
             const price = parseFloat(document.getElementById('admin-prod-price').value);
+            const cost = parseFloat(document.getElementById('admin-prod-cost').value) || null;
             const wholesalePrice = parseFloat(document.getElementById('admin-prod-wholesale').value) || null; 
             const description = document.getElementById('admin-prod-desc').value; const imgUrl = document.getElementById('admin-prod-img').value;
             const useInv = document.getElementById('admin-prod-use-inv').checked; const stock = useInv ? (parseInt(document.getElementById('admin-prod-stock').value) || 0) : null;
@@ -2296,7 +2423,7 @@
 
             try {
                 if(!imgUrl) throw new Error("Debes proporcionar una URL de imagen.");
-                const dataObj = { name, brand, barcode, category, price, wholesalePrice, stock, onSale, isAgotado, description, img: imgUrl, decants: validDecants };
+                const dataObj = { name, brand, barcode, category, price, cost, wholesalePrice, stock, onSale, isAgotado, description, img: imgUrl, decants: validDecants };
 
                 if(editId) { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', editId), dataObj); window.showToast("Producto actualizado exitosamente."); } 
                 else { await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'productos'), dataObj); window.showToast("Producto agregado correctamente."); }
@@ -2658,6 +2785,24 @@
         // =================================================================
         window.facturaItems = [];
         window.facturaSelectedOrderId = null;
+        window.facturaPaymentMethod = 'Efectivo';
+
+        window.setBillingPaymentMethod = function(method) {
+            window.facturaPaymentMethod = method;
+            const efectivoBtn = document.getElementById('billing-pay-btn-efectivo');
+            const transferBtn = document.getElementById('billing-pay-btn-transferencia');
+            const entityInput = document.getElementById('billing-payment-entity');
+
+            if (method === 'Efectivo') {
+                efectivoBtn.className = "flex-1 border-2 border-perfume-magenta bg-perfume-magenta text-white py-2 rounded-lg text-sm font-bold transition";
+                transferBtn.className = "flex-1 border-2 border-gray-300 bg-white text-gray-600 py-2 rounded-lg text-sm font-bold transition hover:border-perfume-magenta";
+                entityInput.classList.add('hidden');
+            } else {
+                transferBtn.className = "flex-1 border-2 border-perfume-magenta bg-perfume-magenta text-white py-2 rounded-lg text-sm font-bold transition";
+                efectivoBtn.className = "flex-1 border-2 border-gray-300 bg-white text-gray-600 py-2 rounded-lg text-sm font-bold transition hover:border-perfume-magenta";
+                entityInput.classList.remove('hidden');
+            }
+        }
 
         window.openBillingModal = async function() {
             window.closeProfileModal();
@@ -2686,7 +2831,7 @@
         }
 
         window.switchBillingSubTab = function(tab) {
-            const subtabs = ['invoice', 'inventory'];
+            const subtabs = ['invoice', 'inventory', 'movements', 'history', 'reports'];
             subtabs.forEach(t => {
                 const el = document.getElementById('billing-subtab-' + t); const btn = document.getElementById('billing-subtab-btn-' + t);
                 if (el) el.classList.add('hidden');
@@ -2697,6 +2842,9 @@
             activeBtn.classList.replace('text-gray-500', 'text-perfume-magenta'); activeBtn.classList.add('border-b-2', 'border-perfume-magenta');
 
             if (tab === 'inventory') window.renderInventoryTable();
+            if (tab === 'movements') window.loadInventoryMovements();
+            if (tab === 'history') window.renderInvoiceHistory();
+            if (tab === 'reports') window.setReportRange(window.currentReportRange || 'today');
         }
 
         // Lista de pedidos que aún no están Completados/Cancelados/Eliminados, para poder seleccionarlos y facturarlos.
@@ -2732,7 +2880,10 @@
             if (!order) return;
 
             window.facturaSelectedOrderId = orderId;
-            window.facturaItems = (order.items || []).map(i => ({ ...i }));
+            window.facturaItems = (order.items || []).map(i => {
+                const prod = window.catalogProducts.find(p => p.id === i.id);
+                return { ...i, cost: i.cost !== undefined ? i.cost : (prod ? (prod.cost || null) : null) };
+            });
 
             document.getElementById('billing-customer-name').value = order.customerName || '';
             const badge = document.getElementById('billing-selected-order-badge');
@@ -2749,6 +2900,8 @@
             window.facturaSelectedOrderId = null;
             window.facturaItems = [];
             document.getElementById('billing-customer-name').value = '';
+            document.getElementById('billing-payment-entity').value = '';
+            window.setBillingPaymentMethod('Efectivo');
             const badge = document.getElementById('billing-selected-order-badge');
             badge.classList.add('hidden'); badge.classList.remove('flex');
             window.renderBillingOrdersList();
@@ -2803,7 +2956,7 @@
             if (existing) {
                 existing.qty += 1;
             } else {
-                window.facturaItems.push({ id: prodId, name: name, price: price, qty: 1, img: prod ? prod.img : '', barcode: prod ? prod.barcode : '' });
+                window.facturaItems.push({ id: prodId, name: name, price: price, qty: 1, img: prod ? prod.img : '', barcode: prod ? prod.barcode : '', cost: prod ? (prod.cost || null) : null });
             }
 
             document.getElementById('billing-product-search').value = '';
@@ -2898,6 +3051,13 @@
             const customerName = document.getElementById('billing-customer-name').value.trim() || 'Cliente de Mostrador';
             const total = window.facturaItems.reduce((acc, i) => acc + (i.price * i.qty), 0);
 
+            const paymentMethod = window.facturaPaymentMethod || 'Efectivo';
+            const paymentEntity = document.getElementById('billing-payment-entity').value.trim();
+            if (paymentMethod === 'Transferencia' && !paymentEntity) {
+                return window.showToast("⚠️ Escribe la entidad bancaria de la transferencia.");
+            }
+
+            const adminName = (auth.currentUser && auth.currentUser.displayName) || "Empleado";
             window.showToast("Generando factura... ⏳");
 
             try {
@@ -2905,7 +3065,7 @@
                     // Caso 1: Se está facturando un pedido ya existente (seleccionado de "Pedidos en Proceso")
                     const orderRef = doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', window.facturaSelectedOrderId);
                     await window.deductStockForItems(window.facturaItems);
-                    await updateDoc(orderRef, { items: window.facturaItems, total: total, customerName: customerName, status: 'Completado', stockDeducted: true });
+                    await updateDoc(orderRef, { items: window.facturaItems, total: total, customerName: customerName, status: 'Completado', stockDeducted: true, paymentMethod: paymentMethod, paymentEntity: paymentMethod === 'Transferencia' ? paymentEntity : null, attendedBy: adminName });
 
                     await window.loadAdminOrders();
                     window.loadDynamicProducts();
@@ -2914,7 +3074,6 @@
                     // Caso 2: Venta de mostrador nueva (no proviene de un pedido web)
                     const orderIdHex = Math.random().toString(36).substring(2, 7).toUpperCase();
                     const orderId = `#FAC-${orderIdHex}`;
-                    const adminName = (auth.currentUser && auth.currentUser.displayName) || "Empleado";
 
                     await window.deductStockForItems(window.facturaItems);
                     const newDocRef = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), {
@@ -2929,7 +3088,9 @@
                         status: 'Completado',
                         stockDeducted: true,
                         source: 'mostrador',
-                        attendedBy: adminName
+                        attendedBy: adminName,
+                        paymentMethod: paymentMethod,
+                        paymentEntity: paymentMethod === 'Transferencia' ? paymentEntity : null
                     });
 
                     await window.loadAdminOrders();
@@ -2971,6 +3132,31 @@
             if (unitsEl) unitsEl.innerText = totalUnits.toLocaleString('en-US');
             if (agotadosEl) agotadosEl.innerText = totalAgotados;
 
+            // Alerta de stock bajo: umbral configurable y guardado en localStorage
+            const thresholdInput = document.getElementById('low-stock-threshold');
+            const lowStockList = document.getElementById('low-stock-list');
+            if (thresholdInput && lowStockList) {
+                if (!thresholdInput.value) {
+                    thresholdInput.value = localStorage.getItem('lowStockThreshold') || '3';
+                }
+                const threshold = parseInt(thresholdInput.value) || 0;
+                localStorage.setItem('lowStockThreshold', threshold);
+
+                const lowStock = products.filter(p => typeof p.stock === 'number' && p.stock > 0 && p.stock <= threshold);
+                if (lowStock.length === 0) {
+                    lowStockList.innerHTML = `<p class="text-xs text-gray-400 text-center py-3">✅ Ningún producto está por debajo del umbral de stock.</p>`;
+                } else {
+                    lowStockList.innerHTML = lowStock.map(p => `
+                        <div class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                            <span class="text-xs font-bold text-amber-800 truncate">${p.name}</span>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <span class="text-xs font-extrabold text-amber-700">${p.stock} disp.</span>
+                                <button onclick="window.switchBillingSubTab('movements'); window.preselectMovementProduct('${p.id}')" class="text-[10px] bg-amber-600 text-white px-2 py-1 rounded-md font-bold hover:bg-amber-700 transition">Reabastecer</button>
+                            </div>
+                        </div>`).join('');
+                }
+            }
+
             const t = term.toLowerCase().trim();
             let list = products.filter(p => typeof p.stock === 'number'); // Solo productos con inventario controlado
             if (t) {
@@ -3007,6 +3193,251 @@
                 </tr>`;
             });
             tbody.innerHTML = html;
+        }
+
+        // =================================================================
+        // MOVIMIENTOS DE INVENTARIO (entradas, ajustes, devoluciones, pérdidas)
+        // =================================================================
+        window.movementSelectedProduct = null;
+
+        // Selecciona un producto directamente desde la alerta de stock bajo.
+        window.preselectMovementProduct = function(prodId) {
+            const prod = window.catalogProducts.find(p => p.id === prodId);
+            if (!prod) return;
+            window.movementSelectedProduct = prod;
+            const box = document.getElementById('movement-selected-product');
+            box.classList.remove('hidden');
+            box.innerText = `Producto seleccionado: ${prod.name} (Stock actual: ${prod.stock})`;
+            document.getElementById('movement-type').value = 'Entrada';
+            document.getElementById('movement-qty').focus();
+        }
+
+        window.filterMovementProductSearch = function(term) {
+            const box = document.getElementById('movement-product-suggestions');
+            const t = term.toLowerCase().trim();
+            if (t.length < 2) { box.classList.add('hidden'); return; }
+
+            const matches = (window.catalogProducts || []).filter(p =>
+                typeof p.stock === 'number' && (p.name.toLowerCase().includes(t) || (p.barcode && p.barcode.toLowerCase().includes(t)))
+            ).slice(0, 10);
+
+            if (matches.length > 0) {
+                box.innerHTML = matches.map(m => `
+                    <div onclick='window.selectMovementProduct(${JSON.stringify(m.id)})' class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
+                        <img src="${m.img}" class="w-7 h-7 object-contain rounded border border-gray-100 mix-blend-multiply">
+                        <div class="flex-1 min-w-0"><p class="text-[11px] font-bold text-gray-800 truncate">${m.name}</p></div>
+                        <span class="text-[10px] font-bold text-gray-500">Stock: ${m.stock}</span>
+                    </div>`).join('');
+                box.classList.remove('hidden');
+            } else {
+                box.innerHTML = `<p class="text-xs text-gray-400 p-3 text-center">Sin resultados con inventario controlado.</p>`;
+                box.classList.remove('hidden');
+            }
+        }
+
+        window.selectMovementProduct = function(prodId) {
+            window.preselectMovementProduct(prodId);
+            document.getElementById('movement-product-search').value = '';
+            document.getElementById('movement-product-suggestions').classList.add('hidden');
+        }
+
+        // Guarda el movimiento: ajusta el stock real del producto y deja un registro permanente con fecha y responsable.
+        window.saveInventoryMovement = async function() {
+            if (!window.movementSelectedProduct) return window.showToast("Selecciona un producto primero.");
+            const qtyChange = parseInt(document.getElementById('movement-qty').value);
+            if (isNaN(qtyChange) || qtyChange === 0) return window.showToast("Escribe una cantidad distinta de cero.");
+
+            const type = document.getElementById('movement-type').value;
+            const note = document.getElementById('movement-note').value.trim();
+            const adminName = (auth.currentUser && auth.currentUser.displayName) || "Empleado";
+
+            try {
+                const prodRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', window.movementSelectedProduct.id);
+                const pSnap = await getDoc(prodRef);
+                if (!pSnap.exists()) return window.showToast("❌ El producto ya no existe.");
+
+                const currentStock = pSnap.data().stock || 0;
+                const newStock = Math.max(0, currentStock + qtyChange);
+                const updateData = { stock: newStock };
+                if (newStock <= 0) updateData.isAgotado = true;
+                else if (pSnap.data().isAgotado) updateData.isAgotado = false;
+                await updateDoc(prodRef, updateData);
+
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'movimientosInventario'), {
+                    productId: window.movementSelectedProduct.id,
+                    productName: window.movementSelectedProduct.name,
+                    type: type,
+                    qtyChange: qtyChange,
+                    stockBefore: currentStock,
+                    stockAfter: newStock,
+                    note: note,
+                    adminName: adminName,
+                    date: new Date().toISOString()
+                });
+
+                window.showToast("✅ Movimiento registrado y stock actualizado.");
+                document.getElementById('movement-qty').value = ''; document.getElementById('movement-note').value = '';
+                document.getElementById('movement-selected-product').classList.add('hidden');
+                window.movementSelectedProduct = null;
+
+                await window.loadDynamicProducts();
+                window.loadInventoryMovements();
+            } catch(e) {
+                console.error(e);
+                window.showToast("❌ Error al registrar el movimiento.");
+            }
+        }
+
+        // Carga y muestra los últimos movimientos de inventario registrados.
+        window.loadInventoryMovements = async function() {
+            const listDiv = document.getElementById('movements-history-list');
+            if (!listDiv) return;
+            listDiv.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Cargando movimientos...</p>`;
+            try {
+                const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'movimientosInventario'));
+                let movements = []; snap.forEach(d => movements.push({ id: d.id, ...d.data() }));
+                movements.sort((a, b) => new Date(b.date) - new Date(a.date));
+                movements = movements.slice(0, 60);
+
+                if (movements.length === 0) {
+                    listDiv.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Aún no hay movimientos registrados.</p>`;
+                    return;
+                }
+
+                const typeIcons = { 'Entrada': '➕', 'Ajuste': '⚖️', 'Devolución': '↩️', 'Pérdida': '⚠️' };
+                listDiv.innerHTML = movements.map(m => {
+                    const dateStr = new Date(m.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                    const changeColor = m.qtyChange > 0 ? 'text-green-600' : 'text-red-600';
+                    return `
+                    <div class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                        <div class="min-w-0">
+                            <p class="text-xs font-bold text-gray-700 truncate">${typeIcons[m.type] || '🔄'} ${m.productName}</p>
+                            <p class="text-[10px] text-gray-400">${m.type} • ${dateStr} • ${m.adminName}${m.note ? ' • ' + m.note : ''}</p>
+                        </div>
+                        <span class="text-xs font-extrabold ${changeColor} shrink-0 ml-2">${m.qtyChange > 0 ? '+' : ''}${m.qtyChange}</span>
+                    </div>`;
+                }).join('');
+            } catch(e) {
+                console.error(e);
+                listDiv.innerHTML = `<p class="text-xs text-red-400 text-center py-6">Error cargando movimientos.</p>`;
+            }
+        }
+
+        // =================================================================
+        // HISTORIAL DE FACTURAS (con reimpresión)
+        // =================================================================
+        window.renderInvoiceHistory = function(term = "") {
+            const listDiv = document.getElementById('invoice-history-list');
+            if (!listDiv) return;
+
+            let invoices = (window.adminOrders || []).filter(o => o.status === 'Completado');
+            const t = term.toLowerCase().trim();
+            if (t) {
+                invoices = invoices.filter(o => (o.customerName || '').toLowerCase().includes(t) || (o.orderId || '').toLowerCase().includes(t));
+            }
+            invoices.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            if (invoices.length === 0) {
+                listDiv.innerHTML = `<p class="text-sm text-gray-400 text-center py-10">No hay facturas completadas todavía.</p>`;
+                return;
+            }
+
+            listDiv.innerHTML = invoices.map(order => {
+                const dateStr = new Date(order.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                const payLabel = order.paymentMethod === 'Transferencia' ? `🏦 Transferencia${order.paymentEntity ? ' (' + order.paymentEntity + ')' : ''}` : (order.paymentMethod ? '💵 Efectivo' : '—');
+                const itemCount = (order.items || []).reduce((s, i) => s + i.qty, 0);
+                return `
+                <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-2">
+                    <div class="min-w-0">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs font-extrabold text-perfume-dark bg-gray-100 px-2 py-0.5 rounded">${order.orderId || '#PED-XXX'}</span>
+                            <span class="text-[10px] text-gray-400">${dateStr}</span>
+                        </div>
+                        <p class="text-sm font-bold text-gray-700 mt-1 truncate">${order.customerName || 'Cliente'}</p>
+                        <p class="text-[11px] text-gray-400">${itemCount} artículo(s) • ${payLabel}${order.attendedBy ? ' • Atendió: ' + order.attendedBy : ''}</p>
+                    </div>
+                    <div class="flex items-center gap-3 shrink-0">
+                        <span class="text-sm font-extrabold text-perfume-dark">RD$ ${(order.total || 0).toLocaleString('en-US')}</span>
+                        <button onclick="window.generateInvoicePDF('${order.id}')" class="bg-gray-800 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-black transition">🖨️ Reimprimir</button>
+                    </div>
+                </div>`;
+            }).join('');
+        }
+
+        // =================================================================
+        // REPORTES (ventas por período, por vendedor, productos más vendidos y ganancia)
+        // =================================================================
+        window.currentReportRange = 'today';
+
+        window.setReportRange = function(range) {
+            window.currentReportRange = range;
+            ['today', 'week', 'month', 'all'].forEach(r => {
+                const btn = document.getElementById('report-range-btn-' + r);
+                if (!btn) return;
+                if (r === range) { btn.className = "px-3 py-1.5 rounded-lg border-2 border-perfume-magenta bg-perfume-magenta text-white text-xs font-bold transition"; }
+                else { btn.className = "px-3 py-1.5 rounded-lg border border-gray-300 bg-white text-gray-600 text-xs font-bold transition hover:border-perfume-magenta"; }
+            });
+            window.renderReports();
+        }
+
+        window.renderReports = function() {
+            const now = new Date();
+            let startDate = null;
+            if (window.currentReportRange === 'today') { startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate()); }
+            else if (window.currentReportRange === 'week') { const d = new Date(now); d.setDate(d.getDate() - 7); startDate = d; }
+            else if (window.currentReportRange === 'month') { startDate = new Date(now.getFullYear(), now.getMonth(), 1); }
+
+            let invoices = (window.adminOrders || []).filter(o => o.status === 'Completado');
+            if (startDate) invoices = invoices.filter(o => new Date(o.date) >= startDate);
+
+            let totalSales = 0, totalProfit = 0;
+            const byAgent = {};
+            const byProduct = {};
+
+            invoices.forEach(order => {
+                totalSales += order.total || 0;
+                const agent = order.attendedBy || (order.source === 'mostrador' ? 'Mostrador' : 'Tienda Web');
+                if (!byAgent[agent]) byAgent[agent] = { count: 0, total: 0 };
+                byAgent[agent].count++; byAgent[agent].total += order.total || 0;
+
+                (order.items || []).forEach(item => {
+                    if (!byProduct[item.id || item.name]) byProduct[item.id || item.name] = { name: item.name, qty: 0, revenue: 0, profit: 0 };
+                    const p = byProduct[item.id || item.name];
+                    p.qty += item.qty;
+                    p.revenue += item.price * item.qty;
+                    if (typeof item.cost === 'number' && item.cost !== null) {
+                        const lineProfit = (item.price - item.cost) * item.qty;
+                        p.profit += lineProfit;
+                        totalProfit += lineProfit;
+                    }
+                });
+            });
+
+            document.getElementById('report-total-sales').innerText = `RD$ ${totalSales.toLocaleString('en-US')}`;
+            document.getElementById('report-total-orders').innerText = invoices.length;
+            document.getElementById('report-total-profit').innerText = `RD$ ${totalProfit.toLocaleString('en-US')}`;
+
+            const agentDiv = document.getElementById('report-by-agent');
+            const agentEntries = Object.entries(byAgent).sort((a, b) => b[1].total - a[1].total);
+            agentDiv.innerHTML = agentEntries.length === 0
+                ? `<p class="text-xs text-gray-400 text-center py-4">No hay ventas en este período.</p>`
+                : agentEntries.map(([name, data]) => `
+                    <div class="flex items-center justify-between bg-gray-50 border border-gray-100 rounded-lg px-3 py-2">
+                        <span class="text-xs font-bold text-gray-700">👤 ${name}</span>
+                        <span class="text-xs text-gray-500">${data.count} factura(s) • <span class="font-extrabold text-perfume-dark">RD$ ${data.total.toLocaleString('en-US')}</span></span>
+                    </div>`).join('');
+
+            const tbody = document.getElementById('report-top-products');
+            const productEntries = Object.values(byProduct).sort((a, b) => b.qty - a.qty).slice(0, 15);
+            tbody.innerHTML = productEntries.length === 0
+                ? `<tr><td colspan="4" class="text-center text-sm text-gray-400 py-6">No hay ventas en este período.</td></tr>`
+                : productEntries.map(p => `
+                    <tr class="border-b border-gray-50 hover:bg-gray-50">
+                        <td class="py-2 pr-2 text-xs font-bold text-gray-700 truncate max-w-[200px]">${p.name}</td>
+                        <td class="py-2 pr-2 text-center text-xs font-bold text-perfume-dark">${p.qty}</td>
+                        <td class="py-2 pr-2 text-right text-xs text-gray-600">RD$ ${p.revenue.toLocaleString('en-US')}</td>
+                        <td class="py-2 pr-2 text-right text-xs font-bold text-green-600">${p.profit > 0 ? 'RD$ ' + p.profit.toLocaleString('en-US') : '—'}</td>
+                    </tr>`).join('');
         }
 
         window.openOrdersDashboard = function() { 
@@ -3500,6 +3931,10 @@
             doc.text(`Nombre: ${cleanName}`, 18, 62);
             doc.text(`WhatsApp: ${cleanPhone}`, 18, 67);
             doc.text(`Email: ${cleanEmail}`, 100, 62);
+            if (order.paymentMethod) {
+                const payLabel = order.paymentMethod === 'Transferencia' && order.paymentEntity ? `Transferencia (${window.cleanText(order.paymentEntity)})` : order.paymentMethod;
+                doc.text(`Pago: ${payLabel}`, 100, 67);
+            }
 
             const tableColumn = ["Cant", "Descripción", "SKU", "P. Unitario", "Subtotal"];
             const tableRows = [];
@@ -3968,7 +4403,6 @@
                 // -------------------------------------------------------------
 
                 if(window.catalogProducts.length > 0) { 
-                    window.renderCatalog(window.catalogProducts); 
                     window.filterCatalog(); 
                 }
 
@@ -4006,7 +4440,7 @@
             } else {
                 window.isLoggedIn = false; window.userId = null; window.isWholesaler = false;
                 
-                if(window.catalogProducts.length > 0) { window.renderCatalog(window.catalogProducts); window.filterCatalog(); }
+                if(window.catalogProducts.length > 0) { window.filterCatalog(); }
 
                 document.getElementById('nav-login-text').innerText = "Ingresar"; document.getElementById('btn-admin-panel').classList.add('hidden'); document.getElementById('btn-orders-dashboard').classList.add('hidden'); document.getElementById('btn-billing-panel').classList.add('hidden'); document.getElementById('btn-push-notifications').classList.add('hidden'); document.getElementById('profile-name').innerText = "Cargando..."; document.getElementById('profile-email').innerText = "..."; document.getElementById('profile-initial').innerText = "?";
             }
@@ -4300,11 +4734,14 @@
                         // Se usa la URL de la agencia tal cual está configurada en Ajustes, sin pegarle
                         // el número de guía. El número solo se muestra como texto copiable, porque
                         // muchas agencias requieren que el cliente lo pegue manualmente en su web.
+                        // NOTA: ya no se usa <iframe> porque casi todas las páginas de rastreo de
+                        // agencias bloquean ser embebidas dentro de otro sitio (X-Frame-Options/CSP),
+                        // lo cual hacía que se viera en blanco, sobre todo en el celular.
                         const trackingNumberHtml = order.trackingNumber ? `<span class="font-mono text-gray-700">${order.trackingNumber}</span><button onclick="navigator.clipboard.writeText('${order.trackingNumber}').then(()=>window.showToast('Número de guía copiado'))" class="ml-2 inline-flex items-center text-gray-400 hover:text-blue-600 transition-all active:scale-90">📋</button>` : `<span class="font-mono text-gray-700">Pendiente</span>`;
                         trackingHtml += `
-                        <p class="text-sm font-bold mb-2">Guía de ${order.shippingAgency || 'Agencia'}: ${trackingNumberHtml}</p>
-                        <iframe src="${url}" style="width:100%; height:300px; border:0;" title="Rastreo"></iframe>
-                        <p class="text-xs text-gray-500 mt-2">¿No carga el mapa de ${order.shippingAgency || 'rastreo'}? <a href="${url}" target="_blank" class="text-perfume-magenta font-bold underline">Rastrear aquí ↗</a></p>
+                        <p class="text-sm font-bold mb-3">Guía de ${order.shippingAgency || 'Agencia'}: ${trackingNumberHtml}</p>
+                        <a href="${url}" target="_blank" rel="noopener" class="w-full flex items-center justify-center gap-2 bg-perfume-magenta text-white font-bold px-4 py-3 rounded-lg hover:bg-perfume-dark transition-all text-sm">🔎 Rastrear con ${order.shippingAgency || 'la agencia'} ↗</a>
+                        <p class="text-xs text-gray-500 mt-2 text-center">Se abrirá la página de ${order.shippingAgency || 'la agencia'} en una pestaña nueva. Si te pide el número de guía, cópialo de arriba y pégalo allí.</p>
                         `;
                     } else {
                         trackingHtml += `
