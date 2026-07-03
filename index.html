@@ -1078,125 +1078,140 @@
 
         <div class="flex-1 overflow-hidden min-h-0 flex flex-col">
 
-            <!-- SUBPESTAÑA: NUEVA FACTURA — Estilo POS Eleventa -->
-            <div id="billing-subtab-invoice" class="flex-1 min-h-0 w-full flex flex-col">
-                <div class="flex flex-1 min-h-0 gap-0" style="overflow:hidden">
+            <!-- SUBPESTAÑA: NUEVA FACTURA — Estilo Eleventa -->
+            <div id="billing-subtab-invoice" class="flex-1 min-h-0 w-full flex flex-col bg-gray-100">
 
-                    <!-- PANEL IZQUIERDO: CATÁLOGO DE PRODUCTOS -->
-                    <div class="flex flex-col flex-1 min-w-0 border-r border-gray-200 bg-gray-50">
-                        <!-- Barra de búsqueda + scanner -->
-                        <div class="px-3 py-3 bg-white border-b border-gray-200 shrink-0">
-                            <div class="flex gap-2">
-                                <div class="relative flex-1">
-                                    <svg class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                                    <input type="text" id="billing-product-search" oninput="window.filterBillingProductSearch(this.value)" placeholder="Buscar producto, marca o código..." class="w-full pl-9 pr-3 py-2.5 border-2 border-gray-200 rounded-xl text-sm focus:outline-none focus:border-green-500 bg-gray-50 font-medium">
-                                </div>
-                                <button type="button" onclick="openScannerModal('billing')" class="bg-gray-800 text-white px-3 rounded-xl hover:bg-black transition flex items-center justify-center shrink-0" title="Escanear código de barras">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 3h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
-                                </button>
-                            </div>
-                            <!-- Chips de categoría -->
-                            <div id="billing-cat-chips" class="flex gap-1.5 mt-2 overflow-x-auto no-scrollbar pb-0.5"></div>
+                <!-- BARRA SUPERIOR: código + buscar + acciones rápidas -->
+                <div class="bg-white border-b-2 border-gray-300 shrink-0">
+                    <!-- Fila 1: Ticket header + input de código -->
+                    <div class="flex items-center gap-2 px-3 py-2 border-b border-gray-200">
+                        <div id="billing-selected-order-badge" class="hidden items-center gap-1.5 bg-blue-100 text-blue-700 text-[10px] font-extrabold px-2.5 py-1.5 rounded border border-blue-300 shrink-0 uppercase tracking-wide">
+                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
+                            <span id="billing-selected-order-label">Pedido</span>
+                            <button onclick="window.clearBillingSelection()" class="text-blue-400 hover:text-red-500 ml-1 font-bold">✕</button>
                         </div>
-
-                        <!-- Grid de productos -->
-                        <div id="billing-product-grid" class="flex-1 overflow-y-auto p-3 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-2.5 content-start">
-                            <p class="col-span-full text-center text-sm text-gray-400 py-10">Cargando productos...</p>
+                        <span class="text-xs font-extrabold text-gray-500 uppercase tracking-wider shrink-0 hidden sm:block">Código / Descripción:</span>
+                        <div class="relative flex-1">
+                            <input type="text" id="billing-code-input"
+                                oninput="window.billingSearchLive(this.value)"
+                                onkeydown="if(event.key==='Enter') window.billingAddByCode(this.value)"
+                                placeholder="Escanea o escribe el código / nombre del producto..."
+                                autocomplete="off"
+                                class="w-full border-2 border-blue-400 rounded px-3 py-2 text-sm font-medium focus:outline-none focus:border-blue-600 bg-blue-50">
+                            <!-- Dropdown de sugerencias -->
+                            <div id="billing-suggestions-drop" class="hidden absolute top-full left-0 w-full bg-white border border-gray-300 rounded-b-lg shadow-xl z-50 max-h-64 overflow-y-auto"></div>
                         </div>
+                        <button onclick="window.billingAddByCode(document.getElementById('billing-code-input').value)"
+                            class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded transition flex items-center gap-1.5 whitespace-nowrap">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            <span class="hidden sm:inline">Agregar</span>
+                        </button>
+                        <button type="button" onclick="openScannerModal('billing')"
+                            class="shrink-0 bg-gray-700 hover:bg-black text-white px-3 py-2 rounded transition flex items-center justify-center" title="Escanear con cámara">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 3h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
+                        </button>
                     </div>
 
-                    <!-- PANEL DERECHO: TICKET / COBRO -->
-                    <div class="flex flex-col bg-white shrink-0" style="width: 340px; min-width: 300px;">
-
-                        <!-- Encabezado del ticket -->
-                        <div class="px-4 py-3 border-b border-gray-100 bg-gray-50 shrink-0">
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-extrabold text-gray-500 uppercase tracking-widest">Ticket de Venta</span>
-                                <div id="billing-selected-order-badge" class="hidden bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full items-center gap-1">
-                                    <span>Pedido: <span id="billing-selected-order-label"></span></span>
-                                    <button onclick="window.clearBillingSelection()" class="ml-1 text-green-500 hover:text-red-500 font-bold">✕</button>
-                                </div>
-                            </div>
-                            <div class="relative">
-                                <svg class="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                                <input type="text" id="billing-customer-name" placeholder="Cliente de mostrador" class="w-full pl-8 pr-3 py-2 border border-gray-200 rounded-lg text-xs focus:outline-none focus:border-green-500 bg-white">
-                            </div>
+                    <!-- Fila 2: Acciones rápidas + cliente -->
+                    <div class="flex items-center gap-2 px-3 py-1.5 overflow-x-auto no-scrollbar">
+                        <div class="relative shrink-0">
+                            <svg class="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <input type="text" id="billing-customer-name" placeholder="Cliente (opcional)" class="pl-6 pr-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-blue-400 w-36 sm:w-44">
                         </div>
-
-                        <!-- Lista de artículos del ticket -->
-                        <div id="billing-items-list" class="flex-1 overflow-y-auto divide-y divide-gray-50 min-h-0">
-                            <div class="flex flex-col items-center justify-center h-full text-gray-300 gap-2 py-8">
-                                <svg class="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                                <p class="text-xs font-semibold">Toca un producto para agregarlo</p>
-                            </div>
+                        <button onclick="window.toggleBillingOrdersDrawer()" class="shrink-0 flex items-center gap-1 border border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1 rounded transition whitespace-nowrap">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                            Pendientes <span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-0.5" id="billing-pending-count">0</span>
+                        </button>
+                        <button onclick="window.clearBillingSelection()" class="shrink-0 flex items-center gap-1 border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold px-3 py-1 rounded transition whitespace-nowrap">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                            Limpiar
+                        </button>
+                        <!-- Drawer de pedidos pendientes -->
+                        <div id="billing-orders-drawer" class="hidden absolute top-[96px] left-0 w-72 bg-white border border-gray-300 shadow-2xl rounded-b-xl z-40 max-h-72 overflow-y-auto p-2 space-y-1.5">
+                            <div id="billing-orders-list"></div>
                         </div>
+                    </div>
+                </div>
 
-                        <!-- Totales y cobro -->
-                        <div class="border-t-2 border-gray-200 shrink-0">
-                            <!-- Descuento -->
-                            <div class="px-4 pt-3 pb-2 flex items-center gap-2">
-                                <span class="text-xs text-gray-500 font-bold whitespace-nowrap">Descuento RD$</span>
-                                <input type="number" id="billing-discount" value="0" min="0" oninput="window.renderBillingItems()" class="flex-1 border border-gray-200 rounded-lg text-right text-sm font-bold px-2 py-1.5 focus:outline-none focus:border-green-500">
-                                <span class="text-xs text-gray-500 font-bold whitespace-nowrap">%</span>
-                                <input type="number" id="billing-discount-pct" value="0" min="0" max="100" oninput="window.applyBillingDiscountPct()" class="w-14 border border-gray-200 rounded-lg text-right text-sm font-bold px-2 py-1.5 focus:outline-none focus:border-green-500">
-                            </div>
-
-                            <!-- Subtotal / Descuento / Total -->
-                            <div class="px-4 pb-2 space-y-0.5 text-xs">
-                                <div class="flex justify-between text-gray-400"><span>Subtotal</span><span id="billing-subtotal-display">RD$ 0</span></div>
-                                <div class="flex justify-between text-red-500 font-semibold"><span>Descuento</span><span id="billing-discount-display">- RD$ 0</span></div>
-                                <div class="flex justify-between text-gray-900 font-extrabold text-base pt-1 border-t border-gray-100 mt-1"><span>TOTAL</span><span id="billing-total">RD$ 0</span></div>
-                            </div>
-
-                            <!-- Método de pago -->
-                            <div class="px-4 pb-2">
-                                <div class="flex gap-1.5 mb-2">
-                                    <button type="button" onclick="window.setBillingPaymentMethod('Efectivo')" id="billing-pay-btn-efectivo" class="flex-1 flex items-center justify-center gap-1 border-2 border-green-600 bg-green-600 text-white py-2 rounded-xl text-xs font-extrabold transition">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
-                                        Efectivo
-                                    </button>
-                                    <button type="button" onclick="window.setBillingPaymentMethod('Transferencia')" id="billing-pay-btn-transferencia" class="flex-1 flex items-center justify-center gap-1 border-2 border-gray-200 bg-white text-gray-500 py-2 rounded-xl text-xs font-extrabold transition hover:border-blue-400 hover:text-blue-600">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 14v3m4-3v3m4-3v3M3 21h18M3 10h18M3 7l9-4 9 4M4 10h16v11H4V10z"/></svg>
-                                        Transferencia
-                                    </button>
-                                    <button type="button" onclick="window.setBillingPaymentMethod('Tarjeta')" id="billing-pay-btn-tarjeta" class="flex-1 flex items-center justify-center gap-1 border-2 border-gray-200 bg-white text-gray-500 py-2 rounded-xl text-xs font-extrabold transition hover:border-purple-400 hover:text-purple-600">
-                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/></svg>
-                                        Tarjeta
-                                    </button>
-                                </div>
-                                <input type="text" id="billing-payment-entity" placeholder="Entidad bancaria (ej: Banreservas)" class="hidden w-full border border-gray-200 rounded-lg text-xs px-3 py-2 focus:outline-none focus:border-green-500 mb-2">
-                                <!-- Calculadora de cambio (solo efectivo) -->
-                                <div id="billing-cash-calculator" class="flex items-center gap-2">
-                                    <span class="text-xs text-gray-400 font-bold whitespace-nowrap">Con:</span>
-                                    <input type="number" id="billing-cash-received" placeholder="Monto recibido" min="0" oninput="window.calcChange()" class="flex-1 border border-gray-200 rounded-lg text-xs px-2 py-2 focus:outline-none focus:border-green-500 font-bold">
-                                    <div class="text-right shrink-0">
-                                        <p class="text-[9px] text-gray-400 font-bold uppercase leading-none">Cambio</p>
-                                        <p id="billing-change-display" class="text-sm font-extrabold text-green-600 leading-tight">RD$ 0</p>
+                <!-- TABLA DE ARTÍCULOS -->
+                <div class="flex-1 overflow-auto min-h-0">
+                    <table class="w-full text-sm border-collapse min-w-[480px]">
+                        <thead class="sticky top-0 bg-gray-200 z-10">
+                            <tr class="text-left text-[11px] font-extrabold text-gray-600 uppercase tracking-wide">
+                                <th class="px-3 py-2 border-b border-gray-300 w-8"></th>
+                                <th class="px-3 py-2 border-b border-gray-300">Descripción del Producto</th>
+                                <th class="px-2 py-2 border-b border-gray-300 text-right w-24">Precio</th>
+                                <th class="px-2 py-2 border-b border-gray-300 text-center w-24">Cant.</th>
+                                <th class="px-2 py-2 border-b border-gray-300 text-right w-28">Importe</th>
+                                <th class="px-2 py-2 border-b border-gray-300 text-center w-16 hidden sm:table-cell">Stock</th>
+                                <th class="px-2 py-2 border-b border-gray-300 text-right w-24 hidden md:table-cell">Desc. RD$</th>
+                                <th class="px-2 py-2 border-b border-gray-300 w-8"></th>
+                            </tr>
+                        </thead>
+                        <tbody id="billing-items-list">
+                            <tr id="billing-empty-row">
+                                <td colspan="8" class="text-center text-gray-400 text-sm py-16">
+                                    <div class="flex flex-col items-center gap-2">
+                                        <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                        <span class="font-medium">Escanea un código o busca un producto para comenzar</span>
                                     </div>
-                                </div>
-                            </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                            <!-- Pedidos pendientes (drawer) -->
-                            <div class="px-4 pb-2">
-                                <button onclick="window.toggleBillingOrdersDrawer()" class="w-full border border-dashed border-gray-300 text-gray-500 text-xs font-bold py-2 rounded-xl hover:border-green-400 hover:text-green-600 transition flex items-center justify-center gap-2">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
-                                    <span id="billing-orders-drawer-label">Ver pedidos pendientes (<span id="billing-pending-count">0</span>)</span>
-                                </button>
-                                <div id="billing-orders-drawer" class="hidden mt-2 space-y-1.5 max-h-48 overflow-y-auto">
-                                    <div id="billing-orders-list"></div>
-                                </div>
-                            </div>
+                <!-- BARRA INFERIOR FIJA: Totales + Pago + COBRAR -->
+                <div class="bg-white border-t-2 border-gray-300 shrink-0">
+                    <div class="flex items-stretch divide-x divide-gray-200">
 
-                            <!-- Botones de acción -->
-                            <div class="px-4 pb-4 flex gap-2">
-                                <button onclick="window.clearBillingSelection()" class="flex-none border-2 border-gray-200 text-gray-500 px-3 py-3 rounded-xl font-bold text-xs hover:border-red-300 hover:text-red-500 transition" title="Limpiar ticket">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                                </button>
-                                <button onclick="window.generateManualInvoice()" class="flex-1 bg-green-600 hover:bg-green-700 active:scale-98 text-white py-3 rounded-xl font-extrabold text-sm transition shadow-lg shadow-green-200 flex items-center justify-center gap-2">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                                    COBRAR
-                                </button>
+                        <!-- Descuento global -->
+                        <div class="flex flex-col justify-center px-3 py-2 hidden sm:flex">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase">Desc. Global</span>
+                            <div class="flex items-center gap-1 mt-0.5">
+                                <span class="text-xs text-gray-400">RD$</span>
+                                <input type="number" id="billing-discount" value="0" min="0" oninput="window.renderBillingItems()" class="w-20 border border-gray-300 rounded text-right text-sm font-bold px-1.5 py-1 focus:outline-none focus:border-blue-400">
+                                <span class="text-xs text-gray-400">%</span>
+                                <input type="number" id="billing-discount-pct" value="0" min="0" max="100" oninput="window.applyBillingDiscountPct()" class="w-12 border border-gray-300 rounded text-right text-sm font-bold px-1.5 py-1 focus:outline-none focus:border-blue-400">
                             </div>
+                        </div>
+
+                        <!-- Total acumulado -->
+                        <div class="flex flex-col justify-center px-4 py-2">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase">Total:</span>
+                            <span id="billing-total" class="text-xl font-extrabold text-gray-900">RD$ 0.00</span>
+                            <span id="billing-subtotal-display" class="text-[10px] text-gray-400 hidden"></span>
+                            <span id="billing-discount-display" class="text-[10px] text-red-500 font-bold hidden"></span>
+                        </div>
+
+                        <!-- Método de pago -->
+                        <div class="flex flex-col justify-center px-3 py-2 gap-1 min-w-0">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase">Método:</span>
+                            <div class="flex gap-1">
+                                <button type="button" onclick="window.setBillingPaymentMethod('Efectivo')" id="billing-pay-btn-efectivo" class="text-[10px] font-extrabold px-2 py-1 rounded border-2 border-green-600 bg-green-600 text-white transition whitespace-nowrap">Efectivo</button>
+                                <button type="button" onclick="window.setBillingPaymentMethod('Transferencia')" id="billing-pay-btn-transferencia" class="text-[10px] font-extrabold px-2 py-1 rounded border-2 border-gray-300 bg-white text-gray-500 hover:border-blue-400 transition whitespace-nowrap">Transfer.</button>
+                                <button type="button" onclick="window.setBillingPaymentMethod('Tarjeta')" id="billing-pay-btn-tarjeta" class="text-[10px] font-extrabold px-2 py-1 rounded border-2 border-gray-300 bg-white text-gray-500 hover:border-purple-400 transition whitespace-nowrap">Tarjeta</button>
+                            </div>
+                            <input type="text" id="billing-payment-entity" placeholder="Entidad bancaria..." class="hidden text-[11px] border border-gray-300 rounded px-2 py-1 focus:outline-none focus:border-blue-400 mt-0.5">
+                        </div>
+
+                        <!-- Pagó con + Cambio -->
+                        <div class="flex flex-col justify-center px-3 py-2 min-w-0" id="billing-cash-calculator">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase">Pagó Con:</span>
+                            <input type="number" id="billing-cash-received" placeholder="0.00" min="0" oninput="window.calcChange()" class="w-28 border border-gray-300 rounded text-right text-sm font-bold px-2 py-1 focus:outline-none focus:border-blue-400 mt-0.5">
+                            <div class="flex items-center gap-1 mt-0.5">
+                                <span class="text-[10px] text-gray-400 font-bold">Cambio:</span>
+                                <span id="billing-change-display" class="text-sm font-extrabold text-green-600">RD$ 0.00</span>
+                            </div>
+                        </div>
+
+                        <!-- COBRAR -->
+                        <div class="flex items-center px-3 py-2 ml-auto shrink-0">
+                            <button onclick="window.generateManualInvoice()"
+                                class="bg-green-600 hover:bg-green-700 active:scale-95 text-white font-extrabold text-lg px-8 py-4 rounded-lg shadow-lg transition flex flex-col items-center leading-tight whitespace-nowrap">
+                                <span class="text-xs opacity-80">F12</span>
+                                COBRAR
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -3026,7 +3041,277 @@
         window.facturaItems = [];
         window.facturaSelectedOrderId = null;
         window.facturaPaymentMethod = 'Efectivo';
-        window.billingCatFilter = 'Todas';
+
+        // Busca en vivo mientras el usuario escribe y muestra sugerencias en dropdown
+        window.billingSearchLive = function(term) {
+            const drop = document.getElementById('billing-suggestions-drop');
+            const t = term.trim().toLowerCase();
+            if (t.length < 2) { drop.classList.add('hidden'); return; }
+
+            const matches = (window.catalogProducts || []).filter(p =>
+                p.name.toLowerCase().includes(t) ||
+                (p.barcode && p.barcode.toLowerCase().includes(t)) ||
+                (p.brand && p.brand.toLowerCase().includes(t))
+            ).slice(0, 12);
+
+            if (!matches.length) { drop.innerHTML = `<p class="text-xs text-gray-400 p-3 text-center">Sin resultados.</p>`; drop.classList.remove('hidden'); return; }
+
+            drop.innerHTML = matches.map(p => {
+                const isOut = !!p.isAgotado || (typeof p.stock === 'number' && p.stock <= 0);
+                const stockTag = typeof p.stock === 'number' ? `<span class="text-[9px] font-bold ${isOut ? 'text-red-500' : 'text-green-600'} ml-1">${isOut ? 'Agotado' : p.stock + ' disp.'}</span>` : '';
+                return `<div onclick="window.addBillingItem('${p.id}','${window.safeStr(p.name)}',${p.price}); document.getElementById('billing-code-input').value=''; document.getElementById('billing-suggestions-drop').classList.add('hidden');"
+                    class="flex items-center gap-3 px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100 ${isOut ? 'opacity-50 pointer-events-none' : ''}">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xs font-bold text-gray-800 truncate">${p.name}</p>
+                        <p class="text-[10px] text-gray-400">${p.brand || ''}${p.barcode ? ' · ' + p.barcode : ''}${stockTag}</p>
+                    </div>
+                    <span class="text-xs font-extrabold text-green-700 whitespace-nowrap">RD$ ${p.price.toLocaleString('en-US')}</span>
+                </div>`;
+            }).join('');
+            drop.classList.remove('hidden');
+        }
+
+        // Cierra el dropdown al hacer click afuera
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('#billing-code-input') && !e.target.closest('#billing-suggestions-drop')) {
+                document.getElementById('billing-suggestions-drop')?.classList.add('hidden');
+            }
+        });
+
+        // Agrega por código exacto (Enter o botón Agregar)
+        window.billingAddByCode = function(val) {
+            const t = val.trim();
+            if (!t) return;
+            // Busca por código de barras exacto primero, luego por nombre parcial
+            let prod = window.catalogProducts.find(p => p.barcode && p.barcode.toLowerCase() === t.toLowerCase());
+            if (!prod) {
+                const matches = window.catalogProducts.filter(p => p.name.toLowerCase().includes(t.toLowerCase()));
+                if (matches.length === 1) prod = matches[0];
+                else if (matches.length > 1) { window.billingSearchLive(t); document.getElementById('billing-code-input').select(); return; }
+            }
+            if (!prod) return window.showToast("Producto no encontrado. Selecciónalo de la lista.");
+            window.addBillingItem(prod.id, prod.name, prod.price);
+            document.getElementById('billing-code-input').value = '';
+            document.getElementById('billing-suggestions-drop').classList.add('hidden');
+            document.getElementById('billing-code-input').focus();
+        }
+
+        window.addBillingItemByBarcode = function(code) {
+            const prod = window.catalogProducts.find(p => p.barcode && p.barcode === code);
+            if (!prod) return window.showToast("⚠️ Producto no encontrado con ese código.");
+            window.addBillingItem(prod.id, prod.name, prod.price);
+        }
+
+        window.addBillingItem = function(prodId, name, price) {
+            const prod = window.catalogProducts.find(p => p.id === prodId);
+            if (prod && (!!prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0))) return window.showToast("⚠️ Ese producto está agotado.");
+            const existing = window.facturaItems.find(i => i.id === prodId);
+            const currentQty = existing ? existing.qty : 0;
+            if (prod && typeof prod.stock === 'number' && (currentQty + 1) > prod.stock) return window.showToast(`Solo quedan ${prod.stock} unidades.`);
+            if (existing) { existing.qty += 1; }
+            else { window.facturaItems.push({ id: prodId, name, price, qty: 1, img: prod?.img || '', barcode: prod?.barcode || '', cost: prod?.cost || null }); }
+            window.renderBillingItems();
+        }
+
+        window.updateBillingItemQty = function(idx, delta) {
+            const item = window.facturaItems[idx]; if (!item) return;
+            const prod = window.catalogProducts.find(p => p.id === item.id);
+            const newQty = item.qty + delta;
+            if (newQty < 1) return window.removeBillingItem(idx);
+            if (prod && typeof prod.stock === 'number' && newQty > prod.stock) return window.showToast(`Solo quedan ${prod.stock} unidades.`);
+            item.qty = newQty;
+            window.renderBillingItems();
+        }
+
+        window.updateBillingItemPrice = function(idx, val) {
+            const p = parseFloat(val); if (isNaN(p) || p < 0) return;
+            window.facturaItems[idx].price = p;
+            window.renderBillingItems();
+        }
+
+        window.updateBillingItemDiscount = function(idx, val) {
+            const d = parseFloat(val) || 0;
+            window.facturaItems[idx].lineDiscount = d;
+            window.renderBillingItems();
+        }
+
+        window.removeBillingItem = function(idx) {
+            window.facturaItems.splice(idx, 1);
+            window.renderBillingItems();
+        }
+
+        window.applyBillingDiscountPct = function() {
+            const pct = parseFloat(document.getElementById('billing-discount-pct')?.value) || 0;
+            const subtotal = window.facturaItems.reduce((a, i) => a + i.price * i.qty, 0);
+            const el = document.getElementById('billing-discount');
+            if (el) el.value = Math.round(subtotal * pct / 100);
+            window.renderBillingItems();
+        }
+
+        window.calcChange = function() {
+            const total = window._billingCurrentTotal || 0;
+            const received = parseFloat(document.getElementById('billing-cash-received')?.value) || 0;
+            const el = document.getElementById('billing-change-display');
+            if (el) el.innerText = `RD$ ${Math.max(0, received - total).toLocaleString('en-US')}`;
+        }
+
+        // Renderiza las filas de la tabla del ticket
+        window.renderBillingItems = function() {
+            const tbody = document.getElementById('billing-items-list');
+            const totalEl = document.getElementById('billing-total');
+            const subtotalEl = document.getElementById('billing-subtotal-display');
+            const discountDisplayEl = document.getElementById('billing-discount-display');
+            if (!tbody || !totalEl) return;
+
+            const globalDiscount = parseFloat(document.getElementById('billing-discount')?.value) || 0;
+
+            if (window.facturaItems.length === 0) {
+                tbody.innerHTML = `<tr id="billing-empty-row"><td colspan="8" class="text-center text-gray-400 text-sm py-16">
+                    <div class="flex flex-col items-center gap-2">
+                        <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        <span class="font-medium">Escanea un código o busca un producto para comenzar</span>
+                    </div></td></tr>`;
+                totalEl.innerText = 'RD$ 0.00';
+                if (subtotalEl) { subtotalEl.innerText = ''; subtotalEl.classList.add('hidden'); }
+                if (discountDisplayEl) { discountDisplayEl.innerText = ''; discountDisplayEl.classList.add('hidden'); }
+                window._billingCurrentTotal = 0;
+                window.calcChange();
+                return;
+            }
+
+            let subtotal = 0;
+            let html = '';
+            window.facturaItems.forEach((item, idx) => {
+                const lineDisc = item.lineDiscount || 0;
+                const lineTotal = (item.price * item.qty) - lineDisc;
+                subtotal += lineTotal;
+                const prod = window.catalogProducts.find(p => p.id === item.id);
+                const stock = prod && typeof prod.stock === 'number' ? prod.stock : '—';
+                const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+
+                html += `<tr class="${rowBg} border-b border-gray-200 hover:bg-blue-50 transition-colors">
+                    <td class="px-3 py-2 text-xs text-gray-400 font-bold">${idx + 1}</td>
+                    <td class="px-3 py-2">
+                        <p class="text-xs font-bold text-gray-800 leading-tight">${item.name}</p>
+                        ${item.barcode ? `<p class="text-[9px] text-gray-400 font-mono">${item.barcode}</p>` : ''}
+                    </td>
+                    <td class="px-2 py-2 text-right">
+                        <input type="number" value="${item.price}" onchange="window.updateBillingItemPrice(${idx}, this.value)"
+                            class="w-20 text-right text-xs font-bold border border-transparent hover:border-gray-300 rounded px-1.5 py-1 focus:outline-none focus:border-blue-400 bg-transparent">
+                    </td>
+                    <td class="px-2 py-2">
+                        <div class="flex items-center justify-center gap-1">
+                            <button onclick="window.updateBillingItemQty(${idx},-1)" class="w-6 h-6 rounded bg-gray-200 hover:bg-red-100 hover:text-red-600 font-extrabold text-xs flex items-center justify-center transition">-</button>
+                            <span class="w-7 text-center text-sm font-extrabold text-gray-800">${item.qty}</span>
+                            <button onclick="window.updateBillingItemQty(${idx},1)" class="w-6 h-6 rounded bg-gray-200 hover:bg-green-100 hover:text-green-600 font-extrabold text-xs flex items-center justify-center transition">+</button>
+                        </div>
+                    </td>
+                    <td class="px-2 py-2 text-right text-xs font-extrabold text-gray-800">RD$ ${lineTotal.toLocaleString('en-US')}</td>
+                    <td class="px-2 py-2 text-center text-xs font-bold hidden sm:table-cell ${stock === 0 ? 'text-red-500' : 'text-gray-500'}">${stock}</td>
+                    <td class="px-2 py-2 hidden md:table-cell">
+                        <input type="number" value="${lineDisc}" min="0" onchange="window.updateBillingItemDiscount(${idx}, this.value)"
+                            class="w-20 text-right text-xs border border-transparent hover:border-gray-300 rounded px-1.5 py-1 focus:outline-none focus:border-blue-400 bg-transparent">
+                    </td>
+                    <td class="px-2 py-2 text-center">
+                        <button onclick="window.removeBillingItem(${idx})" class="text-gray-300 hover:text-red-500 transition font-bold text-base leading-none">×</button>
+                    </td>
+                </tr>`;
+            });
+            tbody.innerHTML = html;
+
+            const total = Math.max(0, subtotal - globalDiscount);
+            window._billingCurrentTotal = total;
+            totalEl.innerText = `RD$ ${total.toLocaleString('en-US')}`;
+
+            if (globalDiscount > 0) {
+                if (subtotalEl) { subtotalEl.innerText = `Subtotal: RD$ ${subtotal.toLocaleString('en-US')}`; subtotalEl.classList.remove('hidden'); }
+                if (discountDisplayEl) { discountDisplayEl.innerText = `Desc.: - RD$ ${globalDiscount.toLocaleString('en-US')}`; discountDisplayEl.classList.remove('hidden'); }
+            } else {
+                if (subtotalEl) subtotalEl.classList.add('hidden');
+                if (discountDisplayEl) discountDisplayEl.classList.add('hidden');
+            }
+            window.calcChange();
+        }
+
+        window.setBillingPaymentMethod = function(method) {
+            window.facturaPaymentMethod = method;
+            const ids = ['Efectivo','Transferencia','Tarjeta'];
+            ids.forEach(m => {
+                const id = `billing-pay-btn-${m.toLowerCase()}`;
+                const el = document.getElementById(id); if (!el) return;
+                const active = m === method;
+                const colors = { Efectivo: 'border-green-600 bg-green-600 text-white', Transferencia: 'border-blue-500 bg-blue-500 text-white', Tarjeta: 'border-purple-500 bg-purple-500 text-white' };
+                el.className = `text-[10px] font-extrabold px-2 py-1 rounded border-2 transition whitespace-nowrap ${active ? colors[m] : 'border-gray-300 bg-white text-gray-500'}`;
+            });
+            const entity = document.getElementById('billing-payment-entity');
+            const cashCalc = document.getElementById('billing-cash-calculator');
+            if (entity) entity.classList.toggle('hidden', method !== 'Transferencia');
+            if (cashCalc) cashCalc.classList.toggle('hidden', method !== 'Efectivo');
+        }
+
+        window.toggleBillingOrdersDrawer = function() {
+            const drawer = document.getElementById('billing-orders-drawer');
+            if (drawer) drawer.classList.toggle('hidden');
+        }
+
+        window.renderBillingOrdersList = function() {
+            const listDiv = document.getElementById('billing-orders-list');
+            const countEl = document.getElementById('billing-pending-count');
+            if (!listDiv) return;
+            const pending = (window.adminOrders || []).filter(o => o.status !== 'Completado' && o.status !== 'Cancelado' && o.status !== 'Eliminado');
+            if (countEl) countEl.innerText = pending.length;
+            if (!pending.length) { listDiv.innerHTML = `<p class="text-xs text-gray-400 text-center py-3">No hay pedidos en proceso.</p>`; return; }
+            listDiv.innerHTML = pending.map(order => {
+                const isSelected = window.facturaSelectedOrderId === order.id;
+                const itemCount = (order.items || []).reduce((s, i) => s + i.qty, 0);
+                return `<button onclick="window.selectBillingOrder('${order.id}')"
+                    class="w-full text-left px-3 py-2 rounded border-2 ${isSelected ? 'border-blue-500 bg-blue-50' : 'border-gray-200 bg-white hover:border-blue-300'} transition mb-1">
+                    <div class="flex justify-between items-center">
+                        <span class="text-[10px] font-extrabold text-gray-700">${order.orderId || '#PED-XXX'}</span>
+                        <span class="text-[9px] text-gray-400">${itemCount} art. · RD$ ${(order.total||0).toLocaleString('en-US')}</span>
+                    </div>
+                    <p class="text-xs text-gray-600 truncate">${order.customerName || 'Cliente'}</p>
+                </button>`;
+            }).join('');
+        }
+
+        window.selectBillingOrder = function(orderId) {
+            const order = window.adminOrders.find(o => o.id === orderId); if (!order) return;
+            window.facturaSelectedOrderId = orderId;
+            window.facturaItems = (order.items || []).map(i => {
+                const prod = window.catalogProducts.find(p => p.id === i.id);
+                return { ...i, cost: i.cost !== undefined ? i.cost : (prod?.cost || null) };
+            });
+            document.getElementById('billing-customer-name').value = order.customerName || '';
+            const badge = document.getElementById('billing-selected-order-badge');
+            if (badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
+            document.getElementById('billing-selected-order-label').innerText = order.orderId || '#PED-XXX';
+            window.renderBillingOrdersList();
+            window.renderBillingItems();
+            document.getElementById('billing-orders-drawer')?.classList.add('hidden');
+            document.getElementById('billing-code-input')?.focus();
+            window.showToast("Pedido cargado.");
+        }
+
+        window.clearBillingSelection = function() {
+            window.facturaSelectedOrderId = null;
+            window.facturaItems = [];
+            ['billing-customer-name','billing-payment-entity','billing-cash-received'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            ['billing-discount','billing-discount-pct'].forEach(id => { const el = document.getElementById(id); if (el) el.value = '0'; });
+            document.getElementById('billing-payment-entity')?.classList.add('hidden');
+            const badge = document.getElementById('billing-selected-order-badge');
+            if (badge) { badge.classList.add('hidden'); badge.classList.remove('flex'); }
+            window.setBillingPaymentMethod('Efectivo');
+            window.renderBillingOrdersList();
+            window.renderBillingItems();
+            document.getElementById('billing-code-input')?.focus();
+        }
+
+        // Estas funciones ya no se usan en el nuevo POS pero se conservan vacías por compatibilidad
+        window.renderBillingCatChips = function() {}
+        window.setBillingCatFilter = function() {}
+        window.renderBillingProductGrid = function() {}
+        window.filterBillingProductSearch = function() {}
 
         window.setBillingPaymentMethod = function(method) {
             window.facturaPaymentMethod = method;
@@ -3290,8 +3575,7 @@
             window.switchBillingSubTab('invoice');
             if (!window.adminOrders || window.adminOrders.length === 0) await window.loadAdminOrders();
             window.renderBillingOrdersList();
-            window.renderBillingCatChips();
-            window.renderBillingProductGrid();
+            setTimeout(() => document.getElementById('billing-code-input')?.focus(), 200);
         }
 
         window.closeBillingModal = function() {
