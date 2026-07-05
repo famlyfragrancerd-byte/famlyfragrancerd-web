@@ -96,15 +96,6 @@
             animation: fadeInSlideUp 0.4s ease-out forwards;
         }
 
-        .swatch-circle {
-            width: 44px; height: 44px; border-radius: 50%; border: 2px solid #e5e7eb;
-            overflow: hidden; cursor: pointer; transition: all 0.2s ease;
-            background-color: white; padding: 2px; flex-shrink: 0;
-        }
-        .swatch-circle:hover { transform: scale(1.1); border-color: var(--primary); }
-        .swatch-circle.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(0,0,0,0.1); }
-        .swatch-circle img { width: 100%; height: 100%; object-fit: contain; mix-blend-multiply; }
-
         /* SCROLL HORIZONTAL EN CHIPS */
         #cat-chips, #brand-chips {
             scrollbar-width: thin;
@@ -1051,7 +1042,7 @@
             </div>
         </div>
         <div class="flex-1 overflow-y-auto p-4 md:p-8">
-            <div id="admin-orders-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
+            <div id="admin-orders-list" class="space-y-2 px-4 pb-6"></div>
         </div>
     </div>
 
@@ -1085,57 +1076,57 @@
                 <div class="bg-white border-b-2 border-gray-300 shrink-0">
                     <!-- Fila 1: Ticket header + input de código -->
                     <div class="flex items-center gap-2 px-3 py-2 border-b border-gray-200">
-                        <div id="billing-selected-order-badge" class="hidden items-center gap-1.5 bg-blue-100 text-blue-700 text-[10px] font-extrabold px-2.5 py-1.5 rounded border border-blue-300 shrink-0 uppercase tracking-wide">
+                        <div id="billing-selected-order-badge" class="hidden items-center gap-1.5 bg-blue-100 text-blue-700 text-[10px] font-extrabold px-2 py-1 rounded border border-blue-300 shrink-0 uppercase tracking-wide">
                             <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2"/></svg>
                             <span id="billing-selected-order-label">Pedido</span>
-                            <button onclick="window.clearBillingSelection()" class="text-blue-400 hover:text-red-500 ml-1 font-bold">✕</button>
+                            <button onclick="window.clearBillingSelection()" class="text-blue-400 hover:text-red-500 ml-0.5 font-bold">✕</button>
                         </div>
-                        <span class="text-xs font-extrabold text-gray-500 uppercase tracking-wider shrink-0 hidden sm:block">Código / Descripción:</span>
                         <div class="relative flex-1">
                             <input type="text" id="billing-code-input"
                                 oninput="window.billingSearchLive(this.value)"
                                 onkeydown="if(event.key==='Enter') window.billingAddByCode(this.value)"
-                                placeholder="Escanea o escribe el código / nombre del producto..."
+                                placeholder="Código, nombre o marca..."
                                 autocomplete="off"
-                                class="w-full border-2 border-blue-400 rounded px-3 py-2 text-sm font-medium focus:outline-none focus:border-blue-600 bg-blue-50">
-                            <!-- Dropdown de sugerencias -->
+                                class="w-full border-2 border-blue-400 rounded-lg px-3 py-2.5 text-sm font-medium focus:outline-none focus:border-blue-600 bg-blue-50">
                             <div id="billing-suggestions-drop" class="hidden absolute top-full left-0 w-full bg-white border border-gray-300 rounded-b-lg shadow-xl z-50 max-h-64 overflow-y-auto"></div>
                         </div>
                         <button onclick="window.billingAddByCode(document.getElementById('billing-code-input').value)"
-                            class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded transition flex items-center gap-1.5 whitespace-nowrap">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-3 py-2.5 rounded-lg transition flex items-center gap-1 whitespace-nowrap">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                             <span class="hidden sm:inline">Agregar</span>
                         </button>
                         <button type="button" onclick="openScannerModal('billing')"
-                            class="shrink-0 bg-gray-700 hover:bg-black text-white px-3 py-2 rounded transition flex items-center justify-center" title="Escanear con cámara">
+                            class="shrink-0 bg-gray-800 hover:bg-black text-white px-3 py-2.5 rounded-lg transition flex items-center justify-center" title="Escanear">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 3h.01M5 8h2a1 1 0 001-1V5a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1zm12 0h2a1 1 0 001-1V5a1 1 0 00-1-1h-2a1 1 0 00-1 1v2a1 1 0 001 1zM5 20h2a1 1 0 001-1v-2a1 1 0 00-1-1H5a1 1 0 00-1 1v2a1 1 0 001 1z"/></svg>
                         </button>
                     </div>
 
-                    <!-- Fila 2: Acciones rápidas + cliente -->
-                    <div class="flex items-center gap-2 px-3 py-1.5 overflow-x-auto no-scrollbar">
+                    <!-- Fila 2: Cliente + acciones -->
+                    <div class="flex items-center gap-2 px-3 py-1.5 overflow-x-auto no-scrollbar relative">
                         <div class="relative shrink-0">
                             <svg class="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            <input type="text" id="billing-customer-name" placeholder="Cliente (opcional)" class="pl-6 pr-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:border-blue-400 w-36 sm:w-44">
+                            <input type="text" id="billing-customer-name" placeholder="Cliente (opcional)" class="pl-6 pr-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:border-blue-400 w-32 sm:w-44">
                         </div>
-                        <button onclick="window.toggleBillingOrdersDrawer()" class="shrink-0 flex items-center gap-1 border border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1 rounded transition whitespace-nowrap">
+                        <button onclick="window.toggleBillingOrdersDrawer()" class="shrink-0 flex items-center gap-1 border border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                             Pendientes <span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-0.5" id="billing-pending-count">0</span>
                         </button>
-                        <button onclick="window.clearBillingSelection()" class="shrink-0 flex items-center gap-1 border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold px-3 py-1 rounded transition whitespace-nowrap">
+                        <button onclick="window.clearBillingSelection()" class="shrink-0 flex items-center gap-1 border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                             Limpiar
                         </button>
                         <!-- Drawer de pedidos pendientes -->
-                        <div id="billing-orders-drawer" class="hidden absolute top-[96px] left-0 w-72 bg-white border border-gray-300 shadow-2xl rounded-b-xl z-40 max-h-72 overflow-y-auto p-2 space-y-1.5">
+                        <div id="billing-orders-drawer" class="hidden absolute top-full left-0 w-full sm:w-80 bg-white border border-gray-300 shadow-2xl rounded-b-xl z-40 max-h-72 overflow-y-auto p-2 space-y-1.5">
                             <div id="billing-orders-list"></div>
                         </div>
                     </div>
                 </div>
 
-                <!-- TABLA DE ARTÍCULOS -->
+                <!-- TABLA DE ARTÍCULOS — Desktop: tabla completa | Mobile: tarjetas apiladas -->
                 <div class="flex-1 overflow-auto min-h-0">
-                    <table class="w-full text-sm border-collapse" style="min-width:520px">
+
+                    <!-- DESKTOP: tabla normal (oculta en móvil) -->
+                    <table class="w-full text-sm border-collapse hidden md:table" style="min-width:520px">
                         <thead class="sticky top-0 bg-gray-200 z-10">
                             <tr class="text-left text-[11px] font-extrabold text-gray-600 uppercase tracking-wide">
                                 <th class="px-3 py-2.5 border-b border-gray-300 w-8 text-center">#</th>
@@ -1159,58 +1150,66 @@
                             </tr>
                         </tbody>
                     </table>
+
+                    <!-- MÓVIL: tarjetas apiladas (ocultas en desktop) -->
+                    <div id="billing-items-mobile" class="md:hidden divide-y divide-gray-100">
+                        <div class="flex flex-col items-center justify-center text-gray-400 py-14 gap-2">
+                            <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                            <span class="text-sm font-medium text-center px-4">Escribe o escanea un producto para comenzar</span>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- BARRA INFERIOR FIJA: Totales + Pago + COBRAR -->
+                <!-- En móvil se apila verticalmente; en desktop queda horizontal -->
                 <div class="bg-white border-t-2 border-gray-300 shrink-0">
-                    <div class="flex items-stretch divide-x divide-gray-200">
 
-                        <!-- Descuento global -->
-                        <div class="flex flex-col justify-center px-3 py-2 hidden sm:flex shrink-0">
-                            <span class="text-[10px] text-gray-400 font-bold uppercase mb-1">Desc. Global</span>
-                            <div class="flex items-center gap-1">
-                                <span class="text-xs text-gray-400 shrink-0">RD$</span>
-                                <input type="number" id="billing-discount" value="0" min="0" oninput="window.renderBillingItems()" class="w-20 border border-gray-300 rounded text-right text-sm font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
-                                <span class="text-xs text-gray-400 shrink-0">%</span>
-                                <input type="number" id="billing-discount-pct" value="0" min="0" max="100" oninput="window.applyBillingDiscountPct()" class="w-12 border border-gray-300 rounded text-right text-sm font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
+                    <!-- FILA SUPERIOR: Método de pago + descuento (visible en todas las pantallas) -->
+                    <div class="flex items-center gap-2 px-3 pt-2 pb-1 flex-wrap">
+                        <div class="flex gap-1 shrink-0">
+                            <button type="button" onclick="window.setBillingPaymentMethod('Efectivo')" id="billing-pay-btn-efectivo" class="text-xs font-extrabold px-3 py-1.5 rounded-lg border-2 border-green-600 bg-green-600 text-white transition">Efectivo</button>
+                            <button type="button" onclick="window.setBillingPaymentMethod('Transferencia')" id="billing-pay-btn-transferencia" class="text-xs font-extrabold px-3 py-1.5 rounded-lg border-2 border-gray-300 bg-white text-gray-500 hover:border-blue-400 transition">Transfer.</button>
+                            <button type="button" onclick="window.setBillingPaymentMethod('Tarjeta')" id="billing-pay-btn-tarjeta" class="text-xs font-extrabold px-3 py-1.5 rounded-lg border-2 border-gray-300 bg-white text-gray-500 hover:border-purple-400 transition">Tarjeta</button>
+                        </div>
+                        <input type="text" id="billing-payment-entity" placeholder="Entidad bancaria..." class="hidden flex-1 min-w-0 border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                        <!-- Descuento (siempre visible) -->
+                        <div class="flex items-center gap-1 ml-auto shrink-0">
+                            <span class="text-[10px] text-gray-400 font-bold">Desc.:</span>
+                            <span class="text-[10px] text-gray-400">RD$</span>
+                            <input type="number" id="billing-discount" value="0" min="0" oninput="window.renderBillingItems()" class="w-16 border border-gray-300 rounded-lg text-right text-xs font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
+                            <span class="text-[10px] text-gray-400">%</span>
+                            <input type="number" id="billing-discount-pct" value="0" min="0" max="100" oninput="window.applyBillingDiscountPct()" class="w-12 border border-gray-300 rounded-lg text-right text-xs font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
+                        </div>
+                    </div>
+
+                    <!-- FILA INFERIOR: Pagó con/Cambio + Total + COBRAR -->
+                    <div class="flex items-stretch gap-0 divide-x divide-gray-200 pb-1">
+
+                        <!-- Pagó con + Cambio (solo Efectivo) -->
+                        <div id="billing-cash-calculator" class="flex flex-col justify-center px-3 py-1 min-w-0">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase leading-none mb-1">Pagó Con:</span>
+                            <input type="number" id="billing-cash-received" placeholder="0.00" min="0" oninput="window.calcChange()"
+                                class="w-28 sm:w-32 border-2 border-gray-300 rounded-lg text-right text-sm font-bold px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                            <div class="flex items-center gap-1 mt-0.5">
+                                <span class="text-[10px] text-gray-400 font-bold">Cambio:</span>
+                                <span id="billing-change-display" class="text-sm font-extrabold text-green-600">RD$ 0</span>
                             </div>
                         </div>
 
                         <!-- Total -->
-                        <div class="flex flex-col justify-center px-4 py-2 shrink-0">
-                            <span class="text-[10px] text-gray-400 font-bold uppercase">Total:</span>
-                            <span id="billing-total" class="text-2xl font-extrabold text-gray-900 leading-tight">RD$ 0.00</span>
-                            <span id="billing-subtotal-display" class="text-[10px] text-gray-400 hidden"></span>
-                            <span id="billing-discount-display" class="text-[10px] text-red-500 font-bold hidden"></span>
-                        </div>
-
-                        <!-- Método de pago -->
-                        <div class="flex flex-col justify-center px-3 py-2 shrink-0">
-                            <span class="text-[10px] text-gray-400 font-bold uppercase mb-1">Método:</span>
-                            <div class="flex gap-1.5">
-                                <button type="button" onclick="window.setBillingPaymentMethod('Efectivo')" id="billing-pay-btn-efectivo" class="text-xs font-extrabold px-3 py-2 rounded border-2 border-green-600 bg-green-600 text-white transition whitespace-nowrap">Efectivo</button>
-                                <button type="button" onclick="window.setBillingPaymentMethod('Transferencia')" id="billing-pay-btn-transferencia" class="text-xs font-extrabold px-3 py-2 rounded border-2 border-gray-300 bg-white text-gray-500 hover:border-blue-400 transition whitespace-nowrap">Transfer.</button>
-                                <button type="button" onclick="window.setBillingPaymentMethod('Tarjeta')" id="billing-pay-btn-tarjeta" class="text-xs font-extrabold px-3 py-2 rounded border-2 border-gray-300 bg-white text-gray-500 hover:border-purple-400 transition whitespace-nowrap">Tarjeta</button>
-                            </div>
-                            <input type="text" id="billing-payment-entity" placeholder="Entidad bancaria..." class="hidden text-xs border border-gray-300 rounded px-2 py-1.5 focus:outline-none focus:border-blue-400 mt-1.5 w-36">
-                        </div>
-
-                        <!-- Pagó con + Cambio -->
-                        <div class="flex flex-col justify-center px-3 py-2 shrink-0" id="billing-cash-calculator">
-                            <span class="text-[10px] text-gray-400 font-bold uppercase mb-1">Pagó Con:</span>
-                            <input type="number" id="billing-cash-received" placeholder="0.00" min="0" oninput="window.calcChange()" class="w-32 border-2 border-gray-300 rounded text-right text-base font-bold px-2 py-1.5 focus:outline-none focus:border-blue-400">
-                            <div class="flex items-center gap-1 mt-1">
-                                <span class="text-[10px] text-gray-400 font-bold">Cambio:</span>
-                                <span id="billing-change-display" class="text-base font-extrabold text-green-600">RD$ 0.00</span>
-                            </div>
+                        <div class="flex flex-col justify-center px-3 py-1 shrink-0">
+                            <span class="text-[10px] text-gray-400 font-bold uppercase leading-none">Total:</span>
+                            <span id="billing-total" class="text-xl sm:text-2xl font-extrabold text-gray-900 leading-tight">RD$ 0.00</span>
+                            <span id="billing-subtotal-display" class="text-[9px] text-gray-400 hidden"></span>
+                            <span id="billing-discount-display" class="text-[9px] text-red-500 font-bold hidden"></span>
                         </div>
 
                         <!-- COBRAR -->
                         <div class="flex items-stretch ml-auto shrink-0">
                             <button onclick="window.generateManualInvoice()"
-                                class="bg-green-600 hover:bg-green-700 active:scale-95 text-white font-extrabold px-10 py-4 flex flex-col items-center justify-center leading-tight transition shadow-lg h-full">
-                                <span class="text-[10px] opacity-70 font-bold tracking-widest">F12</span>
-                                <span class="text-2xl font-extrabold tracking-wide">COBRAR</span>
+                                class="bg-green-600 hover:bg-green-700 active:scale-95 text-white font-extrabold px-6 sm:px-10 flex flex-col items-center justify-center leading-tight transition shadow-lg h-full min-w-[80px]">
+                                <span class="text-[9px] opacity-70 font-bold tracking-widest hidden sm:block">F12</span>
+                                <span class="text-xl sm:text-2xl font-extrabold tracking-wide">COBRAR</span>
                             </button>
                         </div>
                     </div>
@@ -1465,7 +1464,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut, updateProfile, updatePassword, sendEmailVerification, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, getDocs, doc, deleteDoc, setDoc, getDoc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, getDocs, getDocsFromServer, doc, deleteDoc, setDoc, getDoc, updateDoc, onSnapshot, query, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-messaging.js";
 
         const firebaseConfig = {
@@ -2763,23 +2762,31 @@
         window.deleteAdminOrder = function(docId) {
             window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas eliminar este pedido permanentemente? Esta acción no se puede deshacer.", async () => {
                 try {
-                    // Delete from Firestore
+                    // 1. Borrar de Firestore (fuente de verdad)
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId));
 
-                    // Remove locally and re-render
-                    window.adminOrders = window.adminOrders.filter(o => o.id !== docId);
+                    // 2. Borrar de TODOS los arrays en memoria para que no quede caché
+                    window.adminOrders = (window.adminOrders || []).filter(o => o.id !== docId);
+                    window.userOrdersList = (window.userOrdersList || []).filter(o => o.id !== docId);
+
+                    // 3. Re-renderizar la vista de admin
                     window.renderAdminOrdersList();
 
-                    // If user orders list contains it, remove as well
-                    if (Array.isArray(window.userOrdersList) && window.userOrdersList.findIndex(o => o.id === docId) !== -1) {
-                        window.userOrdersList = window.userOrdersList.filter(o => o.id !== docId);
+                    // 4. Si el perfil del cliente está abierto y mostraba ese pedido, actualizarlo también
+                    const ordersListEl = document.getElementById('orders-list');
+                    if (ordersListEl && ordersListEl.closest('#profile-modal') && !ordersListEl.closest('#profile-modal').classList.contains('hidden')) {
                         window.renderUserOrdersPage();
+                    }
+
+                    // 5. Actualizar historial de facturas en el panel de Facturación si está abierto
+                    if (document.getElementById('billing-subtab-history') && !document.getElementById('billing-subtab-history').classList.contains('hidden')) {
+                        window.renderInvoiceHistory();
                     }
 
                     window.showToast("✅ Pedido eliminado permanentemente.");
                 } catch (e) {
                     console.error('Error eliminando pedido:', e);
-                    window.showToast("❌ Error al eliminar el pedido. Revisa la consola.");
+                    window.showToast("❌ Error al eliminar el pedido.");
                 }
             });
         }
@@ -3307,205 +3314,6 @@
             document.getElementById('billing-code-input')?.focus();
         }
 
-        // Estas funciones ya no se usan en el nuevo POS pero se conservan vacías por compatibilidad
-        window.renderBillingCatChips = function() {}
-        window.setBillingCatFilter = function() {}
-        window.renderBillingProductGrid = function() {}
-        window.filterBillingProductSearch = function() {}
-
-        window.setBillingPaymentMethod = function(method) {
-            window.facturaPaymentMethod = method;
-            const btns = { 'Efectivo': 'billing-pay-btn-efectivo', 'Transferencia': 'billing-pay-btn-transferencia', 'Tarjeta': 'billing-pay-btn-tarjeta' };
-            const activeClass = 'border-2 border-green-600 bg-green-600 text-white py-2 rounded-xl text-xs font-extrabold transition flex-1 flex items-center justify-center gap-1';
-            const inactiveClass = 'border-2 border-gray-200 bg-white text-gray-500 py-2 rounded-xl text-xs font-extrabold transition hover:border-green-400 hover:text-green-600 flex-1 flex items-center justify-center gap-1';
-            const blueInactive = 'border-2 border-gray-200 bg-white text-gray-500 py-2 rounded-xl text-xs font-extrabold transition hover:border-blue-400 hover:text-blue-600 flex-1 flex items-center justify-center gap-1';
-            const purpleInactive = 'border-2 border-gray-200 bg-white text-gray-500 py-2 rounded-xl text-xs font-extrabold transition hover:border-purple-400 hover:text-purple-600 flex-1 flex items-center justify-center gap-1';
-            Object.entries(btns).forEach(([m, id]) => {
-                const el = document.getElementById(id); if (!el) return;
-                el.className = m === method ? activeClass : (m === 'Transferencia' ? blueInactive : (m === 'Tarjeta' ? purpleInactive : inactiveClass));
-            });
-            const entity = document.getElementById('billing-payment-entity');
-            const cashCalc = document.getElementById('billing-cash-calculator');
-            if (entity) entity.classList.toggle('hidden', method !== 'Transferencia');
-            if (cashCalc) cashCalc.classList.toggle('hidden', method !== 'Efectivo');
-        }
-
-        // Calcula el cambio a devolver al cliente en efectivo
-        window.calcChange = function() {
-            const total = window._billingCurrentTotal || 0;
-            const received = parseFloat(document.getElementById('billing-cash-received')?.value) || 0;
-            const change = Math.max(0, received - total);
-            const el = document.getElementById('billing-change-display');
-            if (el) el.innerText = `RD$ ${change.toLocaleString('en-US')}`;
-        }
-
-        // Aplica descuento por porcentaje al campo de monto
-        window.applyBillingDiscountPct = function() {
-            const pct = parseFloat(document.getElementById('billing-discount-pct')?.value) || 0;
-            const subtotal = window.facturaItems.reduce((a, i) => a + i.price * i.qty, 0);
-            const discAmt = Math.round(subtotal * pct / 100);
-            const discEl = document.getElementById('billing-discount');
-            if (discEl) discEl.value = discAmt;
-            window.renderBillingItems();
-        }
-
-        // Renderiza los chips de categoría en el panel izquierdo del POS
-        window.renderBillingCatChips = function() {
-            const el = document.getElementById('billing-cat-chips'); if (!el) return;
-            const cats = ['Todas', ...window.siteCategories];
-            el.innerHTML = cats.map(c => `
-                <button onclick="window.setBillingCatFilter('${window.safeStr(c)}')" class="filter-chip ${window.billingCatFilter === c ? 'active' : ''}" style="${window.billingCatFilter === c ? 'background:var(--primary);color:#fff;border-color:var(--primary)' : ''}">${c}</button>
-            `).join('');
-        }
-
-        window.setBillingCatFilter = function(cat) {
-            window.billingCatFilter = cat;
-            window.renderBillingCatChips();
-            window.renderBillingProductGrid();
-        }
-
-        // Renderiza la cuadrícula de productos (el corazón del POS)
-        window.renderBillingProductGrid = function(term = '') {
-            const grid = document.getElementById('billing-product-grid'); if (!grid) return;
-            let products = window.catalogProducts || [];
-
-            if (window.billingCatFilter && window.billingCatFilter !== 'Todas') {
-                products = products.filter(p => p.category === window.billingCatFilter);
-            }
-            if (term) {
-                const t = term.toLowerCase();
-                products = products.filter(p => p.name.toLowerCase().includes(t) || (p.barcode && p.barcode.includes(t)) || (p.brand && p.brand.toLowerCase().includes(t)));
-            }
-
-            if (products.length === 0) {
-                grid.innerHTML = `<p class="col-span-full text-center text-sm text-gray-400 py-10">No se encontraron productos.</p>`;
-                return;
-            }
-
-            grid.innerHTML = products.map(p => {
-                const isOut = !!p.isAgotado || (typeof p.stock === 'number' && p.stock <= 0);
-                const stockBadge = typeof p.stock === 'number'
-                    ? `<span class="absolute top-1 right-1 text-[9px] font-bold px-1.5 py-0.5 rounded-full ${isOut ? 'bg-red-100 text-red-600' : p.stock <= 3 ? 'bg-amber-100 text-amber-700' : 'bg-green-100 text-green-700'}">${isOut ? 'Agotado' : p.stock}</span>`
-                    : '';
-                return `
-                <button onclick="${isOut ? '' : `window.addBillingItem('${p.id}', '${window.safeStr(p.name)}', ${p.price})`}" 
-                    class="relative bg-white rounded-xl border-2 ${isOut ? 'border-gray-100 opacity-50 cursor-not-allowed' : 'border-gray-100 hover:border-green-400 active:scale-95'} p-2 flex flex-col items-center text-center transition-all shadow-sm">
-                    ${stockBadge}
-                    <div class="w-full aspect-square bg-gray-50 rounded-lg flex items-center justify-center mb-1.5 overflow-hidden">
-                        <img src="${p.img}" loading="lazy" class="w-full h-full object-contain p-1 mix-blend-multiply">
-                    </div>
-                    <p class="text-[10px] font-bold text-gray-700 leading-tight line-clamp-2">${p.name}</p>
-                    <p class="text-[11px] font-extrabold text-green-700 mt-0.5">RD$ ${p.price.toLocaleString('en-US')}</p>
-                </button>`;
-            }).join('');
-        }
-
-        window.filterBillingProductSearch = function(term) {
-            window.renderBillingProductGrid(term);
-            // ya no se usa el dropdown de sugerencias, el grid reemplaza ese patrón
-        }
-
-        window.addBillingItemByBarcode = function(code) {
-            const prod = window.catalogProducts.find(p => p.barcode && p.barcode === code);
-            if (!prod) return window.showToast("⚠️ Producto no encontrado con ese código.");
-            window.addBillingItem(prod.id, prod.name, prod.price);
-        }
-
-        window.addBillingItem = function(prodId, name, price) {
-            const prod = window.catalogProducts.find(p => p.id === prodId);
-            const existing = window.facturaItems.find(i => i.id === prodId);
-            const currentQty = existing ? existing.qty : 0;
-            if (prod && typeof prod.stock === 'number' && (currentQty + 1) > prod.stock) {
-                return window.showToast(`Solo quedan ${prod.stock} unidades disponibles.`);
-            }
-            if (existing) { existing.qty += 1; }
-            else { window.facturaItems.push({ id: prodId, name, price, qty: 1, img: prod?.img || '', barcode: prod?.barcode || '', cost: prod?.cost || null }); }
-            window.renderBillingItems();
-        }
-
-        window.updateBillingItemQty = function(idx, delta) {
-            const item = window.facturaItems[idx]; if (!item) return;
-            const prod = window.catalogProducts.find(p => p.id === item.id);
-            const newQty = item.qty + delta;
-            if (newQty < 1) return window.removeBillingItem(idx);
-            if (prod && typeof prod.stock === 'number' && newQty > prod.stock) return window.showToast(`Solo quedan ${prod.stock} unidades.`);
-            item.qty = newQty;
-            window.renderBillingItems();
-        }
-
-        window.updateBillingItemPrice = function(idx, val) {
-            const p = parseFloat(val); if (isNaN(p) || p < 0) return;
-            window.facturaItems[idx].price = p;
-            window.renderBillingItems();
-        }
-
-        window.removeBillingItem = function(idx) {
-            window.facturaItems.splice(idx, 1);
-            window.renderBillingItems();
-        }
-
-        window.renderBillingItems = function() {
-            const listDiv = document.getElementById('billing-items-list');
-            const totalEl = document.getElementById('billing-total');
-            const subtotalEl = document.getElementById('billing-subtotal-display');
-            const discountDisplayEl = document.getElementById('billing-discount-display');
-            if (!listDiv || !totalEl) return;
-
-            const discountAmt = parseFloat(document.getElementById('billing-discount')?.value) || 0;
-
-            if (window.facturaItems.length === 0) {
-                listDiv.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-gray-300 gap-2 py-8">
-                    <svg class="w-12 h-12 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
-                    <p class="text-xs font-semibold">Toca un producto para agregarlo</p>
-                </div>`;
-                totalEl.innerText = 'RD$ 0';
-                if (subtotalEl) subtotalEl.innerText = 'RD$ 0';
-                if (discountDisplayEl) discountDisplayEl.innerText = '- RD$ 0';
-                window._billingCurrentTotal = 0;
-                window.calcChange();
-                return;
-            }
-
-            let subtotal = 0;
-            let html = '';
-            window.facturaItems.forEach((item, idx) => {
-                const sub = item.price * item.qty;
-                subtotal += sub;
-                html += `
-                <div class="flex items-center gap-2 px-3 py-2.5 hover:bg-gray-50 transition">
-                    <img src="${item.img}" class="w-9 h-9 object-contain rounded-lg bg-gray-50 mix-blend-multiply shrink-0">
-                    <div class="flex-1 min-w-0">
-                        <p class="text-[11px] font-bold text-gray-800 truncate leading-tight">${item.name}</p>
-                        <div class="flex items-center gap-1 mt-0.5">
-                            <button onclick="window.updateBillingItemQty(${idx}, -1)" class="w-5 h-5 rounded-md bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-xs hover:bg-red-100 hover:text-red-600 transition">-</button>
-                            <span class="w-5 text-center text-xs font-extrabold text-gray-800">${item.qty}</span>
-                            <button onclick="window.updateBillingItemQty(${idx}, 1)" class="w-5 h-5 rounded-md bg-gray-200 text-gray-600 flex items-center justify-center font-bold text-xs hover:bg-green-100 hover:text-green-600 transition">+</button>
-                        </div>
-                    </div>
-                    <div class="shrink-0 text-right">
-                        <input type="number" value="${item.price}" onchange="window.updateBillingItemPrice(${idx}, this.value)" class="w-20 text-right text-xs font-extrabold text-gray-700 border border-gray-200 rounded-lg px-1.5 py-1 focus:outline-none focus:border-green-500 mb-0.5">
-                        <p class="text-[10px] text-gray-400">× ${item.qty} = <span class="font-bold text-gray-700">RD$ ${sub.toLocaleString('en-US')}</span></p>
-                    </div>
-                    <button onclick="window.removeBillingItem(${idx})" class="text-gray-300 hover:text-red-500 transition p-0.5 shrink-0">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-                    </button>
-                </div>`;
-            });
-            listDiv.innerHTML = html;
-
-            const total = Math.max(0, subtotal - discountAmt);
-            window._billingCurrentTotal = total;
-            if (subtotalEl) subtotalEl.innerText = `RD$ ${subtotal.toLocaleString('en-US')}`;
-            if (discountDisplayEl) discountDisplayEl.innerText = `- RD$ ${discountAmt.toLocaleString('en-US')}`;
-            totalEl.innerText = `RD$ ${total.toLocaleString('en-US')}`;
-            window.calcChange();
-        }
-
-        window.toggleBillingOrdersDrawer = function() {
-            const drawer = document.getElementById('billing-orders-drawer');
-            if (!drawer) return;
-            drawer.classList.toggle('hidden');
-        }
 
         window.openBillingModal = async function() {
             window.closeProfileModal();
@@ -3547,7 +3355,7 @@
             if (tab === 'reports') window.setReportRange(window.currentReportRange || 'today');
         }
 
-        // Calcula y muestra el valor total del inventario, unidades en stock, productos agotados,
+        // Genera la factura, descuenta el inventario y marca Agotado si llega a 0
         window.generateManualInvoice = async function() {
             if (window.facturaItems.length === 0) return window.showToast("Agrega al menos un producto al ticket.");
             const customerName = document.getElementById('billing-customer-name').value.trim() || 'Cliente de Mostrador';
@@ -3581,7 +3389,7 @@
             } catch(e) { console.error(e); window.showToast("❌ Error al generar la factura."); }
         }
 
-        // y una tabla detallada de cada producto con su stock y valor.
+        // Calcula y muestra valor total del inventario, unidades y productos agotados
         window.renderInventoryTable = function(term = "") {
             const valueEl = document.getElementById('inventory-total-value');
             const unitsEl = document.getElementById('inventory-total-units');
@@ -4074,160 +3882,206 @@
                 filtered = filtered.filter(o => o.status === 'Eliminado');
             }
             
-            if(filterTerm) { 
-                filtered = filtered.filter(o => (o.orderId && o.orderId.toLowerCase().includes(filterTerm)) || (o.customerName && o.customerName.toLowerCase().includes(filterTerm)) || (o.customerPhone && o.customerPhone.toLowerCase().includes(filterTerm))); 
+            if (filterTerm) { 
+                filtered = filtered.filter(o => 
+                    (o.orderId && o.orderId.toLowerCase().includes(filterTerm)) || 
+                    (o.customerName && o.customerName.toLowerCase().includes(filterTerm)) || 
+                    (o.customerPhone && o.customerPhone.toLowerCase().includes(filterTerm))
+                ); 
             }
 
-            if(filtered.length === 0) return listDiv.innerHTML = '<p class="text-sm text-gray-500 col-span-full text-center py-10">No hay pedidos en esta categoría actualmente.</p>';
+            if (filtered.length === 0) return listDiv.innerHTML = '<p class="text-sm text-gray-500 text-center py-10">No hay pedidos en esta categoría actualmente.</p>';
+
+            const statusColors = { Recibido: 'bg-yellow-100 text-yellow-800 border-yellow-200', Procesando: 'bg-blue-100 text-blue-700 border-blue-200', Enviado: 'bg-indigo-100 text-indigo-700 border-indigo-200', Completado: 'bg-green-100 text-green-700 border-green-200', Cancelado: 'bg-red-100 text-red-600 border-red-200', Eliminado: 'bg-gray-100 text-gray-400 border-gray-200' };
+            const shippingAgenciesList = window.getShippingAgencies();
 
             let html = '';
-            const shippingAgenciesList = window.getShippingAgencies();
             filtered.forEach(order => {
-                const dateStr = new Date(order.date).toLocaleString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute:'2-digit' });
-                let statusColor = "text-gray-800";
-                if(order.status === 'Completado') statusColor = "text-green-600"; 
-                if(order.status === 'Cancelado') statusColor = "text-red-600"; 
-                if(order.status === 'Procesando') statusColor = "text-blue-600"; 
-                if(order.status === 'Enviado') statusColor = "text-gray-600"; 
-                if(order.status === 'Eliminado') statusColor = "text-gray-400 bg-gray-100";
-                
-                const attendedBadge = order.attendedBy ? `<div class="mt-2 inline-flex items-center gap-1.5 bg-gray-100 text-gray-800 text-[10px] font-bold px-2.5 py-1 rounded-md border border-gray-200">👨‍💻 Atendido por: ${order.attendedBy}</div>` : '';
-                const attendButton = (!order.attendedBy && order.status !== 'Eliminado') ? `<button onclick="attendOrder('${order.id}')" class="w-full bg-gray-800 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-black transition flex items-center justify-center gap-2 shadow-sm border border-gray-900 mb-2">👋 Tomar y Atender Cliente</button>` : '';
-
+                const dateStr = new Date(order.date).toLocaleString('es-ES', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+                const statusBadge = statusColors[order.status] || 'bg-gray-100 text-gray-600 border-gray-200';
+                const statusLabel = window.statusDisplayNames[order.status] || order.status;
+                const itemCount = order.items.reduce((s, i) => s + i.qty, 0);
                 let subtotal = order.items.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
                 let shippingFee = order.shippingFee !== undefined ? order.shippingFee : (order.total > subtotal ? order.total - subtotal : 0);
                 let discount = order.discount !== undefined ? order.discount : (order.total < subtotal ? subtotal - order.total : 0);
                 let calculatedTotal = subtotal + shippingFee - discount;
+                const attendedBadge = order.attendedBy ? `<span class="text-[10px] text-gray-400 font-bold">👨‍💻 ${order.attendedBy}</span>` : '';
+                const attendButton = (!order.attendedBy && order.status !== 'Eliminado') ? `<button onclick="attendOrder('${order.id}')" class="w-full bg-gray-800 text-white py-2.5 rounded-lg text-xs font-bold hover:bg-black transition flex items-center justify-center gap-2 shadow-sm mb-2">👋 Tomar y Atender</button>` : '';
 
                 let editableItemsHTML = '';
                 order.items.forEach((item, idx) => {
-                    const skuText = item.barcode ? `<span class="text-[9px] text-gray-400 font-mono block leading-none mt-0.5">SKU: ${item.barcode}</span>` : '';
+                    const skuText = item.barcode ? `<span class="text-[9px] text-gray-400 font-mono">${item.barcode}</span>` : '';
                     editableItemsHTML += `
-                    <div class="flex justify-between items-center mb-2 border-b border-gray-100 pb-2">
-                        <div class="flex-1 flex items-start gap-2">
-                            <div class="flex items-center gap-1 mt-0.5">
-                                <button onclick="updateAdminItemQty('${order.id}', ${idx}, -1)" class="bg-gray-200 w-5 h-5 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300 transition">-</button>
-                                <span class="text-xs font-bold w-4 text-center">${item.qty}</span>
-                                <button onclick="updateAdminItemQty('${order.id}', ${idx}, 1)" class="bg-gray-200 w-5 h-5 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-gray-300 transition">+</button>
+                    <div class="flex justify-between items-center py-2 border-b border-gray-100 last:border-0">
+                        <div class="flex items-center gap-2 flex-1 min-w-0">
+                            <div class="flex items-center gap-1 shrink-0">
+                                <button onclick="updateAdminItemQty('${order.id}',${idx},-1)" class="bg-gray-200 w-6 h-6 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-red-100 hover:text-red-600 transition text-sm">−</button>
+                                <span class="text-xs font-bold w-5 text-center">${item.qty}</span>
+                                <button onclick="updateAdminItemQty('${order.id}',${idx},1)" class="bg-gray-200 w-6 h-6 rounded flex items-center justify-center font-bold text-gray-600 hover:bg-green-100 hover:text-green-600 transition text-sm">+</button>
                             </div>
-                            <div class="flex flex-col flex-1">
-                                <span class="text-xs leading-tight font-medium text-gray-800 pr-1">${item.name}</span>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-xs font-medium text-gray-800 truncate leading-tight">${item.name}</p>
                                 ${skuText}
                             </div>
                         </div>
-                        <div class="flex items-center gap-1.5 ml-1">
+                        <div class="flex items-center gap-1.5 shrink-0 ml-2">
                             <div class="flex flex-col items-end">
                                 <div class="flex items-center gap-1">
                                     <span class="text-[9px] text-gray-400 font-bold">RD$</span>
-                                    <input type="number" value="${item.price}" onchange="updateAdminItemPrice('${order.id}', ${idx}, this.value)" class="w-16 text-right text-xs border border-gray-300 p-1 rounded outline-none focus:border-perfume-magenta font-bold bg-white" title="Editar precio del artículo">
+                                    <input type="number" value="${item.price}" onchange="updateAdminItemPrice('${order.id}',${idx},this.value)" class="w-16 text-right text-xs border border-gray-300 px-1 py-1 rounded focus:outline-none focus:border-perfume-magenta font-bold bg-white">
                                 </div>
-                                <span class="text-[9px] text-gray-400 mt-0.5 font-bold">Sub: ${(item.price * item.qty).toLocaleString('en-US')}</span>
+                                <span class="text-[9px] text-gray-400 font-bold">= RD$ ${(item.price * item.qty).toLocaleString('en-US')}</span>
                             </div>
-                            <button onclick="removeAdminItem('${order.id}', ${idx})" class="text-red-400 hover:text-red-600 font-bold px-1.5 text-lg transition" title="Quitar artículo">&times;</button>
+                            <button onclick="removeAdminItem('${order.id}',${idx})" class="text-gray-300 hover:text-red-500 transition text-lg font-bold w-6 h-6 flex items-center justify-center">&times;</button>
                         </div>
                     </div>`;
                 });
 
                 html += `
-                <div class="bg-white border ${order.status === 'Eliminado' ? 'border-red-200 opacity-80' : 'border-gray-200'} p-5 rounded-2xl shadow-sm hover:shadow-lg transition duration-300 flex flex-col h-full relative group">
-                    <div class="flex justify-between items-start mb-4 border-b border-gray-100 pb-3">
-                        <div><span class="text-sm font-extrabold text-perfume-dark bg-gray-100 px-2 py-1 rounded">${order.orderId || '#PED-XXX'}</span><p class="text-[10px] text-gray-400 mt-1">📅 ${dateStr}</p></div>
-                        <div class="flex items-center gap-2">
-                            <select onchange="updateOrderStatus('${order.id}', this.value)" class="text-xs font-bold border border-gray-300 rounded-lg px-2 py-1.5 outline-none cursor-pointer ${statusColor} bg-gray-50 hover:bg-white transition shadow-sm">
-                                <option value="Recibido" ${order.status==='Recibido'?'selected':''} class="text-gray-800">${window.statusDisplayNames['Recibido']}</option>
-                                <option value="Procesando" ${order.status==='Procesando'?'selected':''} class="text-blue-600">${window.statusDisplayNames['Procesando']}</option>
-                                <option value="Enviado" ${order.status==='Enviado'?'selected':''} class="text-gray-600">${window.statusDisplayNames['Enviado']}</option>
-                                <option value="Completado" ${order.status==='Completado'?'selected':''} class="text-green-600">${window.statusDisplayNames['Completado']}</option>
-                                <option value="Cancelado" ${order.status==='Cancelado'?'selected':''} class="text-red-600">${window.statusDisplayNames['Cancelado']}</option>
-                                <option value="Eliminado" ${order.status==='Eliminado'?'selected':''} class="text-gray-400">${window.statusDisplayNames['Eliminado']}</option>
-                            </select>
-                            ${order.status !== 'Eliminado' ? `<button onclick="deleteAdminOrder('${order.id}')" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-1.5 rounded-lg transition shadow-sm border border-red-100" title="Eliminar Pedido"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>` : ''}
-
-                            <!-- Shipping agency + tracking inputs (visible when order is Enviado) -->
-                            <div class="mt-2">
-                                <label class="text-[10px] text-gray-500 font-bold mb-1 block">Agencia de Envío</label>
-                                <select onchange="updateOrderShippingAgency('${order.id}', this.value)" class="w-full text-sm border border-gray-300 rounded px-2 py-1 bg-white">
-                                    <option value="">Seleccionar agencia</option>
-                                    ${shippingAgenciesList.map(agency => `<option value="${agency.name}" ${order.shippingAgency === agency.name ? 'selected' : ''}>${agency.name}</option>`).join('')}
-                                </select>
-                                <label class="text-[10px] text-gray-500 font-bold mb-1 block mt-2">Número de Guía</label>
-                                <input type="text" value="${order.trackingNumber || ''}" onblur="updateOrderTrackingNumber('${order.id}', this.value)" placeholder="Ej: 123456789" class="w-full text-sm border border-gray-300 rounded px-2 py-1 bg-white">
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mb-4"><p class="text-sm font-bold text-gray-800 flex items-center gap-2">👤 ${order.customerName}</p><p class="text-sm text-gray-500 flex items-center gap-2 mt-1">📞 ${order.customerPhone || 'Sin número'}</p>${attendedBadge}</div>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden ${order.status === 'Eliminado' ? 'opacity-60' : ''}">
                     
-                    <div class="mb-4 bg-gray-50/70 p-3 rounded-lg border border-gray-100 flex-1 flex flex-col">
-                        <div class="space-y-1 mb-2">${editableItemsHTML}</div>
+                    <!-- CABECERA del acordeón (siempre visible) -->
+                    <button onclick="window.toggleOrderAccordion('${order.id}')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left">
+                        <!-- Chevron -->
+                        <svg id="chevron-${order.id}" class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
                         
-                        <div id="add-item-form-${order.id}" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-lg shadow-sm border-l-4 border-l-perfume-magenta">
-                            <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">➕ Añadir Producto</p>
-                            <div class="relative mb-2">
-                                <input type="text" id="new-item-search-${order.id}" placeholder="Buscar por nombre..."
-                                       oninput="filterNewItemSearch('${order.id}', this.value)" autocomplete="off"
-                                       class="border border-gray-300 p-1.5 rounded-md w-full text-xs outline-none focus:border-perfume-magenta bg-gray-50">
-                                <div id="new-item-suggestions-${order.id}" class="absolute z-20 w-full bg-white border border-gray-200 shadow-xl max-h-40 overflow-y-auto hidden rounded-b-lg"></div>
+                        <!-- ID + Nombre -->
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-xs font-extrabold text-gray-900 bg-gray-100 px-2 py-0.5 rounded font-mono">${order.orderId || '#PED-XXX'}</span>
+                                <span class="text-sm font-bold text-gray-700 truncate">${order.customerName || 'Cliente'}</span>
+                                ${attendedBadge}
                             </div>
-                            <div class="flex gap-2">
-                                <input type="number" id="new-item-price-${order.id}" placeholder="RD$ Precio" class="border border-gray-300 p-1.5 rounded-md w-1/2 text-xs outline-none focus:border-perfume-magenta">
-                                <input type="number" id="new-item-qty-${order.id}" value="1" min="1" class="border border-gray-300 p-1.5 rounded-md w-1/4 text-xs text-center outline-none">
-                                <button onclick="saveNewAdminItem('${order.id}')" class="bg-perfume-magenta text-white rounded-md w-1/4 text-xs font-bold hover:bg-perfume-dark transition">OK</button>
+                            <div class="flex items-center gap-2 mt-0.5 flex-wrap">
+                                <span class="text-[10px] text-gray-400">${dateStr}</span>
+                                <span class="text-[10px] text-gray-400">${itemCount} artículo(s)</span>
                             </div>
-                            <button onclick="toggleAddItemForm('${order.id}')" class="text-gray-400 text-[10px] w-full text-center mt-3 hover:text-red-500 uppercase tracking-widest font-bold">Cerrar</button>
                         </div>
-
-                        <div class="flex justify-start items-center mt-auto pt-3 border-t border-gray-100">
-                            <button onclick="toggleAddItemForm('${order.id}')" class="text-perfume-magenta text-[10px] font-bold uppercase tracking-widest hover:underline flex items-center gap-1 bg-white border border-perfume-magenta/20 px-2 py-1 rounded">
-                                <span>➕</span> Buscar y Añadir Artículo
-                            </button>
+                        
+                        <!-- Estado + Total -->
+                        <div class="flex flex-col items-end gap-1 shrink-0">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${statusBadge}">${statusLabel}</span>
+                            <span class="text-sm font-extrabold text-gray-900">RD$ ${calculatedTotal.toLocaleString('en-US')}</span>
                         </div>
-                    </div>
+                    </button>
 
-                    <div class="mt-auto border-t border-gray-100 pt-3 flex flex-col">
-                        <div class="flex flex-col gap-1.5 mb-3 pt-1">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-400 text-[10px] font-bold uppercase tracking-widest">Subtotal</span>
-                                <span class="text-gray-800 font-bold text-sm">RD$ ${subtotal.toLocaleString('en-US')}</span>
+                    <!-- CUERPO del acordeón (colapsado por defecto) -->
+                    <div id="order-body-${order.id}" class="hidden border-t border-gray-100">
+                        <div class="p-4 space-y-4">
+
+                            <!-- Fila: Estado + Eliminar -->
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <select onchange="updateOrderStatus('${order.id}', this.value)" class="flex-1 text-xs font-bold border border-gray-300 rounded-lg px-2 py-2 outline-none cursor-pointer bg-gray-50 hover:bg-white transition">
+                                    <option value="Recibido" ${order.status==='Recibido'?'selected':''}>📥 ${window.statusDisplayNames['Recibido']}</option>
+                                    <option value="Procesando" ${order.status==='Procesando'?'selected':''}>⚙️ ${window.statusDisplayNames['Procesando']}</option>
+                                    <option value="Enviado" ${order.status==='Enviado'?'selected':''}>🚚 ${window.statusDisplayNames['Enviado']}</option>
+                                    <option value="Completado" ${order.status==='Completado'?'selected':''}>✅ ${window.statusDisplayNames['Completado']}</option>
+                                    <option value="Cancelado" ${order.status==='Cancelado'?'selected':''}>❌ ${window.statusDisplayNames['Cancelado']}</option>
+                                    <option value="Eliminado" ${order.status==='Eliminado'?'selected':''}>🗑️ ${window.statusDisplayNames['Eliminado']}</option>
+                                </select>
+                                ${order.status !== 'Eliminado' ? `<button onclick="deleteAdminOrder('${order.id}')" class="text-red-400 hover:text-red-600 bg-red-50 hover:bg-red-100 p-2 rounded-lg transition border border-red-100" title="Eliminar"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>` : ''}
                             </div>
-                            <div class="flex justify-between items-center bg-blue-50/50 p-1 rounded">
-                                <span class="text-blue-500 text-[10px] font-bold uppercase tracking-widest">🚚 Envío / Extra</span>
-                                <div class="flex items-center gap-1">
-                                    <span class="text-blue-500 text-[10px] font-bold">+RD$</span>
-                                    <input type="number" onchange="updateOrderShipping('${order.id}', this.value)" value="${shippingFee}" class="w-16 text-right text-xs border border-blue-200 p-1 rounded outline-none focus:border-blue-500 font-bold text-blue-600 bg-white shadow-sm" title="Modificar costo de envío">
+
+                            <!-- Info cliente + agencia -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Cliente</p>
+                                    <p class="text-sm font-bold text-gray-800">${order.customerName || '—'}</p>
+                                    <p class="text-xs text-gray-500">${order.customerPhone || 'Sin número'}</p>
+                                    ${order.customerEmail ? `<p class="text-[10px] text-gray-400">${order.customerEmail}</p>` : ''}
+                                </div>
+                                <div class="bg-gray-50 rounded-lg p-3">
+                                    <p class="text-[10px] font-bold text-gray-400 uppercase mb-1">Envío</p>
+                                    <select onchange="updateOrderShippingAgency('${order.id}', this.value)" class="w-full text-xs border border-gray-300 rounded px-2 py-1.5 bg-white mb-1.5">
+                                        <option value="">Seleccionar agencia</option>
+                                        ${shippingAgenciesList.map(a => `<option value="${a.name}" ${order.shippingAgency === a.name ? 'selected' : ''}>${a.name}</option>`).join('')}
+                                    </select>
+                                    <input type="text" value="${order.trackingNumber || ''}" onblur="updateOrderTrackingNumber('${order.id}', this.value)" placeholder="Número de guía" class="w-full text-xs border border-gray-300 rounded px-2 py-1.5 bg-white">
                                 </div>
                             </div>
-                            <div class="flex justify-between items-center bg-green-50/50 p-1 rounded">
-                                <span class="text-green-500 text-[10px] font-bold uppercase tracking-widest">📉 Descuento</span>
-                                <div class="flex items-center gap-1">
-                                    <span class="text-green-500 text-[10px] font-bold">-RD$</span>
-                                    <input type="number" onchange="updateOrderDiscount('${order.id}', this.value)" value="${discount}" class="w-16 text-right text-xs border border-green-200 p-1 rounded outline-none focus:border-green-500 font-bold text-green-600 bg-white shadow-sm" title="Aplicar descuento manual">
+
+                            <!-- Artículos editables -->
+                            <div class="bg-gray-50 rounded-lg p-3">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase mb-2">Artículos</p>
+                                ${editableItemsHTML}
+
+                                <!-- Form añadir artículo -->
+                                <div id="add-item-form-${order.id}" class="hidden mt-3 p-3 bg-white border border-gray-200 rounded-lg border-l-4 border-l-perfume-magenta">
+                                    <p class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">Añadir Producto</p>
+                                    <div class="relative mb-2">
+                                        <input type="text" id="new-item-search-${order.id}" placeholder="Buscar por nombre..."
+                                               oninput="filterNewItemSearch('${order.id}', this.value)" autocomplete="off"
+                                               class="border border-gray-300 p-2 rounded w-full text-xs outline-none focus:border-perfume-magenta bg-gray-50">
+                                        <div id="new-item-suggestions-${order.id}" class="absolute z-20 w-full bg-white border border-gray-200 shadow-xl max-h-40 overflow-y-auto hidden rounded-b-lg"></div>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <input type="number" id="new-item-price-${order.id}" placeholder="Precio RD$" class="border border-gray-300 p-2 rounded flex-1 text-xs outline-none focus:border-perfume-magenta">
+                                        <input type="number" id="new-item-qty-${order.id}" value="1" min="1" class="border border-gray-300 p-2 rounded w-16 text-xs text-center outline-none">
+                                        <button onclick="saveNewAdminItem('${order.id}')" class="bg-perfume-magenta text-white rounded px-3 text-xs font-bold hover:bg-perfume-dark transition">OK</button>
+                                    </div>
+                                    <button onclick="toggleAddItemForm('${order.id}')" class="text-gray-400 text-[10px] w-full text-center mt-2 hover:text-red-500 uppercase tracking-widest font-bold">Cerrar</button>
+                                </div>
+                                <button onclick="toggleAddItemForm('${order.id}')" class="mt-2 text-perfume-magenta text-[10px] font-bold uppercase tracking-widest hover:underline flex items-center gap-1 bg-white border border-perfume-magenta/20 px-2 py-1 rounded">
+                                    + Añadir Artículo
+                                </button>
+                            </div>
+
+                            <!-- Totales -->
+                            <div class="space-y-1.5">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-gray-400 font-bold uppercase">Subtotal</span>
+                                    <span class="font-bold text-gray-700">RD$ ${subtotal.toLocaleString('en-US')}</span>
+                                </div>
+                                <div class="flex justify-between items-center bg-blue-50 px-2 py-1.5 rounded">
+                                    <span class="text-blue-500 text-[10px] font-bold uppercase">Envío / Extra</span>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-blue-500 text-[10px] font-bold">+RD$</span>
+                                        <input type="number" onchange="updateOrderShipping('${order.id}', this.value)" value="${shippingFee}" class="w-16 text-right text-xs border border-blue-200 px-1 py-1 rounded focus:outline-none focus:border-blue-500 font-bold text-blue-600 bg-white">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center bg-green-50 px-2 py-1.5 rounded">
+                                    <span class="text-green-500 text-[10px] font-bold uppercase">Descuento</span>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-green-500 text-[10px] font-bold">−RD$</span>
+                                        <input type="number" onchange="updateOrderDiscount('${order.id}', this.value)" value="${discount}" class="w-16 text-right text-xs border border-green-200 px-1 py-1 rounded focus:outline-none focus:border-green-500 font-bold text-green-600 bg-white">
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-center border-t border-gray-200 pt-2">
+                                    <span class="text-gray-900 font-black uppercase text-xs tracking-wide">Total Final</span>
+                                    <span class="text-perfume-magenta font-extrabold text-lg">RD$ ${calculatedTotal.toLocaleString('en-US')}</span>
                                 </div>
                             </div>
-                        </div>
-                        <div class="flex justify-between items-center mb-4 border-t border-gray-200 pt-3">
-                            <span class="text-gray-800 text-sm font-black uppercase tracking-widest">Total Final</span>
-                            <span class="text-perfume-magenta font-extrabold text-xl">RD$ ${calculatedTotal.toLocaleString('en-US')}</span>
-                        </div>
-                        
-                        ${attendButton}
-                        
-                        <div class="flex flex-col gap-2">
-                            <button onclick="generateAndSendPDF('${order.id}')" class="w-full bg-perfume-magenta text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-perfume-dark transition flex items-center justify-center gap-2 shadow-sm">
-                                📄 Generar PDF y Enviar a Cliente
-                            </button>
-                            <div class="flex gap-2">
-                                <button onclick="generateInvoicePDF('${order.id}')" class="flex-1 bg-gray-100 text-gray-800 px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-gray-200 transition flex items-center justify-center shadow-sm border border-gray-300" title="Solo Descargar PDF">
-                                    ⬇️ Bajar PDF
+
+                            <!-- Acciones -->
+                            ${attendButton}
+                            <div class="flex flex-col gap-2">
+                                <button onclick="generateAndSendPDF('${order.id}')" class="w-full bg-perfume-magenta text-white px-4 py-2.5 rounded-lg text-xs font-bold hover:bg-perfume-dark transition flex items-center justify-center gap-2 shadow-sm">
+                                    📄 Generar PDF y Enviar a Cliente
                                 </button>
-                                <button onclick="notifyCustomerWhatsApp('${order.id}')" class="flex-1 bg-[#25D366] text-white px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-[#20ba59] transition flex items-center justify-center shadow-sm border border-[#20ba59]" title="Solo enviar mensaje de estado sin adjunto">
-                                    💬 Solo Mensaje
-                                </button>
+                                <div class="flex gap-2">
+                                    <button onclick="generateInvoicePDF('${order.id}')" class="flex-1 bg-gray-100 text-gray-800 px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-gray-200 transition flex items-center justify-center gap-1 border border-gray-300">
+                                        ⬇️ Bajar PDF
+                                    </button>
+                                    <button onclick="notifyCustomerWhatsApp('${order.id}')" class="flex-1 bg-[#25D366] text-white px-2 py-2.5 rounded-lg text-[10px] font-bold hover:bg-[#20ba59] transition flex items-center justify-center gap-1 border border-[#20ba59]">
+                                        💬 WhatsApp
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>`;
             });
             listDiv.innerHTML = html;
+        }
+
+        // Abre o cierra un pedido del acordeón
+        window.toggleOrderAccordion = function(orderId) {
+            const body = document.getElementById('order-body-' + orderId);
+            const chevron = document.getElementById('chevron-' + orderId);
+            if (!body || !chevron) return;
+            const isOpen = !body.classList.contains('hidden');
+            body.classList.toggle('hidden', isOpen);
+            chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
         }
 
         // Descuenta el stock de una lista de artículos (pedido o factura) en la base de datos.
@@ -5124,7 +4978,7 @@
         // --- INICIO LÓGICA HISTORIAL DE PEDIDOS DEL CLIENTE ---
         window.userOrdersList = [];
         window.userOrdersPage = 1;
-        window.ordersPerPage = 2; // REDUCIDO A 2 PARA QUE EL BOTÓN SE MUESTRE MÁS FÁCILMENTE
+        window.ordersPerPage = 5;
 
         async function fetchUserOrders() {
             if (!window.userId) return; 
@@ -5135,11 +4989,12 @@
 
             try {
                 const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'); 
-                const querySnapshot = await getDocs(ordersRef); 
+                // Usamos getDocsFromServer para forzar lectura del servidor y evitar que Firestore
+                // devuelva pedidos ya eliminados desde su caché offline.
+                const querySnapshot = await getDocsFromServer(ordersRef); 
                 let orders = []; 
-                querySnapshot.forEach((doc) => { const data = doc.data(); if(data.userId === window.userId) orders.push({ id: doc.id, ...data }); }); 
+                querySnapshot.forEach((d) => { const data = d.data(); if(data.userId === window.userId) orders.push({ id: d.id, ...data }); }); 
                 
-                // Guardamos en memoria y ordenamos de más reciente a más viejo
                 window.userOrdersList = orders.sort((a, b) => new Date(b.date) - new Date(a.date));
                 window.userOrdersPage = 1;
                 window.renderUserOrdersPage();
