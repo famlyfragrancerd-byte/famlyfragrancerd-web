@@ -96,6 +96,22 @@
             animation: fadeInSlideUp 0.4s ease-out forwards;
         }
 
+        /* BOTÓN HERO — CTA EXPLORAR */
+        .hero-cta-btn {
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25), 0 0 0 0 var(--primary);
+            transform: translateY(0) scale(1);
+            -webkit-tap-highlight-color: transparent;
+        }
+        .hero-cta-btn:hover {
+            box-shadow: 0 16px 48px rgba(0,0,0,0.3), 0 0 0 4px rgba(var(--primary-rgb, 180,0,80), 0.15);
+            transform: translateY(-3px) scale(1.02);
+        }
+        .hero-cta-btn:active, .hero-cta-btn.btn-tap {
+            transform: translateY(1px) scale(0.96) !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.25) !important;
+            transition: transform 0.1s ease, box-shadow 0.1s ease !important;
+        }
+
         /* SCROLL HORIZONTAL EN CHIPS */
         #cat-chips, #brand-chips {
             scrollbar-width: thin;
@@ -195,8 +211,26 @@
                 <p id="display-hero-subtitle" class="text-lg text-gray-500 mb-8 max-w-lg mx-auto md:mx-0 opacity-80">
                     Fragancias originales seleccionadas para destacar tu personalidad en cada momento especial.
                 </p>
-                <a href="#catalogo" id="display-hero-btn" class="inline-block bg-perfume-dark text-white px-8 py-3.5 rounded-full text-lg font-medium hover:bg-perfume-magenta transition duration-300 shadow-lg transform hover:-translate-y-1">
-                    Explorar Colección
+                <a href="#catalogo" id="display-hero-btn"
+                    onclick="this.classList.add('btn-tap'); setTimeout(()=>this.classList.remove('btn-tap'),400)"
+                    class="hero-cta-btn group relative inline-flex items-center gap-3 overflow-hidden rounded-2xl px-8 py-4 font-bold text-white text-base shadow-xl transition-all duration-200 select-none cursor-pointer">
+                    <!-- Fondo degradado -->
+                    <span class="absolute inset-0 bg-gradient-to-br from-perfume-dark via-gray-800 to-perfume-dark transition-all duration-300 group-hover:from-perfume-magenta group-hover:via-perfume-magenta group-hover:to-perfume-dark"></span>
+                    <!-- Brillo animado que recorre el botón -->
+                    <span class="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/20 to-transparent skew-x-12 pointer-events-none"></span>
+                    <!-- Ícono de perfume SVG -->
+                    <span class="relative flex items-center justify-center w-8 h-8 bg-white/15 rounded-xl group-hover:bg-white/25 transition-all duration-200 shrink-0">
+                        <svg class="w-4 h-4 transition-transform duration-300 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3h6m-3 0v3m-6 4h12a1 1 0 011 1v8a3 3 0 01-3 3H7a3 3 0 01-3-3V11a1 1 0 011-1z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6c1 0 2 .5 2 1.5S13 9 12 9s-2-.5-2-1.5S11 6 12 6z"/>
+                        </svg>
+                    </span>
+                    <!-- Texto -->
+                    <span class="relative leading-none">Explorar Colección</span>
+                    <!-- Flecha que se mueve al hover -->
+                    <span class="relative transition-transform duration-300 group-hover:translate-x-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                    </span>
                 </a>
             </div>
             <div class="md:w-1/2 flex justify-center" id="hero-media-container">
@@ -390,21 +424,21 @@
 
             <!-- Botones de admin (solo visibles para administradores) -->
             <div class="space-y-2" id="admin-buttons-group">
-                <button id="btn-admin-panel" onclick="openAdminModal()" class="hidden w-full bg-white/15 hover:bg-white/25 border border-white/20 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm">
+                <button id="btn-admin-panel" onclick="window.openAdminModal()" class="hidden w-full bg-white/15 hover:bg-white/25 border border-white/20 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-2 text-sm">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
                     Panel de Administrador
                 </button>
                 <div class="grid grid-cols-2 gap-2">
-                    <button id="btn-orders-dashboard" onclick="openOrdersDashboard()" class="hidden bg-white/15 hover:bg-white/25 border border-white/20 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 text-xs">
+                    <button id="btn-orders-dashboard" onclick="window.openOrdersDashboard()" class="hidden bg-white/15 hover:bg-white/25 border border-white/20 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 text-xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         Monitor
                     </button>
-                    <button id="btn-billing-panel" onclick="openBillingModal()" class="hidden bg-green-600/80 hover:bg-green-600 border border-green-500/30 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 text-xs">
+                    <button id="btn-billing-panel" onclick="window.openBillingModal()" class="hidden bg-green-600/80 hover:bg-green-600 border border-green-500/30 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 text-xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         Facturación
                     </button>
                 </div>
-                <button id="btn-push-notifications" onclick="requestPushNotifications()" class="hidden w-full bg-blue-600/80 hover:bg-blue-600 border border-blue-500/30 text-white py-2 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs">
+                <button id="btn-push-notifications" onclick="window.requestPushNotifications()" class="hidden w-full bg-blue-600/80 hover:bg-blue-600 border border-blue-500/30 text-white py-2 rounded-xl font-bold transition flex items-center justify-center gap-2 text-xs">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
                     Activar Alertas Push
                 </button>
@@ -1107,7 +1141,7 @@
     </div>
 
     <!-- DASHBOARD DE PEDIDOS -->
-    <div id="orders-dashboard-modal" class="fixed inset-0 bg-gray-100 z-[250] hidden flex-col transition-opacity duration-300 opacity-0">
+    <div id="orders-dashboard-modal" class="fixed inset-0 bg-gray-100 z-[250] flex-col transition-opacity duration-300 opacity-0" style="display:none">
         <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
                 <div class="flex items-center gap-3 w-full md:w-auto">
@@ -1147,7 +1181,7 @@
     </div>
 
     <!-- DASHBOARD DE FACTURACIÓN E INVENTARIO -->
-    <div id="billing-modal" class="fixed inset-0 bg-gray-100 z-[250] hidden flex-col transition-opacity duration-300 opacity-0">
+    <div id="billing-modal" class="fixed inset-0 bg-gray-100 z-[250] flex-col transition-opacity duration-300 opacity-0" style="display:none">
         <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col shrink-0">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-extrabold text-perfume-dark flex items-center gap-2.5">
@@ -1167,7 +1201,7 @@
             </div>
         </div>
 
-        <div class="flex-1 overflow-hidden min-h-0 flex flex-col">
+        <div class="flex-1 overflow-hidden flex flex-col" style="min-height:0">
 
             <!-- SUBPESTAÑA: NUEVA FACTURA — Estilo Eleventa -->
             <div id="billing-subtab-invoice" class="flex-1 min-h-0 w-full flex flex-col bg-gray-100">
@@ -3484,21 +3518,24 @@
             window.closeAdminModal();
             window.closeOrdersDashboard();
             const modal = document.getElementById('billing-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.style.display = 'flex';
+            modal.style.flexDirection = 'column';
+            modal.style.height = '100dvh'; // dvh funciona mejor en móvil que vh (respeta la barra del navegador)
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
             window.switchBillingSubTab('invoice');
             if (!window.adminOrders || window.adminOrders.length === 0) await window.loadAdminOrders();
             window.renderBillingOrdersList();
-            setTimeout(() => document.getElementById('billing-code-input')?.focus(), 200);
+            // En móvil no hacemos focus automático para que no se abra el teclado sin que el usuario lo pida
+            if (window.innerWidth >= 768) {
+                setTimeout(() => document.getElementById('billing-code-input')?.focus(), 200);
+            }
         }
 
         window.closeBillingModal = function() {
             const modal = document.getElementById('billing-modal');
             modal.classList.add('opacity-0');
             setTimeout(() => {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
+                modal.style.display = 'none';
             }, 300);
         }
 
@@ -3889,8 +3926,8 @@
             window.closeProfileModal(); 
             window.closeAdminModal(); 
             const modal = document.getElementById('orders-dashboard-modal'); 
-            modal.classList.remove('hidden'); 
-            modal.classList.add('flex'); 
+            modal.style.display = 'flex';
+            modal.style.flexDirection = 'column';
             setTimeout(()=> modal.classList.remove('opacity-0'), 10); 
             window.loadAdminOrders(); 
         }
@@ -3899,8 +3936,7 @@
             const modal = document.getElementById('orders-dashboard-modal'); 
             modal.classList.add('opacity-0'); 
             setTimeout(()=> { 
-                modal.classList.remove('flex'); 
-                modal.classList.add('hidden'); 
+                modal.style.display = 'none';
             }, 300); 
         }
 
@@ -4869,8 +4905,13 @@
                 document.getElementById('profile-name').innerHTML = fullName + badgeHTML; 
                 document.getElementById('profile-email').innerText = user.email || ""; 
                 const profileIdEl = document.getElementById('profile-id');
-                if (profileIdEl) profileIdEl.innerText = window.generateNumericId(user.uid);
+                const numericId = window.generateNumericId(user.uid);
+                if (profileIdEl) profileIdEl.innerText = numericId;
                 document.getElementById('profile-initial').innerText = fullName.charAt(0).toUpperCase();
+                // Poblar campos nuevos del perfil
+                const pinfoName = document.getElementById('profile-info-name'); if (pinfoName) pinfoName.innerText = fullName;
+                const pinfoEmail = document.getElementById('profile-info-email'); if (pinfoEmail) pinfoEmail.innerText = user.email || '';
+                const pinfoId = document.getElementById('profile-info-id'); if (pinfoId) pinfoId.innerText = numericId;
 
                 // --- NUEVO: Actualizar carrito a precio mayorista al iniciar sesión ---
                 if (window.isWholesaler && window.cart && window.cart.length > 0) {
@@ -4900,10 +4941,17 @@
                 try { 
                     const infoSnap = await getDoc(doc(db, 'artifacts', appId, 'users', user.uid, 'profile', 'info')); 
                     let userPhone = "";
-                    if (infoSnap.exists() && infoSnap.data().phone) { 
-                        userPhone = infoSnap.data().phone; 
-                        document.getElementById('profile-phone-input').value = userPhone; 
-                        if(document.getElementById('checkout-phone')) document.getElementById('checkout-phone').value = userPhone; 
+                    if (infoSnap.exists()) { 
+                        if (infoSnap.data().phone) { 
+                            userPhone = infoSnap.data().phone; 
+                            const phoneInput = document.getElementById('profile-phone-input');
+                            if (phoneInput) phoneInput.value = userPhone; 
+                            if(document.getElementById('checkout-phone')) document.getElementById('checkout-phone').value = userPhone; 
+                        }
+                        if (infoSnap.data().address) {
+                            const addrInput = document.getElementById('profile-address-input');
+                            if (addrInput) addrInput.value = infoSnap.data().address;
+                        }
                     } 
                     
                     // Sincronizar usuario con la base global de clientes (CRM)
@@ -4948,11 +4996,46 @@
             if(window.isLoggedIn) { 
                 document.getElementById('profile-modal').classList.remove('translate-x-full'); 
                 document.body.classList.add('overflow-hidden');
-                fetchUserOrders(); 
+                // Siempre abre en la pestaña de pedidos y carga el historial fresco
+                window.switchProfileTab('orders');
             } else { 
                 window.openLoginModal(); 
             } 
         }
+        // Manejo de tabs del perfil
+        window.switchProfileTab = function(tab) {
+            const tabs = ['orders', 'info', 'security'];
+            tabs.forEach(t => {
+                const content = document.getElementById('profile-tab-' + t);
+                const btn = document.getElementById('profile-tab-btn-' + t);
+                if (content) content.classList.add('hidden');
+                if (btn) {
+                    btn.classList.remove('text-perfume-magenta', 'border-b-2', 'border-perfume-magenta');
+                    btn.classList.add('text-gray-400');
+                }
+            });
+            const activeContent = document.getElementById('profile-tab-' + tab);
+            const activeBtn = document.getElementById('profile-tab-btn-' + tab);
+            if (activeContent) activeContent.classList.remove('hidden');
+            if (activeBtn) {
+                activeBtn.classList.remove('text-gray-400');
+                activeBtn.classList.add('text-perfume-magenta', 'border-b-2', 'border-perfume-magenta');
+            }
+            // Al abrir Mis Pedidos, carga el historial fresco
+            if (tab === 'orders') fetchUserOrders();
+        }
+
+        // Guarda la dirección de envío del usuario en Firestore
+        window.updateUserAddress = async function() {
+            if (!auth.currentUser) return window.showToast("Debes iniciar sesión.");
+            const addr = document.getElementById('profile-address-input')?.value.trim();
+            if (!addr) return window.showToast("Escribe una dirección válida.");
+            try {
+                await setDoc(doc(db, 'artifacts', appId, 'users', auth.currentUser.uid, 'profile', 'info'), { address: addr }, { merge: true });
+                window.showToast("✅ Dirección guardada correctamente.");
+            } catch(e) { window.showToast("❌ Error al guardar la dirección."); console.error(e); }
+        }
+
         window.closeProfileModal = () => { 
             document.getElementById('profile-modal').classList.add('translate-x-full');
             document.body.classList.remove('overflow-hidden');
