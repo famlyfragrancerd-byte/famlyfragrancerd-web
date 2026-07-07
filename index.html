@@ -606,7 +606,7 @@
     </div>
 
     <!-- PANEL DE ADMINISTRADOR AVANZADO (A PANTALLA COMPLETA) -->
-    <div id="admin-modal" class="fixed inset-0 bg-gray-100 z-[200] hidden flex-col transition-opacity duration-300 opacity-0">
+    <div id="admin-modal" class="fixed inset-0 bg-gray-100 z-[200] flex-col transition-opacity duration-300 opacity-0" style="display:none">
         <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col shrink-0">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-extrabold text-perfume-dark flex items-center gap-2.5">
@@ -1153,7 +1153,7 @@
     </div>
 
     <!-- DASHBOARD DE PEDIDOS -->
-    <div id="orders-dashboard-modal" class="fixed inset-0 bg-gray-100 z-[250] hidden flex-col transition-opacity duration-300 opacity-0">
+    <div id="orders-dashboard-modal" class="fixed inset-0 bg-gray-100 z-[250] flex-col transition-opacity duration-300 opacity-0" style="display:none">
         <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col">
             <div class="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
                 <div class="flex items-center gap-3 w-full md:w-auto">
@@ -1193,7 +1193,7 @@
     </div>
 
     <!-- DASHBOARD DE FACTURACIÓN E INVENTARIO -->
-    <div id="billing-modal" class="fixed inset-0 bg-gray-100 z-[250] hidden flex-col transition-opacity duration-300 opacity-0">
+    <div id="billing-modal" class="fixed inset-0 bg-gray-100 z-[250] flex-col transition-opacity duration-300 opacity-0" style="display:none">
         <div class="bg-white border-b border-gray-200 px-4 md:px-8 pt-4 pb-0 shadow-sm flex flex-col shrink-0">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-2xl font-extrabold text-perfume-dark flex items-center gap-2.5">
@@ -3531,22 +3531,22 @@
             window.closeAdminModal();
             window.closeOrdersDashboard();
             const modal = document.getElementById('billing-modal');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
+            modal.style.display = 'flex';
+            modal.style.flexDirection = 'column';
+            modal.style.height = '100dvh';
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
             window.switchBillingSubTab('invoice');
             if (!window.adminOrders || window.adminOrders.length === 0) await window.loadAdminOrders();
             window.renderBillingOrdersList();
-            setTimeout(() => document.getElementById('billing-code-input')?.focus(), 200);
+            if (window.innerWidth >= 768) {
+                setTimeout(() => document.getElementById('billing-code-input')?.focus(), 200);
+            }
         }
 
         window.closeBillingModal = function() {
             const modal = document.getElementById('billing-modal');
             modal.classList.add('opacity-0');
-            setTimeout(() => {
-                modal.classList.remove('flex');
-                modal.classList.add('hidden');
-            }, 300);
+            setTimeout(() => { modal.style.display = 'none'; }, 300);
         }
 
         window.switchBillingSubTab = function(tab) {
@@ -3936,8 +3936,8 @@
             window.closeProfileModal(); 
             window.closeAdminModal(); 
             const modal = document.getElementById('orders-dashboard-modal'); 
-            modal.classList.remove('hidden'); 
-            modal.classList.add('flex'); 
+            modal.style.display = 'flex';
+            modal.style.flexDirection = 'column';
             setTimeout(()=> modal.classList.remove('opacity-0'), 10); 
             window.loadAdminOrders(); 
         }
@@ -3945,10 +3945,7 @@
         window.closeOrdersDashboard = function() { 
             const modal = document.getElementById('orders-dashboard-modal'); 
             modal.classList.add('opacity-0'); 
-            setTimeout(()=> { 
-                modal.classList.remove('flex'); 
-                modal.classList.add('hidden'); 
-            }, 300); 
+            setTimeout(()=> { modal.style.display = 'none'; }, 300); 
         }
 
         window.loadAdminOrders = async function() {
@@ -4989,13 +4986,13 @@
             try { await updatePassword(auth.currentUser, newPass); window.showToast("✅ Contraseña actualizada exitosamente."); newPassInput.value = ''; } catch (error) { if(error.code === 'auth/requires-recent-login') window.showToast("⚠️ Cierra sesión, vuelve a entrar e intenta de nuevo."); else window.showToast("❌ Error al actualizar la contraseña."); }
         }
 
-        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.classList.remove('hidden'); m.classList.add('flex'); setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); window.renderShippingAgencies(); }
-        window.closeAdminModal = () => { const m = document.getElementById('admin-modal'); m.classList.add('opacity-0'); setTimeout(()=> { m.classList.remove('flex'); m.classList.add('hidden'); }, 300); }
+        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.style.display = 'flex'; m.style.flexDirection = 'column'; setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); window.renderShippingAgencies(); }
+        window.closeAdminModal = () => { const m = document.getElementById('admin-modal'); m.classList.add('opacity-0'); setTimeout(()=> { m.style.display = 'none'; }, 300); }
         window.handleProfileClick = () => { 
             if(window.isLoggedIn) { 
                 document.getElementById('profile-modal').classList.remove('translate-x-full'); 
                 document.body.classList.add('overflow-hidden');
-                fetchUserOrders(); 
+                window.switchProfileTab('orders');
             } else { 
                 window.openLoginModal(); 
             } 
