@@ -361,6 +361,7 @@
             
             <div class="w-full md:w-1/2 flex flex-col flex-1 overflow-hidden relative bg-white">
                 <div class="p-5 md:p-8 pb-4 flex-1 overflow-y-auto no-scrollbar">
+                    <div id="detail-breadcrumb" class="text-xs font-medium mb-2 flex items-center gap-1.5"></div>
                     <span id="detail-cat" class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block">Categoría</span>
                     
                     <div class="flex justify-between items-start mb-2 gap-2">
@@ -492,6 +493,8 @@
                 Seguridad
             </button>
         </div>
+
+        <div id="profile-breadcrumb" class="text-xs font-medium px-4 pt-3 flex items-center gap-1.5"><span class="text-gray-400">Inicio</span> <span class="text-gray-300">›</span> <span class="text-perfume-dark font-bold">Mis Pedidos</span></div>
 
         <!-- CONTENIDO con scroll -->
         <div class="flex-1 overflow-y-auto no-scrollbar">
@@ -639,6 +642,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
+            <div id="admin-breadcrumb" class="text-xs font-medium mb-3 flex items-center gap-1.5"></div>
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="switchAdminTab('products')" id="tab-btn-products" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
@@ -1198,6 +1202,7 @@
                     <button onclick="closeOrdersDashboard()" class="text-gray-400 hover:text-red-500 text-3xl leading-none ml-2" title="Cerrar Monitor">&times;</button>
                 </div>
             </div>
+            <div id="orders-breadcrumb" class="text-xs font-medium mb-3 flex items-center gap-1.5"></div>
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="setOrderTab('Pendientes')" id="tab-orders-pendientes" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">⏳ Pendientes</button>
                 <button onclick="setOrderTab('Atendiendo')" id="tab-orders-atendiendo" class="text-xs md:text-sm font-bold text-gray-400 pb-3 hover:text-gray-600 transition uppercase tracking-wide whitespace-nowrap">👋 Atendiendo</button>
@@ -1223,6 +1228,7 @@
                 </h2>
                 <button onclick="closeBillingModal()" class="text-gray-400 hover:text-red-500 text-3xl leading-none" title="Cerrar">&times;</button>
             </div>
+            <div id="billing-breadcrumb" class="text-xs font-medium mb-3 flex items-center gap-1.5"></div>
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="switchBillingSubTab('invoice')" id="billing-subtab-btn-invoice" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">🧾 Nueva Factura</button>
                 <button onclick="switchBillingSubTab('inventory')" id="billing-subtab-btn-inventory" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">📦 Inventario</button>
@@ -2573,6 +2579,7 @@
             document.getElementById('detail-img').src = prod.img;
             document.getElementById('detail-cat').innerText = brandLabel + prod.category;
             document.getElementById('detail-name').innerText = prod.name;
+            window.setBreadcrumb('detail-breadcrumb', ['Inicio', prod.category || 'Perfumes', prod.name]);
             document.getElementById('detail-desc').innerText = prod.description || "Una fragancia excepcional perfecta para cualquier ocasión.";
             
             const qtyDetailEl = document.getElementById('qty-detail');
@@ -2777,6 +2784,16 @@
         window.removeDecantField = function(idx) { window.currentDecants.splice(idx, 1); window.renderAdminDecants(); }
         window.updateDecantVal = function(idx, field, val) { if(field === 'price') window.currentDecants[idx][field] = parseFloat(val) || 0; else window.currentDecants[idx][field] = val; }
 
+        // ── BREADCRUMB (ruta de navegación arriba de cada panel) ──
+        window.setBreadcrumb = function(elId, parts) {
+            const el = document.getElementById(elId);
+            if (!el) return;
+            el.innerHTML = parts.map((p, i) => {
+                if (i === parts.length - 1) return `<span class="text-perfume-dark font-bold">${p}</span>`;
+                return `<span class="text-gray-400">${p}</span>`;
+            }).join(' <span class="text-gray-300">›</span> ');
+        };
+
         window.switchAdminTab = function(tab) {
             const tabs = ['products', 'categories', 'clients', 'settings'];
             tabs.forEach(t => {
@@ -2785,6 +2802,9 @@
                 if(btn) { btn.classList.replace('text-perfume-magenta', 'text-gray-500'); btn.classList.remove('border-b-2', 'border-perfume-magenta'); }
             });
             document.getElementById('admin-tab-'+tab).classList.remove('hidden'); document.getElementById('tab-btn-'+tab).classList.replace('text-gray-500', 'text-perfume-magenta'); document.getElementById('tab-btn-'+tab).classList.add('border-b-2', 'border-perfume-magenta');
+            
+            const adminTabLabels = {products:'Productos', categories:'Categorías y Marcas', clients:'Clientes VIP', settings:'Configurar Tienda'};
+            window.setBreadcrumb('admin-breadcrumb', ['Inicio', 'Panel de Administración', adminTabLabels[tab] || tab]);
             
             if(tab === 'clients') window.extractClientsFromOrders();
         }
@@ -2932,6 +2952,7 @@
                     if (t === 'Eliminados') { btn.classList.remove('text-red-600'); btn.classList.add('text-red-400'); } else { btn.classList.remove('text-perfume-magenta'); btn.classList.add('text-gray-400'); }
                 }
             });
+            window.setBreadcrumb('orders-breadcrumb', ['Inicio', 'Monitor de Pedidos', tab]);
             window.filterAdminOrders();
         }
 
@@ -3626,6 +3647,9 @@
             const activeBtn = document.getElementById('billing-subtab-btn-' + tab);
             activeBtn.classList.replace('text-gray-500', 'text-perfume-magenta'); activeBtn.classList.add('border-b-2', 'border-perfume-magenta');
 
+            const billingTabLabels = {invoice:'Nueva Factura', inventory:'Inventario', movements:'Movimientos', history:'Historial', reports:'Reportes'};
+            window.setBreadcrumb('billing-breadcrumb', ['Inicio', 'Facturación e Inventario', billingTabLabels[tab] || tab]);
+
             if (tab === 'inventory') window.renderInventoryTable();
             if (tab === 'movements') window.loadInventoryMovements();
             if (tab === 'history') window.renderInvoiceHistory();
@@ -4005,6 +4029,7 @@
             modal.style.display = 'flex';
             modal.style.flexDirection = 'column';
             setTimeout(()=> modal.classList.remove('opacity-0'), 10); 
+            window.setBreadcrumb('orders-breadcrumb', ['Inicio', 'Monitor de Pedidos', window.currentOrderTab || 'Pendientes']);
             window.loadAdminOrders(); 
         }
 
@@ -5073,7 +5098,7 @@
             try { await updatePassword(auth.currentUser, newPass); window.showToast("✅ Contraseña actualizada exitosamente."); newPassInput.value = ''; } catch (error) { if(error.code === 'auth/requires-recent-login') window.showToast("⚠️ Cierra sesión, vuelve a entrar e intenta de nuevo."); else window.showToast("❌ Error al actualizar la contraseña."); }
         }
 
-        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.style.display = 'flex'; m.style.flexDirection = 'column'; setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); window.renderShippingAgencies(); }
+        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.style.display = 'flex'; m.style.flexDirection = 'column'; setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); window.renderShippingAgencies(); window.setBreadcrumb('admin-breadcrumb', ['Inicio', 'Panel de Administración', 'Productos']); }
         window.closeAdminModal = () => { const m = document.getElementById('admin-modal'); m.classList.add('opacity-0'); setTimeout(()=> { m.style.display = 'none'; }, 300); }
         window.handleProfileClick = () => { 
             if(window.isLoggedIn) { 
@@ -5107,6 +5132,8 @@
                 activeBtn.classList.remove('text-gray-400');
                 activeBtn.classList.add('text-perfume-magenta','border-b-2','border-perfume-magenta');
             }
+            const profileTabLabels = {orders:'Mis Pedidos', info:'Mi Perfil', security:'Seguridad'};
+            window.setBreadcrumb('profile-breadcrumb', ['Inicio', profileTabLabels[tab] || tab]);
             if (tab === 'orders') fetchUserOrders();
         }
 
