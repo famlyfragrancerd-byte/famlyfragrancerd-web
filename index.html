@@ -361,7 +361,6 @@
             
             <div class="w-full md:w-1/2 flex flex-col flex-1 overflow-hidden relative bg-white">
                 <div class="p-5 md:p-8 pb-4 flex-1 overflow-y-auto no-scrollbar">
-                    <div id="detail-breadcrumb" class="text-xs font-medium mb-2 flex items-center gap-1.5"></div>
                     <span id="detail-cat" class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1 block">Categoría</span>
                     
                     <div class="flex justify-between items-start mb-2 gap-2">
@@ -466,7 +465,7 @@
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
                         Monitor
                     </button>
-                    <button id="btn-billing-panel" onclick="openBillingModal()" class="hidden bg-green-600/80 hover:bg-green-600 border border-green-500/30 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 text-xs">
+                    <button id="btn-billing-panel" onclick="window.openBillingModal()" class="hidden bg-green-600/80 hover:bg-green-600 border border-green-500/30 text-white py-2.5 rounded-xl font-bold transition flex items-center justify-center gap-1.5 text-xs">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                         Facturación
                     </button>
@@ -493,8 +492,6 @@
                 Seguridad
             </button>
         </div>
-
-        <div id="profile-breadcrumb" class="text-xs font-medium px-4 pt-3 flex items-center gap-1.5"><span class="text-gray-400">Inicio</span> <span class="text-gray-300">›</span> <span class="text-perfume-dark font-bold">Mis Pedidos</span></div>
 
         <!-- CONTENIDO con scroll -->
         <div class="flex-1 overflow-y-auto no-scrollbar">
@@ -642,7 +639,6 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
             </div>
-            <div id="admin-breadcrumb" class="text-xs font-medium mb-3 flex items-center gap-1.5"></div>
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="switchAdminTab('products')" id="tab-btn-products" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap flex items-center gap-1.5">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
@@ -1202,7 +1198,6 @@
                     <button onclick="closeOrdersDashboard()" class="text-gray-400 hover:text-red-500 text-3xl leading-none ml-2" title="Cerrar Monitor">&times;</button>
                 </div>
             </div>
-            <div id="orders-breadcrumb" class="text-xs font-medium mb-3 flex items-center gap-1.5"></div>
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="setOrderTab('Pendientes')" id="tab-orders-pendientes" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">⏳ Pendientes</button>
                 <button onclick="setOrderTab('Atendiendo')" id="tab-orders-atendiendo" class="text-xs md:text-sm font-bold text-gray-400 pb-3 hover:text-gray-600 transition uppercase tracking-wide whitespace-nowrap">👋 Atendiendo</button>
@@ -1228,7 +1223,6 @@
                 </h2>
                 <button onclick="closeBillingModal()" class="text-gray-400 hover:text-red-500 text-3xl leading-none" title="Cerrar">&times;</button>
             </div>
-            <div id="billing-breadcrumb" class="text-xs font-medium mb-3 flex items-center gap-1.5"></div>
             <div class="flex gap-6 overflow-x-auto no-scrollbar">
                 <button onclick="switchBillingSubTab('invoice')" id="billing-subtab-btn-invoice" class="text-xs md:text-sm font-bold text-perfume-magenta border-b-2 border-perfume-magenta pb-3 uppercase tracking-wide whitespace-nowrap">🧾 Nueva Factura</button>
                 <button onclick="switchBillingSubTab('inventory')" id="billing-subtab-btn-inventory" class="text-xs md:text-sm font-bold text-gray-500 pb-3 hover:text-gray-700 transition uppercase tracking-wide whitespace-nowrap">📦 Inventario</button>
@@ -1281,6 +1275,10 @@
                         <button onclick="window.toggleBillingOrdersDrawer()" class="shrink-0 flex items-center gap-1 border border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                             Pendientes <span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-0.5" id="billing-pending-count">0</span>
+                        </button>
+                        <button onclick="window.openBillingAddProduct()" class="shrink-0 flex items-center gap-1 border border-green-300 bg-green-50 hover:bg-green-100 text-green-700 text-xs font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
+                            Nuevo Producto
                         </button>
                         <button onclick="window.clearBillingSelection()" class="shrink-0 flex items-center gap-1 border border-red-200 bg-red-50 hover:bg-red-100 text-red-500 text-xs font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
@@ -2579,7 +2577,6 @@
             document.getElementById('detail-img').src = prod.img;
             document.getElementById('detail-cat').innerText = brandLabel + prod.category;
             document.getElementById('detail-name').innerText = prod.name;
-            window.setBreadcrumb('detail-breadcrumb', ['Inicio', prod.category || 'Perfumes', prod.name]);
             document.getElementById('detail-desc').innerText = prod.description || "Una fragancia excepcional perfecta para cualquier ocasión.";
             
             const qtyDetailEl = document.getElementById('qty-detail');
@@ -2784,16 +2781,6 @@
         window.removeDecantField = function(idx) { window.currentDecants.splice(idx, 1); window.renderAdminDecants(); }
         window.updateDecantVal = function(idx, field, val) { if(field === 'price') window.currentDecants[idx][field] = parseFloat(val) || 0; else window.currentDecants[idx][field] = val; }
 
-        // ── BREADCRUMB (ruta de navegación arriba de cada panel) ──
-        window.setBreadcrumb = function(elId, parts) {
-            const el = document.getElementById(elId);
-            if (!el) return;
-            el.innerHTML = parts.map((p, i) => {
-                if (i === parts.length - 1) return `<span class="text-perfume-dark font-bold">${p}</span>`;
-                return `<span class="text-gray-400">${p}</span>`;
-            }).join(' <span class="text-gray-300">›</span> ');
-        };
-
         window.switchAdminTab = function(tab) {
             const tabs = ['products', 'categories', 'clients', 'settings'];
             tabs.forEach(t => {
@@ -2802,9 +2789,6 @@
                 if(btn) { btn.classList.replace('text-perfume-magenta', 'text-gray-500'); btn.classList.remove('border-b-2', 'border-perfume-magenta'); }
             });
             document.getElementById('admin-tab-'+tab).classList.remove('hidden'); document.getElementById('tab-btn-'+tab).classList.replace('text-gray-500', 'text-perfume-magenta'); document.getElementById('tab-btn-'+tab).classList.add('border-b-2', 'border-perfume-magenta');
-            
-            const adminTabLabels = {products:'Productos', categories:'Categorías y Marcas', clients:'Clientes VIP', settings:'Configurar Tienda'};
-            window.setBreadcrumb('admin-breadcrumb', ['Inicio', 'Panel de Administración', adminTabLabels[tab] || tab]);
             
             if(tab === 'clients') window.extractClientsFromOrders();
         }
@@ -2952,7 +2936,6 @@
                     if (t === 'Eliminados') { btn.classList.remove('text-red-600'); btn.classList.add('text-red-400'); } else { btn.classList.remove('text-perfume-magenta'); btn.classList.add('text-gray-400'); }
                 }
             });
-            window.setBreadcrumb('orders-breadcrumb', ['Inicio', 'Monitor de Pedidos', tab]);
             window.filterAdminOrders();
         }
 
@@ -3615,13 +3598,20 @@
 
         window.openBillingModal = async function() {
             window.closeProfileModal();
-            window.closeAdminModal();
-            window.closeOrdersDashboard();
+            // Cerrar otros modales sin disparar su routing
+            const adminModal = document.getElementById('admin-modal');
+            if (adminModal) { adminModal.classList.add('opacity-0'); setTimeout(()=>{ adminModal.style.display='none'; }, 300); }
+            const ordersModal = document.getElementById('orders-dashboard-modal');
+            if (ordersModal) { ordersModal.classList.add('opacity-0'); setTimeout(()=>{ ordersModal.style.display='none'; }, 300); }
+
             const modal = document.getElementById('billing-modal');
+            if (!modal) return;
             modal.style.display = 'flex';
             modal.style.flexDirection = 'column';
             modal.style.height = '100dvh';
+            modal.classList.remove('opacity-0');
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            history.replaceState({}, '', '/facturacion');
             window.switchBillingSubTab('invoice');
             if (!window.adminOrders || window.adminOrders.length === 0) await window.loadAdminOrders();
             window.renderBillingOrdersList();
@@ -3634,6 +3624,43 @@
             const modal = document.getElementById('billing-modal');
             modal.classList.add('opacity-0');
             setTimeout(() => { modal.style.display = 'none'; }, 300);
+            history.replaceState({}, '', '/');
+        }
+
+        // Abre el Panel de Admin directamente en la pestaña de Productos
+        // para agregar un producto nuevo sin salir de Facturación
+        window.openBillingAddProduct = function() {
+            // Cierra el billing modal para abrir el admin encima limpiamente
+            const billingModal = document.getElementById('billing-modal');
+            if (billingModal) billingModal.style.display = 'none';
+
+            // Abre el panel admin directamente en la pestaña de Productos
+            const adminModal = document.getElementById('admin-modal');
+            if (!adminModal) return;
+            adminModal.style.display = 'flex';
+            adminModal.style.flexDirection = 'column';
+            adminModal.style.zIndex = '300'; // encima de todo
+            setTimeout(() => adminModal.classList.remove('opacity-0'), 10);
+            window.renderAdminDecants();
+            window.renderShippingAgencies();
+            window.switchAdminTab('products');
+            window.resetAdminForm();
+
+            // Sobrescribe temporalmente closeAdminModal para regresar a Facturación
+            const origClose = window.closeAdminModal;
+            window.closeAdminModal = function() {
+                adminModal.classList.add('opacity-0');
+                setTimeout(() => {
+                    adminModal.style.display = 'none';
+                    adminModal.style.zIndex = '200'; // restaurar z-index
+                }, 300);
+                window.closeAdminModal = origClose; // restaurar función original
+                // Cargar nuevos productos y regresar al billing
+                window.loadDynamicProducts().then(() => {
+                    window.showToast("✅ Catálogo actualizado.");
+                    window.openBillingModal();
+                });
+            };
         }
 
         window.switchBillingSubTab = function(tab) {
@@ -3646,9 +3673,6 @@
             document.getElementById('billing-subtab-' + tab).classList.remove('hidden');
             const activeBtn = document.getElementById('billing-subtab-btn-' + tab);
             activeBtn.classList.replace('text-gray-500', 'text-perfume-magenta'); activeBtn.classList.add('border-b-2', 'border-perfume-magenta');
-
-            const billingTabLabels = {invoice:'Nueva Factura', inventory:'Inventario', movements:'Movimientos', history:'Historial', reports:'Reportes'};
-            window.setBreadcrumb('billing-breadcrumb', ['Inicio', 'Facturación e Inventario', billingTabLabels[tab] || tab]);
 
             if (tab === 'inventory') window.renderInventoryTable();
             if (tab === 'movements') window.loadInventoryMovements();
@@ -4029,14 +4053,15 @@
             modal.style.display = 'flex';
             modal.style.flexDirection = 'column';
             setTimeout(()=> modal.classList.remove('opacity-0'), 10); 
-            window.setBreadcrumb('orders-breadcrumb', ['Inicio', 'Monitor de Pedidos', window.currentOrderTab || 'Pendientes']);
-            window.loadAdminOrders(); 
+            window.loadAdminOrders();
+            history.replaceState({}, '', '/monitor-pedidos');
         }
 
         window.closeOrdersDashboard = function() { 
             const modal = document.getElementById('orders-dashboard-modal'); 
             modal.classList.add('opacity-0'); 
-            setTimeout(()=> { modal.style.display = 'none'; }, 300); 
+            setTimeout(()=> { modal.style.display = 'none'; }, 300);
+            history.replaceState({}, '', '/');
         }
 
         window.loadAdminOrders = async function() {
@@ -5016,17 +5041,8 @@
                 document.getElementById('profile-name').innerHTML = fullName + badgeHTML; 
                 document.getElementById('profile-email').innerText = user.email || ""; 
                 const profileIdEl = document.getElementById('profile-id');
-                const numericId = window.generateNumericId(user.uid);
-                if (profileIdEl) profileIdEl.innerText = numericId;
+                if (profileIdEl) profileIdEl.innerText = window.generateNumericId(user.uid);
                 document.getElementById('profile-initial').innerText = fullName.charAt(0).toUpperCase();
-
-                // Poblar campos de "Información de cuenta" en la pestaña Mi Perfil
-                const pinfoName = document.getElementById('profile-info-name');
-                const pinfoEmail = document.getElementById('profile-info-email');
-                const pinfoId = document.getElementById('profile-info-id');
-                if (pinfoName) pinfoName.innerText = fullName;
-                if (pinfoEmail) pinfoEmail.innerText = user.email || '';
-                if (pinfoId) pinfoId.innerText = numericId;
 
                 // --- NUEVO: Actualizar carrito a precio mayorista al iniciar sesión ---
                 if (window.isWholesaler && window.cart && window.cart.length > 0) {
@@ -5098,7 +5114,7 @@
             try { await updatePassword(auth.currentUser, newPass); window.showToast("✅ Contraseña actualizada exitosamente."); newPassInput.value = ''; } catch (error) { if(error.code === 'auth/requires-recent-login') window.showToast("⚠️ Cierra sesión, vuelve a entrar e intenta de nuevo."); else window.showToast("❌ Error al actualizar la contraseña."); }
         }
 
-        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.style.display = 'flex'; m.style.flexDirection = 'column'; setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); window.renderShippingAgencies(); window.setBreadcrumb('admin-breadcrumb', ['Inicio', 'Panel de Administración', 'Productos']); }
+        window.openAdminModal = () => { window.closeProfileModal(); const m = document.getElementById('admin-modal'); m.style.display = 'flex'; m.style.flexDirection = 'column'; setTimeout(()=>m.classList.remove('opacity-0'), 10); window.renderAdminDecants(); window.renderShippingAgencies(); history.replaceState({}, '', '/admin'); }
         window.closeAdminModal = () => { const m = document.getElementById('admin-modal'); m.classList.add('opacity-0'); setTimeout(()=> { m.style.display = 'none'; }, 300); }
         window.handleProfileClick = () => { 
             if(window.isLoggedIn) { 
@@ -5132,8 +5148,6 @@
                 activeBtn.classList.remove('text-gray-400');
                 activeBtn.classList.add('text-perfume-magenta','border-b-2','border-perfume-magenta');
             }
-            const profileTabLabels = {orders:'Mis Pedidos', info:'Mi Perfil', security:'Seguridad'};
-            window.setBreadcrumb('profile-breadcrumb', ['Inicio', profileTabLabels[tab] || tab]);
             if (tab === 'orders') fetchUserOrders();
         }
 
@@ -5174,6 +5188,23 @@
         document.addEventListener('DOMContentLoaded', () => {
             enableHorizontalScroll(document.getElementById('cat-chips'));
             enableHorizontalScroll(document.getElementById('brand-chips'));
+
+            // Routing por URL: abre el panel correcto según la ruta
+            const path = window.location.pathname.replace(/\/$/, '').toLowerCase();
+            if (path === '/monitor-pedidos') {
+                // Espera a que el usuario esté autenticado antes de abrir
+                const unwatch = onAuthStateChanged(auth, (user) => {
+                    if (user) { unwatch(); setTimeout(() => window.openOrdersDashboard(), 1200); }
+                });
+            } else if (path === '/facturacion') {
+                const unwatch = onAuthStateChanged(auth, (user) => {
+                    if (user) { unwatch(); setTimeout(() => window.openBillingModal(), 1200); }
+                });
+            } else if (path === '/admin') {
+                const unwatch = onAuthStateChanged(auth, (user) => {
+                    if (user) { unwatch(); setTimeout(() => window.openAdminModal(), 1200); }
+                });
+            }
         });
         
         window.openCustomConfirm = function(title, desc, onConfirmCallback) {
@@ -5437,15 +5468,17 @@
                     `;
 
                     if (url) {
+                        // Se usa la URL de la agencia tal cual está configurada en Ajustes, sin pegarle
+                        // el número de guía. El número solo se muestra como texto copiable, porque
+                        // muchas agencias requieren que el cliente lo pegue manualmente en su web.
+                        // NOTA: ya no se usa <iframe> porque casi todas las páginas de rastreo de
+                        // agencias bloquean ser embebidas dentro de otro sitio (X-Frame-Options/CSP),
+                        // lo cual hacía que se viera en blanco, sobre todo en el celular.
                         const trackingNumberHtml = order.trackingNumber ? `<span class="font-mono text-gray-700">${order.trackingNumber}</span><button onclick="navigator.clipboard.writeText('${order.trackingNumber}').then(()=>window.showToast('Número de guía copiado'))" class="ml-2 inline-flex items-center text-gray-400 hover:text-blue-600 transition-all active:scale-90">📋</button>` : `<span class="font-mono text-gray-700">Pendiente</span>`;
-                        // Aseguramos que la URL sea absoluta antes de usarla en el iframe
-                        const safeUrl = url.startsWith('http') ? url : 'https://' + url;
                         trackingHtml += `
-                        <p class="text-sm font-bold mb-2">Guía de ${order.shippingAgency || 'Agencia'}: ${trackingNumberHtml}</p>
-                        <div class="rounded-xl overflow-hidden border border-gray-200 mb-2" style="height:320px">
-                            <iframe src="${safeUrl}" style="width:100%;height:100%;border:0;" title="Rastreo" loading="lazy"></iframe>
-                        </div>
-                        <p class="text-xs text-gray-500 text-center">¿No carga? <a href="${safeUrl}" target="_blank" rel="noopener" class="text-perfume-magenta font-bold underline">Abrir en nueva pestaña ↗</a></p>
+                        <p class="text-sm font-bold mb-3">Guía de ${order.shippingAgency || 'Agencia'}: ${trackingNumberHtml}</p>
+                        <a href="${url}" target="_blank" rel="noopener" class="w-full flex items-center justify-center gap-2 bg-perfume-magenta text-white font-bold px-4 py-3 rounded-lg hover:bg-perfume-dark transition-all text-sm">🔎 Rastrear con ${order.shippingAgency || 'la agencia'} ↗</a>
+                        <p class="text-xs text-gray-500 mt-2 text-center">Se abrirá la página de ${order.shippingAgency || 'la agencia'} en una pestaña nueva. Si te pide el número de guía, cópialo de arriba y pégalo allí.</p>
                         `;
                     } else {
                         trackingHtml += `
