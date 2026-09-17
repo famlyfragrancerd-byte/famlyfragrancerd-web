@@ -1329,23 +1329,18 @@
 
                     <!-- Fila 2: Cliente + acciones -->
                     <div class="flex items-center gap-2 px-3 py-1.5 overflow-x-auto no-scrollbar relative" id="billing-actions-row">
-                        <div class="relative shrink-0">
-                            <svg class="w-3 h-3 absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                            <input type="text" id="billing-customer-name" placeholder="Cliente (opcional)" autocomplete="off"
-                                oninput="window.billingCustomerSearchLive(this.value)"
-                                onfocus="window.billingCustomerSearchLive(this.value)"
-                                onblur="setTimeout(() => window.hideCrmSuggestions(), 150)"
-                                class="pl-6 pr-2 py-1.5 border border-gray-300 rounded-lg text-xs focus:outline-none focus:border-blue-400 w-32 sm:w-44">
-                            <div id="billing-customer-suggestions" class="hidden fixed w-64 bg-white border border-gray-300 rounded-lg shadow-xl z-[300] max-h-56 overflow-y-auto"></div>
-                        </div>
-                        <input type="email" id="billing-customer-email" placeholder="Correo (opcional, para enviar factura)" autocomplete="off"
-                            class="shrink-0 border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-blue-400 w-36 sm:w-48">
-                        <input type="tel" id="billing-customer-phone" placeholder="Tel. (opcional, para WhatsApp)" autocomplete="off"
-                            class="shrink-0 border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-blue-400 w-32 sm:w-40">
-                        <button onclick="window.openAddCustomerModal()" class="shrink-0 flex items-center gap-1 border border-blue-200 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1.5 rounded-lg transition whitespace-nowrap" title="Añadir nuevo cliente">
-                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
-                            <span class="hidden sm:inline">Cliente</span>
+                        <!-- Selector de cliente estilo Eleventa: un botón que abre la lista
+                             completa (buscar, elegir, dar de alta), en vez de 3 campos sueltos.
+                             Los 3 inputs originales quedan ocultos: el resto del código (factura,
+                             recibo, correo, WhatsApp) sigue leyendo sus valores tal cual. -->
+                        <button type="button" onclick="window.openClientPickerModal()" id="btn-billing-client-picker"
+                            class="shrink-0 flex items-center gap-1.5 border-2 border-gray-300 hover:border-blue-400 bg-white text-gray-700 text-xs font-bold pl-2.5 pr-2 py-1.5 rounded-lg transition max-w-[150px] sm:max-w-[200px]">
+                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            <span id="billing-client-picker-label" class="truncate">Cliente: Mostrador</span>
                         </button>
+                        <input type="hidden" id="billing-customer-name" value="">
+                        <input type="hidden" id="billing-customer-email" value="">
+                        <input type="hidden" id="billing-customer-phone" value="">
                         <button onclick="window.toggleBillingOrdersDrawer()" class="shrink-0 flex items-center gap-1 border border-gray-300 bg-gray-50 hover:bg-gray-100 text-gray-600 text-xs font-bold px-3 py-1.5 rounded-lg transition whitespace-nowrap">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
                             Pendientes <span class="bg-blue-600 text-white text-[9px] px-1.5 py-0.5 rounded-full ml-0.5" id="billing-pending-count">0</span>
@@ -1664,18 +1659,24 @@
                 </div>
 
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm flex flex-col sm:flex-row gap-2 items-stretch sm:items-center">
-                    <input type="text" id="customers-admin-search" oninput="window.searchCustomerAdmin(this.value)" placeholder="🔍 Buscar cliente por ID, nombre, teléfono o RNC/Cédula..." class="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
+                    <input type="text" id="customers-admin-search" oninput="window.searchCustomerAdmin(this.value)" placeholder="🔍 Buscar cliente por código, nombre, teléfono o RNC/Cédula..." class="flex-1 border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                     <button onclick="window.openAddCustomerModal()" class="shrink-0 flex items-center justify-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold px-4 py-2 rounded-lg transition whitespace-nowrap">
                         <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
                         Nuevo Cliente
                     </button>
                 </div>
 
+                <div class="flex gap-2">
+                    <button id="customers-filter-btn-todos" onclick="window.setCustomerAdminFilterMode('todos')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-perfume-dark text-white">Todos</button>
+                    <button id="customers-filter-btn-saldo" onclick="window.setCustomerAdminFilterMode('saldo')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-100 text-gray-600">💳 Con saldo</button>
+                    <button id="customers-filter-btn-sinsaldo" onclick="window.setCustomerAdminFilterMode('sinsaldo')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-100 text-gray-600">Sin saldo</button>
+                </div>
+
                 <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
                     <table class="w-full text-sm">
                         <thead>
                             <tr class="text-left text-[10px] text-gray-400 uppercase border-b border-gray-100">
-                                <th class="py-2 px-3">ID</th>
+                                <th class="py-2 px-3">Código</th>
                                 <th class="py-2 px-3">Nombre</th>
                                 <th class="py-2 px-3">Teléfono</th>
                                 <th class="py-2 px-3">RNC/Cédula</th>
@@ -1951,10 +1952,41 @@
     </div>
 
     <!-- MODAL: AÑADIR CLIENTE (rápido, desde Facturación) -->
+    <!-- MODAL: SELECCIONAR CLIENTE (estilo Eleventa) -->
+    <div id="client-picker-modal" class="hidden fixed inset-0 bg-gray-900/60 z-[290] justify-center items-center opacity-100 transition-opacity duration-200 backdrop-blur-sm p-4" onclick="if(event.target.id === 'client-picker-modal') window.closeClientPickerModal()">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col overflow-hidden">
+            <div class="bg-perfume-dark text-white px-5 py-3 flex items-center justify-between shrink-0">
+                <h3 class="font-extrabold text-sm flex items-center gap-2">👤 Seleccionar Cliente</h3>
+                <button onclick="window.closeClientPickerModal()" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
+            </div>
+            <div class="p-3 border-b border-gray-100 shrink-0">
+                <input type="text" id="client-picker-search" oninput="window.renderClientPickerList(this.value)" placeholder="🔍 Buscar por código, nombre, teléfono o RNC..." autocomplete="off"
+                    class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
+            </div>
+            <div class="px-3 pt-2 pb-1 flex gap-2 shrink-0">
+                <button type="button" onclick="window.selectWalkInClient()" class="flex-1 flex items-center justify-center gap-1.5 border-2 border-gray-200 hover:border-gray-400 bg-gray-50 text-gray-700 text-xs font-bold px-3 py-2 rounded-lg transition">
+                    🚶 <span>Cliente de Mostrador</span>
+                </button>
+                <button type="button" onclick="window.openAddCustomerModal()" class="flex-1 flex items-center justify-center gap-1.5 border-2 border-blue-200 hover:border-blue-400 bg-blue-50 text-blue-700 text-xs font-bold px-3 py-2 rounded-lg transition">
+                    ➕ <span>Nuevo Cliente</span>
+                </button>
+            </div>
+            <div id="client-picker-list" class="flex-1 overflow-y-auto px-2 pb-2 space-y-1"></div>
+            <div class="p-3 border-t border-gray-100 shrink-0 bg-gray-50">
+                <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">O escribe un nombre solo para este ticket (sin registrarlo)</label>
+                <div class="flex gap-1.5">
+                    <input type="text" id="client-picker-quick-name" onkeydown="if(event.key==='Enter') window.useQuickClientName()" placeholder="Nombre para el ticket" autocomplete="off" class="flex-1 border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                    <button type="button" onclick="window.useQuickClientName()" class="shrink-0 bg-gray-700 hover:bg-gray-900 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition">Usar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="add-customer-modal" class="hidden fixed inset-0 bg-gray-900/60 z-[280] justify-center items-center opacity-100 transition-opacity duration-200 backdrop-blur-sm" onclick="if(event.target.id === 'add-customer-modal') window.closeAddCustomerModal()">
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md relative mx-4">
             <button onclick="window.closeAddCustomerModal()" class="absolute top-3 right-4 text-gray-400 hover:text-red-500 text-2xl leading-none">&times;</button>
-            <h3 class="text-lg font-extrabold text-perfume-dark mb-4 flex items-center gap-2">🧑‍💼 Nuevo Cliente</h3>
+            <h3 class="text-lg font-extrabold text-perfume-dark mb-1 flex items-center gap-2">🧑‍💼 Nuevo Cliente</h3>
+            <p class="text-[11px] text-gray-400 mb-4">Se le asignará un código de cliente automáticamente al guardar (ej. #0008).</p>
             <div class="space-y-3">
                 <div>
                     <label class="block text-xs font-bold text-gray-600 mb-1">Nombre <span class="text-red-500">*</span></label>
@@ -1986,6 +2018,7 @@
         <div class="bg-white p-6 rounded-2xl shadow-2xl w-full max-w-md relative mx-4">
             <button onclick="window.closeEditCustomerModal()" class="absolute top-3 right-4 text-gray-400 hover:text-red-500 text-2xl leading-none">&times;</button>
             <h3 class="text-lg font-extrabold text-perfume-dark mb-1 flex items-center gap-2">✏️ Ver / Editar Cliente</h3>
+            <p id="edit-customer-code" class="text-[11px] font-mono font-extrabold text-gray-400 mb-2">Cliente</p>
             <div class="bg-red-50 border border-red-100 rounded-lg px-3 py-2 mb-4 flex justify-between items-center">
                 <span class="text-xs font-bold text-gray-500 uppercase">Saldo a Crédito</span>
                 <span id="edit-customer-balance" class="text-lg font-extrabold text-red-600">RD$ 0</span>
@@ -3920,7 +3953,8 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
 // customers.js — Base de clientes para Facturación (búsqueda + alta rápida)
 // ============================================================
 // Colección Firestore: artifacts/{appId}/public/data/clientes
-// Campos: nombre, taxId (RNC/Cédula), telefono, email, direccion, createdAt
+// Campos: codigo (folio secuencial estilo Eleventa, ej. "0007"), nombre,
+// taxId (RNC/Cédula), telefono, email, direccion, createdAt
 //
 // Solo para recibos internos (sin NCF/e-CF). El RNC/Cédula es opcional y
 // se guarda como referencia del cliente, no como comprobante fiscal.
@@ -3935,6 +3969,21 @@ function escapeHtml(str) {
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
+// ── CÓDIGO DE CLIENTE SECUENCIAL (estilo Eleventa: "0001", "0002"...) ──
+// Usa una transacción de Firestore para que dos altas al mismo tiempo nunca
+// terminen con el mismo código (mismo patrón que el folio de facturación).
+window.getNextClientCode = async function() {
+    const counterRef = doc(db, 'artifacts', appId, 'public', 'data', 'counters', 'clientesFacturacion');
+    const nextNum = await runTransaction(db, async (transaction) => {
+        const snap = await transaction.get(counterRef);
+        const current = snap.exists() ? (snap.data().lastCode || 0) : 0;
+        const next = current + 1;
+        transaction.set(counterRef, { lastCode: next }, { merge: true });
+        return next;
+    });
+    return String(nextNum).padStart(4, '0');
+};
+
 window.loadCrmClients = async function(force = false) {
     if (window.crmClientsLoaded && !force) return;
     try {
@@ -3942,46 +3991,28 @@ window.loadCrmClients = async function(force = false) {
         window.crmClients = [];
         snap.forEach(d => window.crmClients.push({ id: d.id, ...d.data() }));
         window.crmClientsLoaded = true;
+
+        // Compatibilidad: clientes guardados antes de que existiera el código
+        // secuencial no tienen "codigo". Se les asigna uno en segundo plano,
+        // uno por uno, sin bloquear la pantalla.
+        const sinCodigo = window.crmClients.filter(c => !c.codigo);
+        if (sinCodigo.length > 0) {
+            (async () => {
+                for (const c of sinCodigo) {
+                    try {
+                        const codigo = await window.getNextClientCode();
+                        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clientesFacturacion', c.id), { codigo });
+                        c.codigo = codigo;
+                        if (document.getElementById('customers-admin-table-body')) window.renderCustomersAdminTable();
+                        const pickerModal = document.getElementById('client-picker-modal');
+                        if (pickerModal && !pickerModal.classList.contains('hidden')) {
+                            window.renderClientPickerList(document.getElementById('client-picker-search')?.value || '');
+                        }
+                    } catch (e) { console.error('No se pudo asignar código al cliente', c.id, e); }
+                }
+            })();
+        }
     } catch (e) { console.error("Error cargando clientes:", e); }
-};
-
-window.billingCustomerSearchLive = async function(term) {
-    await window.loadCrmClients();
-
-    // Si el texto ya no coincide con el cliente seleccionado, lo deseleccionamos
-    if (window.facturaSelectedClient && window.facturaSelectedClient.nombre !== term) {
-        window.facturaSelectedClient = null;
-    }
-
-    const dropdown = document.getElementById('billing-customer-suggestions');
-    if (!dropdown) return;
-    const clean = (term || '').trim().toLowerCase();
-    if (clean.length < 1) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; return; }
-
-    const matches = window.crmClients.filter(c =>
-        (c.nombre || '').toLowerCase().includes(clean) ||
-        (c.taxId || '').toLowerCase().includes(clean)
-    ).slice(0, 6);
-
-    if (matches.length === 0) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; return; }
-
-    dropdown.innerHTML = matches.map(c => `
-        <div onclick="window.selectCrmClientById('${c.id}')" class="px-3 py-2 hover:bg-blue-50 cursor-pointer text-xs border-b border-gray-100 last:border-0">
-            <div class="font-bold text-gray-800">${escapeHtml(c.nombre)}</div>
-            <div class="text-gray-400">${escapeHtml(c.taxId) || 'Sin RNC/Cédula'}${c.telefono ? ' · ' + escapeHtml(c.telefono) : ''}${c.email ? ' · ' + escapeHtml(c.email) : ''}</div>
-        </div>
-    `).join('');
-    // Posición "fixed" calculada en JS: el input vive dentro de una fila con
-    // overflow-x-auto, y cuando un eje de overflow no es "visible" el navegador
-    // fuerza el otro eje a "auto" también, recortando cualquier hijo "absolute".
-    // Por eso posicionamos el dropdown como "fixed" respecto al viewport.
-    const input = document.getElementById('billing-customer-name');
-    if (input) {
-        const rect = input.getBoundingClientRect();
-        dropdown.style.top = (rect.bottom + 4) + 'px';
-        dropdown.style.left = rect.left + 'px';
-    }
-    dropdown.classList.remove('hidden');
 };
 
 window.selectCrmClientById = function(id) {
@@ -3994,23 +4025,137 @@ window.selectCrmClientById = function(id) {
     if (emailInput) emailInput.value = client.email || '';
     const phoneInput = document.getElementById('billing-customer-phone');
     if (phoneInput) phoneInput.value = client.telefono || '';
-    window.hideCrmSuggestions();
+    if (window.updateClientPickerLabel) window.updateClientPickerLabel();
 };
 
-window.hideCrmSuggestions = function() {
-    const dropdown = document.getElementById('billing-customer-suggestions');
-    if (dropdown) { dropdown.classList.add('hidden'); dropdown.innerHTML = ''; }
+// Se llama al limpiar/resetear la facturación (ver window.clearBillingSelection en billing.js)
+window.clearCrmSelection = function() {
+    window.facturaSelectedClient = null;
+    if (window.updateClientPickerLabel) window.updateClientPickerLabel();
+};
+
+// ============================================================
+// SELECTOR DE CLIENTE ESTILO ELEVENTA
+// ============================================================
+// Un solo botón "Cliente: ..." en la barra de Facturación abre este modal:
+// buscar en la lista, elegir "Cliente de Mostrador", escribir un nombre
+// suelto para el ticket (sin registrarlo), o dar de alta uno nuevo — todo
+// sin salir de la pantalla de venta, igual que en Eleventa.
+
+window.openClientPickerModal = async function() {
+    const modal = document.getElementById('client-picker-modal');
+    if (!modal) return;
+    await window.loadCrmClients();
+    const search = document.getElementById('client-picker-search');
+    if (search) search.value = '';
+    const quickName = document.getElementById('client-picker-quick-name');
+    if (quickName) quickName.value = '';
+    window.renderClientPickerList('');
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    setTimeout(() => search?.focus(), 50);
+};
+
+window.closeClientPickerModal = function() {
+    const modal = document.getElementById('client-picker-modal');
+    if (modal) { modal.classList.add('hidden'); modal.classList.remove('flex'); }
+};
+
+window.renderClientPickerList = function(term = '') {
+    const listEl = document.getElementById('client-picker-list');
+    if (!listEl) return;
+    const clean = (term || '').trim().toLowerCase();
+    let list = window.crmClients || [];
+    if (clean) {
+        list = list.filter(c =>
+            (c.codigo || '').toLowerCase().includes(clean) ||
+            (c.nombre || '').toLowerCase().includes(clean) ||
+            (c.telefono || '').toLowerCase().includes(clean) ||
+            (c.taxId || '').toLowerCase().includes(clean)
+        );
+    }
+    list = [...list].sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+
+    if (list.length === 0) {
+        listEl.innerHTML = `<p class="text-xs text-gray-400 text-center py-8">Sin resultados.${clean ? ' Presiona "➕ Nuevo Cliente" para agregarlo.' : ' Aún no hay clientes registrados.'}</p>`;
+        return;
+    }
+
+    const selectedId = window.facturaSelectedClient?.id;
+    listEl.innerHTML = list.map(c => {
+        const saldo = c.creditBalance || 0;
+        const isSel = c.id === selectedId;
+        return `
+        <button type="button" onclick="window.pickClientFromModal('${c.id}')" class="w-full text-left flex items-center gap-2.5 px-3 py-2.5 rounded-lg border transition ${isSel ? 'border-blue-400 bg-blue-50' : 'border-gray-100 hover:bg-gray-50 hover:border-gray-300'}">
+            <span class="shrink-0 font-mono text-[10px] font-extrabold text-white bg-gray-700 rounded px-1.5 py-1">${escapeHtml(c.codigo) || '----'}</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-gray-800 truncate">${escapeHtml(c.nombre)}</p>
+                <p class="text-[11px] text-gray-400 truncate">${escapeHtml(c.telefono) || 'Sin teléfono'}${c.taxId ? ' · ' + escapeHtml(c.taxId) : ''}</p>
+            </div>
+            ${saldo > 0 ? `<span class="shrink-0 text-[10px] font-extrabold text-red-600 bg-red-50 border border-red-200 rounded px-1.5 py-1 whitespace-nowrap">RD$ ${saldo.toLocaleString('en-US')}</span>` : ''}
+        </button>`;
+    }).join('');
+};
+
+window.pickClientFromModal = function(id) {
+    window.selectCrmClientById(id);
+    window.closeClientPickerModal();
+};
+
+window.selectWalkInClient = function() {
+    window.clearCrmSelection();
+    ['billing-customer-name', 'billing-customer-phone', 'billing-customer-email'].forEach(elId => {
+        const el = document.getElementById(elId); if (el) el.value = '';
+    });
+    window.updateClientPickerLabel();
+    window.closeClientPickerModal();
+};
+
+window.useQuickClientName = function() {
+    const val = (document.getElementById('client-picker-quick-name')?.value || '').trim();
+    if (!val) return window.showToast("Escribe un nombre para el ticket.");
+    window.clearCrmSelection();
+    const nameInput = document.getElementById('billing-customer-name');
+    if (nameInput) nameInput.value = val;
+    window.updateClientPickerLabel();
+    window.closeClientPickerModal();
+};
+
+// Sincroniza el botón "Cliente: ..." de la barra de Facturación con el
+// estado actual (cliente registrado, nombre suelto, o Mostrador).
+window.updateClientPickerLabel = function() {
+    const label = document.getElementById('billing-client-picker-label');
+    if (!label) return;
+    const btn = document.getElementById('btn-billing-client-picker');
+    const client = window.facturaSelectedClient;
+    const nameVal = (document.getElementById('billing-customer-name')?.value || '').trim();
+    if (client) {
+        label.innerText = `${client.codigo ? client.codigo + ' · ' : ''}${client.nombre}`;
+    } else if (nameVal) {
+        label.innerText = nameVal;
+    } else {
+        label.innerText = 'Cliente: Mostrador';
+    }
+    if (btn) {
+        const activo = !!(client || nameVal);
+        btn.classList.toggle('border-blue-400', activo);
+        btn.classList.toggle('bg-blue-50', activo);
+        btn.classList.toggle('text-blue-700', activo);
+    }
 };
 
 window.openAddCustomerModal = function() {
     const modal = document.getElementById('add-customer-modal');
     if (!modal) return;
-    document.getElementById('new-customer-name').value = document.getElementById('billing-customer-name')?.value || '';
+    // Si venía de buscar en el selector de clientes y no encontró nada,
+    // prellenamos el nombre con lo que ya había escrito (como en Eleventa:
+    // buscas, no aparece, y el propio texto pasa al alta).
+    const searchTerm = (document.getElementById('client-picker-search')?.value || '').trim();
+    document.getElementById('new-customer-name').value = searchTerm || (document.getElementById('billing-customer-name')?.value || '');
     document.getElementById('new-customer-taxid').value = '';
     document.getElementById('new-customer-phone').value = '';
     document.getElementById('new-customer-email').value = '';
     document.getElementById('new-customer-address').value = '';
-    window.hideCrmSuggestions();
+    if (window.closeClientPickerModal) window.closeClientPickerModal();
     modal.classList.remove('hidden'); modal.classList.add('flex');
     setTimeout(() => document.getElementById('new-customer-name')?.focus(), 50);
 };
@@ -4027,7 +4172,9 @@ window.saveNewCustomer = async function() {
     const originalText = btn.innerHTML;
     btn.innerHTML = "Guardando..."; btn.disabled = true;
     try {
+        const codigo = await window.getNextClientCode();
         const newClient = {
+            codigo,
             nombre,
             taxId: document.getElementById('new-customer-taxid').value.trim(),
             telefono: document.getElementById('new-customer-phone').value.trim(),
@@ -4041,7 +4188,7 @@ window.saveNewCustomer = async function() {
         window.selectCrmClientById(savedClient.id);
         window.closeAddCustomerModal();
         if (document.getElementById('customers-admin-table-body')) window.renderCustomersAdminTable();
-        window.showToast("✅ Cliente guardado.");
+        window.showToast(`✅ Cliente #${codigo} guardado.`);
     } catch (e) {
         console.error(e);
         window.showToast("❌ Error al guardar el cliente.");
@@ -4050,18 +4197,28 @@ window.saveNewCustomer = async function() {
     }
 };
 
-// Se llama al limpiar/resetear la facturación (ver window.clearBillingSelection en billing.js)
-window.clearCrmSelection = function() {
-    window.facturaSelectedClient = null;
-    window.hideCrmSuggestions();
-};
-
 // ============================================================
-// PANEL ADMIN DE CLIENTES — ver/editar cada cliente, buscar por ID
-// y otorgar/abonar facturas a crédito
+// PANEL ADMIN DE CLIENTES — ver/editar cada cliente, buscar por código
+// y otorgar/abonar facturas a crédito (estilo Eleventa: lista + filtros
+// rápidos + estado de cuenta con saldo corriendo)
 // ============================================================
 
 window._customerAdminFilter = '';
+window._customerAdminFilterMode = 'todos'; // 'todos' | 'saldo' | 'sinsaldo'
+
+window.setCustomerAdminFilterMode = function(mode) {
+    window._customerAdminFilterMode = mode;
+    ['todos', 'saldo', 'sinsaldo'].forEach(m => {
+        const b = document.getElementById('customers-filter-btn-' + m);
+        if (!b) return;
+        const activo = m === mode;
+        b.classList.toggle('bg-perfume-dark', activo);
+        b.classList.toggle('text-white', activo);
+        b.classList.toggle('bg-gray-100', !activo);
+        b.classList.toggle('text-gray-600', !activo);
+    });
+    window.renderCustomersAdminTable();
+};
 
 // Render principal de la tabla de clientes (subpestaña "Clientes")
 window.renderCustomersAdminTable = function(term) {
@@ -4073,13 +4230,14 @@ window.renderCustomersAdminTable = function(term) {
     if (countEl) countEl.innerText = (window.crmClients || []).length;
     if (!tbody) return;
 
-    const clean = (window._customerAdminFilter || '').trim().toLowerCase();
     let list = window.crmClients || [];
+    if (window._customerAdminFilterMode === 'saldo') list = list.filter(c => (c.creditBalance || 0) > 0);
+    else if (window._customerAdminFilterMode === 'sinsaldo') list = list.filter(c => !((c.creditBalance || 0) > 0));
 
+    const clean = (window._customerAdminFilter || '').trim().toLowerCase();
     if (clean) {
         list = list.filter(c =>
-            c.id.toLowerCase() === clean || // coincidencia exacta de ID
-            c.id.toLowerCase().includes(clean) ||
+            (c.codigo || '').toLowerCase().includes(clean) ||
             (c.nombre || '').toLowerCase().includes(clean) ||
             (c.taxId || '').toLowerCase().includes(clean) ||
             (c.telefono || '').toLowerCase().includes(clean)
@@ -4104,7 +4262,7 @@ window.renderCustomersAdminTable = function(term) {
         const saldoClass = saldo > 0 ? 'text-red-600 font-extrabold' : 'text-gray-400';
         return `
         <tr class="border-b border-gray-100 hover:bg-gray-50">
-            <td class="py-2 pr-2 font-mono text-[10px] text-gray-400">${escapeHtml(c.id.slice(0, 8))}…</td>
+            <td class="py-2 pr-2 font-mono text-xs font-extrabold text-gray-500">${escapeHtml(c.codigo) || '—'}</td>
             <td class="py-2 pr-2 font-bold text-gray-800">${escapeHtml(c.nombre)}</td>
             <td class="py-2 pr-2 text-gray-500">${escapeHtml(c.telefono) || '—'}</td>
             <td class="py-2 pr-2 text-gray-500">${escapeHtml(c.taxId) || '—'}</td>
@@ -4139,6 +4297,9 @@ window.openEditCustomerModal = function(id) {
     setVal('edit-customer-phone', client.telefono);
     setVal('edit-customer-email', client.email);
     setVal('edit-customer-address', client.direccion);
+
+    const codeEl = document.getElementById('edit-customer-code');
+    if (codeEl) codeEl.innerText = client.codigo ? `Cliente #${client.codigo}` : 'Cliente';
 
     const saldoEl = document.getElementById('edit-customer-balance');
     if (saldoEl) saldoEl.innerText = `RD$ ${(client.creditBalance || 0).toLocaleString('en-US')}`;
@@ -4236,14 +4397,19 @@ window.registerCreditPayment = async function(clientId, monto) {
     }
 };
 
+// Estado de cuenta estilo Eleventa: tabla con Fecha / Concepto / Cargo /
+// Abono / Saldo corriente, en vez de tarjetas sueltas sin acumulado.
 window.openCreditHistoryModal = async function(clientId) {
     const client = (window.crmClients || []).find(c => c.id === clientId);
     if (!client) return window.showToast("❌ Cliente no encontrado.");
     window._creditHistoryClientId = clientId;
 
-    document.getElementById('credit-history-client-name').innerText = client.nombre;
+    const nameLabel = document.getElementById('credit-history-client-name');
+    if (nameLabel) nameLabel.innerText = client.codigo ? `${client.codigo} · ${client.nombre}` : client.nombre;
     document.getElementById('credit-history-balance').innerText = `RD$ ${(client.creditBalance || 0).toLocaleString('en-US')}`;
     document.getElementById('credit-payment-amount').value = '';
+    const chargeInput = document.getElementById('credit-charge-amount');
+    if (chargeInput) chargeInput.value = '';
 
     const listEl = document.getElementById('credit-history-list');
     listEl.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Cargando movimientos...</p>';
@@ -4255,24 +4421,49 @@ window.openCreditHistoryModal = async function(clientId) {
         const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'clientesFacturacion', clientId, 'movimientosCredito'));
         let movs = [];
         snap.forEach(d => movs.push({ id: d.id, ...d.data() }));
-        movs.sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 
         if (movs.length === 0) {
             listEl.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Este cliente todavía no tiene facturas ni abonos a crédito.</p>';
             return;
         }
 
-        listEl.innerHTML = movs.map(m => {
+        // Saldo corriente: de más antiguo a más reciente para acumular bien,
+        // y al final se invierte para mostrar lo más nuevo arriba.
+        movs.sort((a, b) => new Date(a.fecha) - new Date(b.fecha));
+        let running = 0;
+        const withRunning = movs.map(m => {
+            running += (m.tipo === 'cargo' ? (m.monto || 0) : -(m.monto || 0));
+            return { ...m, runningBalance: running };
+        });
+        withRunning.reverse();
+
+        const rows = withRunning.map(m => {
             const isCargo = m.tipo === 'cargo';
             const dateStr = new Date(m.fecha).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
-            return `<div class="flex justify-between items-center px-3 py-2 rounded-lg border ${isCargo ? 'border-red-100 bg-red-50' : 'border-green-100 bg-green-50'}">
-                <div>
-                    <p class="text-xs font-bold ${isCargo ? 'text-red-700' : 'text-green-700'}">${isCargo ? '🧾 Factura a crédito' : '💵 Abono'}</p>
-                    <p class="text-[10px] text-gray-400">${dateStr}${m.orderId ? ' · ' + escapeHtml(m.orderId) : ''}</p>
-                </div>
-                <span class="font-extrabold ${isCargo ? 'text-red-700' : 'text-green-700'}">${isCargo ? '+' : '−'} RD$ ${(m.monto || 0).toLocaleString('en-US')}</span>
-            </div>`;
+            const concepto = m.nota || (isCargo ? 'Factura a crédito' : 'Abono');
+            return `
+            <tr class="border-b border-gray-50">
+                <td class="py-1.5 pr-2 text-[11px] text-gray-500 whitespace-nowrap">${dateStr}</td>
+                <td class="py-1.5 pr-2 text-xs text-gray-700">${escapeHtml(concepto)}${m.orderId ? ` <span class="text-gray-400">(${escapeHtml(m.orderId)})</span>` : ''}</td>
+                <td class="py-1.5 pr-2 text-xs font-bold text-red-600 text-right whitespace-nowrap">${isCargo ? 'RD$ ' + (m.monto || 0).toLocaleString('en-US') : ''}</td>
+                <td class="py-1.5 pr-2 text-xs font-bold text-green-600 text-right whitespace-nowrap">${!isCargo ? 'RD$ ' + (m.monto || 0).toLocaleString('en-US') : ''}</td>
+                <td class="py-1.5 pl-2 text-xs font-extrabold text-gray-800 text-right whitespace-nowrap">RD$ ${m.runningBalance.toLocaleString('en-US')}</td>
+            </tr>`;
         }).join('');
+
+        listEl.innerHTML = `
+        <table class="w-full text-xs">
+            <thead>
+                <tr class="text-left text-[9px] text-gray-400 uppercase border-b border-gray-200">
+                    <th class="py-1.5 pr-2">Fecha</th>
+                    <th class="py-1.5 pr-2">Concepto</th>
+                    <th class="py-1.5 pr-2 text-right">Cargo</th>
+                    <th class="py-1.5 pr-2 text-right">Abono</th>
+                    <th class="py-1.5 pl-2 text-right">Saldo</th>
+                </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+        </table>`;
     } catch (e) {
         console.error(e);
         listEl.innerHTML = '<p class="text-xs text-red-500 text-center py-3">Error al cargar los movimientos.</p>';
@@ -4713,6 +4904,10 @@ window.submitCreditPayment = function() {
             if (phoneField) phoneField.value = order.customerPhone || '';
             const emailField = document.getElementById('billing-customer-email');
             if (emailField) emailField.value = order.customerEmail || '';
+            // El nombre del pedido es texto suelto, no necesariamente un cliente
+            // ya registrado en el CRM — se limpia la selección previa.
+            if (window.clearCrmSelection) window.clearCrmSelection();
+            if (window.updateClientPickerLabel) window.updateClientPickerLabel();
             const badge = document.getElementById('billing-selected-order-badge');
             if (badge) { badge.classList.remove('hidden'); badge.classList.add('flex'); }
             document.getElementById('billing-selected-order-label').innerText = order.orderId || '#PED-XXX';
@@ -4728,6 +4923,7 @@ window.submitCreditPayment = function() {
             window.facturaItems = [];
             if (window.clearCrmSelection) window.clearCrmSelection();
             ['billing-customer-name','billing-customer-email','billing-customer-phone','billing-payment-entity','billing-cash-received'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+            if (window.updateClientPickerLabel) window.updateClientPickerLabel();
             ['billing-discount','billing-discount-pct'].forEach(id => { const el = document.getElementById(id); if (el) el.value = '0'; });
             document.getElementById('billing-payment-entity')?.classList.add('hidden');
             document.getElementById('billing-orders-drawer')?.classList.add('hidden');
@@ -4757,6 +4953,7 @@ window.submitCreditPayment = function() {
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
             history.replaceState({}, '', '/facturacion');
             window.switchBillingSubTab('invoice');
+            if (window.updateClientPickerLabel) window.updateClientPickerLabel();
             if (!window.adminOrders || window.adminOrders.length === 0) await window.loadAdminOrders();
             window.renderBillingOrdersList();
             if (window.innerWidth >= 768) {
