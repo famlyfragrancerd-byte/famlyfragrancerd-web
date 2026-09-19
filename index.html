@@ -1511,6 +1511,38 @@
 
                         <input type="text" id="billing-payment-entity" placeholder="Entidad bancaria..." class="hidden w-full mb-4 border border-gray-300 rounded-lg text-sm px-3 py-2 focus:outline-none focus:border-blue-400">
 
+                        <!-- PAGO MIXTO: dividir el total en las 4 formas de pago -->
+                        <div id="billing-mixed-split" class="hidden mb-4 space-y-2 bg-amber-50 border border-amber-200 rounded-xl p-3">
+                            <p class="text-[11px] font-bold text-amber-700">Divide el total en las formas de pago que corresponda:</p>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-500">💵 Efectivo</label>
+                                    <input type="number" min="0" id="mixed-amount-efectivo" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-500">🏦 Transferencia</label>
+                                    <input type="number" min="0" id="mixed-amount-transferencia" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-500">💳 Tarjeta</label>
+                                    <input type="number" min="0" id="mixed-amount-tarjeta" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                </div>
+                                <div>
+                                    <label class="text-[10px] font-bold text-gray-500">📋 Crédito</label>
+                                    <input type="number" min="0" id="mixed-amount-credito" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                </div>
+                            </div>
+                            <input type="text" id="mixed-transfer-entity" placeholder="Entidad bancaria (transferencia)..." class="hidden w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                            <div id="mixed-credit-client-row" class="hidden flex items-center justify-between gap-2 bg-white border border-amber-300 rounded-lg px-2 py-1.5">
+                                <span class="text-[11px] font-bold text-gray-600">👤 Cliente del crédito:</span>
+                                <button type="button" onclick="window.openClientPickerModal('mixedCredit')" id="mixed-credit-client-label" class="text-xs font-extrabold text-amber-700 hover:underline">Elegir cliente...</button>
+                            </div>
+                            <div class="flex items-center justify-between pt-1 border-t border-amber-200">
+                                <button type="button" onclick="window.completeMixedWithCash()" class="text-[10px] font-bold text-blue-600 hover:underline">Completar resto con efectivo</button>
+                                <span id="mixed-split-status" class="text-xs font-extrabold text-gray-500">Asignado: RD$ 0 / RD$ 0</span>
+                            </div>
+                        </div>
+
                         <div id="billing-cash-calculator" class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <label class="text-sm font-bold text-gray-600">Pagó Con:</label>
@@ -1642,6 +1674,7 @@
                 <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
                     <input type="text" id="invoice-history-search" oninput="window.renderInvoiceHistory(this.value)" placeholder="🔍 Buscar por cliente o número de orden..." class="w-full border border-gray-300 px-3 py-2 rounded-lg text-sm focus:outline-none focus:border-perfume-magenta">
                 </div>
+                <p class="text-[11px] text-gray-400 -mt-1">Toca una factura para ver los artículos vendidos, reimprimirla o cancelarla.</p>
                 <div id="invoice-history-list" class="space-y-2"></div>
             </div>
 
@@ -1672,22 +1705,10 @@
                     <button id="customers-filter-btn-sinsaldo" onclick="window.setCustomerAdminFilterMode('sinsaldo')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition bg-gray-100 text-gray-600">Sin saldo</button>
                 </div>
 
-                <div class="bg-white rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
-                    <table class="w-full text-sm">
-                        <thead>
-                            <tr class="text-left text-[10px] text-gray-400 uppercase border-b border-gray-100">
-                                <th class="py-2 px-3">Código</th>
-                                <th class="py-2 px-3">Nombre</th>
-                                <th class="py-2 px-3">Teléfono</th>
-                                <th class="py-2 px-3">RNC/Cédula</th>
-                                <th class="py-2 px-3">Saldo a Crédito</th>
-                                <th class="py-2 px-3 text-right">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody id="customers-admin-table-body"></tbody>
-                    </table>
-                    <p id="customers-admin-empty" class="hidden text-sm text-gray-400 text-center py-10">No se encontraron clientes. Prueba con otro término de búsqueda o crea uno nuevo.</p>
-                </div>
+                <!-- Lista tipo acordeón: cada cliente se expande para ver sus datos y
+                     acciones, en vez de una tabla ancha de 6 columnas incómoda en el celular. -->
+                <div id="customers-admin-list" class="space-y-2"></div>
+                <p id="customers-admin-empty" class="hidden text-sm text-gray-400 text-center py-10">No se encontraron clientes. Prueba con otro término de búsqueda o crea uno nuevo.</p>
             </div>
 
             <!-- SUBPESTAÑA: REPORTES -->
@@ -1956,14 +1977,14 @@
     <div id="client-picker-modal" class="hidden fixed inset-0 bg-gray-900/60 z-[290] justify-center items-center opacity-100 transition-opacity duration-200 backdrop-blur-sm p-4" onclick="if(event.target.id === 'client-picker-modal') window.closeClientPickerModal()">
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 max-h-[85vh] flex flex-col overflow-hidden">
             <div class="bg-perfume-dark text-white px-5 py-3 flex items-center justify-between shrink-0">
-                <h3 class="font-extrabold text-sm flex items-center gap-2">👤 Seleccionar Cliente</h3>
+                <h3 id="client-picker-title" class="font-extrabold text-sm flex items-center gap-2">👤 Seleccionar Cliente</h3>
                 <button onclick="window.closeClientPickerModal()" class="text-white/70 hover:text-white text-2xl leading-none">&times;</button>
             </div>
             <div class="p-3 border-b border-gray-100 shrink-0">
                 <input type="text" id="client-picker-search" oninput="window.renderClientPickerList(this.value)" placeholder="🔍 Buscar por código, nombre, teléfono o RNC..." autocomplete="off"
                     class="w-full border-2 border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-blue-400">
             </div>
-            <div class="px-3 pt-2 pb-1 flex gap-2 shrink-0">
+            <div id="client-picker-quickrow" class="px-3 pt-2 pb-1 flex gap-2 shrink-0">
                 <button type="button" onclick="window.selectWalkInClient()" class="flex-1 flex items-center justify-center gap-1.5 border-2 border-gray-200 hover:border-gray-400 bg-gray-50 text-gray-700 text-xs font-bold px-3 py-2 rounded-lg transition">
                     🚶 <span>Cliente de Mostrador</span>
                 </button>
@@ -1972,7 +1993,7 @@
                 </button>
             </div>
             <div id="client-picker-list" class="flex-1 overflow-y-auto px-2 pb-2 space-y-1"></div>
-            <div class="p-3 border-t border-gray-100 shrink-0 bg-gray-50">
+            <div id="client-picker-quicknamerow" class="p-3 border-t border-gray-100 shrink-0 bg-gray-50">
                 <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">O escribe un nombre solo para este ticket (sin registrarlo)</label>
                 <div class="flex gap-1.5">
                     <input type="text" id="client-picker-quick-name" onkeydown="if(event.key==='Enter') window.useQuickClientName()" placeholder="Nombre para el ticket" autocomplete="off" class="flex-1 border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-blue-400">
@@ -4003,7 +4024,7 @@ window.loadCrmClients = async function(force = false) {
                         const codigo = await window.getNextClientCode();
                         await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clientesFacturacion', c.id), { codigo });
                         c.codigo = codigo;
-                        if (document.getElementById('customers-admin-table-body')) window.renderCustomersAdminTable();
+                        if (document.getElementById('customers-admin-list')) window.renderCustomersAdminTable();
                         const pickerModal = document.getElementById('client-picker-modal');
                         if (pickerModal && !pickerModal.classList.contains('hidden')) {
                             window.renderClientPickerList(document.getElementById('client-picker-search')?.value || '');
@@ -4042,14 +4063,29 @@ window.clearCrmSelection = function() {
 // suelto para el ticket (sin registrarlo), o dar de alta uno nuevo — todo
 // sin salir de la pantalla de venta, igual que en Eleventa.
 
-window.openClientPickerModal = async function() {
+window._clientPickerTarget = 'general';
+
+window.openClientPickerModal = async function(target = 'general') {
     const modal = document.getElementById('client-picker-modal');
     if (!modal) return;
+    window._clientPickerTarget = target;
     await window.loadCrmClients();
     const search = document.getElementById('client-picker-search');
     if (search) search.value = '';
     const quickName = document.getElementById('client-picker-quick-name');
     if (quickName) quickName.value = '';
+
+    // Para elegir el cliente del crédito (dentro de un Pago Mixto) sólo tiene
+    // sentido escoger un cliente YA registrado — no se le puede fiar a un
+    // "Cliente de Mostrador" sin datos, así que esas dos opciones se ocultan.
+    const title = document.getElementById('client-picker-title');
+    const quickRow = document.getElementById('client-picker-quickrow');
+    const quickNameRow = document.getElementById('client-picker-quicknamerow');
+    const esCredito = target === 'mixedCredit';
+    if (title) title.innerText = esCredito ? '👤 ¿A quién le darás el crédito?' : '👤 Seleccionar Cliente';
+    if (quickRow) quickRow.classList.toggle('hidden', esCredito);
+    if (quickNameRow) quickNameRow.classList.toggle('hidden', esCredito);
+
     window.renderClientPickerList('');
     modal.classList.remove('hidden'); modal.classList.add('flex');
     setTimeout(() => search?.focus(), 50);
@@ -4080,7 +4116,9 @@ window.renderClientPickerList = function(term = '') {
         return;
     }
 
-    const selectedId = window.facturaSelectedClient?.id;
+    const selectedId = window._clientPickerTarget === 'mixedCredit'
+        ? window.facturaMixedCreditClient?.id
+        : window.facturaSelectedClient?.id;
     listEl.innerHTML = list.map(c => {
         const saldo = c.creditBalance || 0;
         const isSel = c.id === selectedId;
@@ -4097,7 +4135,14 @@ window.renderClientPickerList = function(term = '') {
 };
 
 window.pickClientFromModal = function(id) {
-    window.selectCrmClientById(id);
+    if (window._clientPickerTarget === 'mixedCredit') {
+        const client = (window.crmClients || []).find(c => c.id === id);
+        if (!client) return;
+        window.facturaMixedCreditClient = client;
+        if (window.updateMixedCreditClientLabel) window.updateMixedCreditClientLabel();
+    } else {
+        window.selectCrmClientById(id);
+    }
     window.closeClientPickerModal();
 };
 
@@ -4187,7 +4232,7 @@ window.saveNewCustomer = async function() {
         window.crmClients.push(savedClient);
         window.selectCrmClientById(savedClient.id);
         window.closeAddCustomerModal();
-        if (document.getElementById('customers-admin-table-body')) window.renderCustomersAdminTable();
+        if (document.getElementById('customers-admin-list')) window.renderCustomersAdminTable();
         window.showToast(`✅ Cliente #${codigo} guardado.`);
     } catch (e) {
         console.error(e);
@@ -4220,15 +4265,18 @@ window.setCustomerAdminFilterMode = function(mode) {
     window.renderCustomersAdminTable();
 };
 
-// Render principal de la tabla de clientes (subpestaña "Clientes")
+// Render principal de la lista de clientes (subpestaña "Clientes"), estilo
+// acordeón: cada cliente muestra un resumen y se expande para ver sus datos
+// completos y las acciones — mucho más cómodo en el celular que una tabla
+// ancha de 6 columnas.
 window.renderCustomersAdminTable = function(term) {
     if (term !== undefined) window._customerAdminFilter = term;
-    const tbody = document.getElementById('customers-admin-table-body');
+    const listEl = document.getElementById('customers-admin-list');
     const emptyMsg = document.getElementById('customers-admin-empty');
     const totalCreditoEl = document.getElementById('customers-admin-total-credito');
     const countEl = document.getElementById('customers-admin-count');
     if (countEl) countEl.innerText = (window.crmClients || []).length;
-    if (!tbody) return;
+    if (!listEl) return;
 
     let list = window.crmClients || [];
     if (window._customerAdminFilterMode === 'saldo') list = list.filter(c => (c.creditBalance || 0) > 0);
@@ -4251,28 +4299,48 @@ window.renderCustomersAdminTable = function(term) {
     if (totalCreditoEl) totalCreditoEl.innerText = `RD$ ${totalCredito.toLocaleString('en-US')}`;
 
     if (list.length === 0) {
-        tbody.innerHTML = '';
+        listEl.innerHTML = '';
         if (emptyMsg) emptyMsg.classList.remove('hidden');
         return;
     }
     if (emptyMsg) emptyMsg.classList.add('hidden');
 
-    tbody.innerHTML = list.map(c => {
+    listEl.innerHTML = list.map(c => {
         const saldo = c.creditBalance || 0;
-        const saldoClass = saldo > 0 ? 'text-red-600 font-extrabold' : 'text-gray-400';
         return `
-        <tr class="border-b border-gray-100 hover:bg-gray-50">
-            <td class="py-2 pr-2 font-mono text-xs font-extrabold text-gray-500">${escapeHtml(c.codigo) || '—'}</td>
-            <td class="py-2 pr-2 font-bold text-gray-800">${escapeHtml(c.nombre)}</td>
-            <td class="py-2 pr-2 text-gray-500">${escapeHtml(c.telefono) || '—'}</td>
-            <td class="py-2 pr-2 text-gray-500">${escapeHtml(c.taxId) || '—'}</td>
-            <td class="py-2 pr-2 ${saldoClass}">RD$ ${saldo.toLocaleString('en-US')}</td>
-            <td class="py-2 pr-2 text-right whitespace-nowrap">
-                <button onclick="window.openEditCustomerModal('${c.id}')" class="text-blue-600 hover:text-blue-800 font-bold text-xs mr-3">✏️ Ver/Editar</button>
-                <button onclick="window.openCreditHistoryModal('${c.id}')" class="text-amber-600 hover:text-amber-800 font-bold text-xs">💳 Crédito</button>
-            </td>
-        </tr>`;
+        <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+            <button type="button" onclick="window.toggleClientAccordion('${c.id}')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left">
+                <svg id="client-chevron-${c.id}" class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                <span class="shrink-0 font-mono text-[10px] font-extrabold text-white bg-gray-700 rounded px-1.5 py-1">${escapeHtml(c.codigo) || '----'}</span>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-gray-800 truncate">${escapeHtml(c.nombre)}</p>
+                    <p class="text-[11px] text-gray-400 truncate">${escapeHtml(c.telefono) || 'Sin teléfono'}</p>
+                </div>
+                <span class="text-xs font-extrabold shrink-0 ${saldo > 0 ? 'text-red-600' : 'text-gray-300'}">${saldo > 0 ? 'RD$ ' + saldo.toLocaleString('en-US') : '—'}</span>
+            </button>
+            <div id="client-body-${c.id}" class="hidden border-t border-gray-100 p-4 space-y-3">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1.5 text-xs">
+                    <p><span class="text-gray-400 font-bold">RNC/Cédula:</span> ${escapeHtml(c.taxId) || '—'}</p>
+                    <p><span class="text-gray-400 font-bold">Email:</span> ${escapeHtml(c.email) || '—'}</p>
+                    <p class="sm:col-span-2"><span class="text-gray-400 font-bold">Dirección:</span> ${escapeHtml(c.direccion) || '—'}</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="window.openEditCustomerModal('${c.id}')" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold py-2 rounded-lg transition">✏️ Editar</button>
+                    <button onclick="window.openCreditHistoryModal('${c.id}')" class="flex-1 bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold py-2 rounded-lg transition">💳 Crédito${saldo > 0 ? ` · RD$ ${saldo.toLocaleString('en-US')}` : ''}</button>
+                </div>
+            </div>
+        </div>`;
     }).join('');
+};
+
+// Abre/cierra el detalle de un cliente en la lista de acordeón
+window.toggleClientAccordion = function(id) {
+    const body = document.getElementById('client-body-' + id);
+    const chevron = document.getElementById('client-chevron-' + id);
+    if (!body || !chevron) return;
+    const isOpen = !body.classList.contains('hidden');
+    body.classList.toggle('hidden', isOpen);
+    chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
 };
 
 // Carga los clientes (si hace falta) y dibuja la tabla — se llama al entrar a la subpestaña
@@ -4467,6 +4535,31 @@ window.openCreditHistoryModal = async function(clientId) {
     } catch (e) {
         console.error(e);
         listEl.innerHTML = '<p class="text-xs text-red-500 text-center py-3">Error al cargar los movimientos.</p>';
+    }
+};
+
+// Reversa un cargo a crédito cuando se cancela la factura que lo generó.
+// Se registra como un "abono" con nota explícita (nunca se borra el cargo
+// original: el estado de cuenta debe conservar el historial completo).
+window.reverseCreditForCancelledInvoice = async function(clientId, monto, orderIdLabel) {
+    if (!clientId || !monto || monto <= 0) return;
+    try {
+        await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'clientesFacturacion', clientId, 'movimientosCredito'), {
+            tipo: 'abono',
+            monto,
+            orderId: orderIdLabel || null,
+            nota: `Reverso por cancelación de factura${orderIdLabel ? ' ' + orderIdLabel : ''}`,
+            fecha: new Date().toISOString(),
+            creadoEn: serverTimestamp()
+        });
+        await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'clientesFacturacion', clientId), {
+            creditBalance: increment(-monto)
+        });
+        const idx = (window.crmClients || []).findIndex(c => c.id === clientId);
+        if (idx > -1) window.crmClients[idx].creditBalance = (window.crmClients[idx].creditBalance || 0) - monto;
+        if (document.getElementById('customers-admin-list')) window.renderCustomersAdminTable();
+    } catch (e) {
+        console.error("Error revirtiendo el crédito de la factura cancelada:", e);
     }
 };
 
@@ -4805,9 +4898,71 @@ window.submitCreditPayment = function() {
             const entity = document.getElementById('billing-payment-entity');
             const cashCalc = document.getElementById('billing-cash-calculator');
             const creditNotice = document.getElementById('billing-credit-notice');
+            const mixedSplit = document.getElementById('billing-mixed-split');
             if (entity) entity.classList.toggle('hidden', method !== 'Transferencia');
-            if (cashCalc) cashCalc.classList.toggle('hidden', method === 'Transferencia' || method === 'Tarjeta' || method === 'Crédito');
+            if (cashCalc) cashCalc.classList.toggle('hidden', method === 'Transferencia' || method === 'Tarjeta' || method === 'Crédito' || method === 'Mixto');
             if (creditNotice) creditNotice.classList.toggle('hidden', method !== 'Crédito');
+            if (mixedSplit) mixedSplit.classList.toggle('hidden', method !== 'Mixto');
+        }
+
+        // Limpia el panel de división del Pago Mixto (4 formas: Efectivo,
+        // Transferencia, Tarjeta, Crédito) — se llama al abrir el modal de Cobrar
+        // y después de cada venta, para que la próxima factura empiece en blanco.
+        window.resetMixedSplit = function() {
+            ['mixed-amount-efectivo', 'mixed-amount-transferencia', 'mixed-amount-tarjeta', 'mixed-amount-credito', 'mixed-transfer-entity'].forEach(id => {
+                const el = document.getElementById(id); if (el) el.value = '';
+            });
+            window.facturaMixedCreditClient = null;
+            if (window.updateMixedCreditClientLabel) window.updateMixedCreditClientLabel();
+            document.getElementById('mixed-transfer-entity')?.classList.add('hidden');
+            document.getElementById('mixed-credit-client-row')?.classList.add('hidden');
+            const statusEl = document.getElementById('mixed-split-status');
+            if (statusEl) { statusEl.innerText = 'Asignado: RD$ 0 / RD$ 0'; statusEl.className = 'text-xs font-extrabold text-gray-500'; }
+        }
+
+        // Lee los 4 montos del panel de división y calcula lo asignado.
+        window.getMixedSplitAmounts = function() {
+            const efectivo = parseFloat(document.getElementById('mixed-amount-efectivo')?.value) || 0;
+            const transferencia = parseFloat(document.getElementById('mixed-amount-transferencia')?.value) || 0;
+            const tarjeta = parseFloat(document.getElementById('mixed-amount-tarjeta')?.value) || 0;
+            const credito = parseFloat(document.getElementById('mixed-amount-credito')?.value) || 0;
+            const entidadTransferencia = (document.getElementById('mixed-transfer-entity')?.value || '').trim();
+            return { efectivo, transferencia, tarjeta, credito, entidadTransferencia, asignado: efectivo + transferencia + tarjeta + credito };
+        }
+
+        // Se llama al escribir en cualquiera de los 4 montos: muestra/oculta la
+        // entidad bancaria y el selector de cliente del crédito, y avisa si lo
+        // asignado no cuadra todavía con el total de la factura.
+        window.updateMixedSplitTotals = function() {
+            const total = window._billingCurrentTotal || 0;
+            const s = window.getMixedSplitAmounts();
+            document.getElementById('mixed-transfer-entity')?.classList.toggle('hidden', s.transferencia <= 0);
+            document.getElementById('mixed-credit-client-row')?.classList.toggle('hidden', s.credito <= 0);
+            const statusEl = document.getElementById('mixed-split-status');
+            if (statusEl) {
+                const cuadra = Math.abs(s.asignado - total) < 0.5;
+                statusEl.innerText = `Asignado: RD$ ${s.asignado.toLocaleString('en-US')} / RD$ ${total.toLocaleString('en-US')}`;
+                statusEl.className = `text-xs font-extrabold ${cuadra ? 'text-green-600' : 'text-red-600'}`;
+            }
+            return s;
+        }
+
+        // Atajo estilo Eleventa: llena el resto pendiente directo en Efectivo.
+        window.completeMixedWithCash = function() {
+            const total = window._billingCurrentTotal || 0;
+            const s = window.getMixedSplitAmounts();
+            const resto = Math.max(0, total - s.transferencia - s.tarjeta - s.credito);
+            const el = document.getElementById('mixed-amount-efectivo');
+            if (el) el.value = resto || '';
+            window.updateMixedSplitTotals();
+        }
+
+        // Refleja en el botón el cliente elegido para la parte a crédito del Pago Mixto.
+        window.updateMixedCreditClientLabel = function() {
+            const label = document.getElementById('mixed-credit-client-label');
+            if (!label) return;
+            const c = window.facturaMixedCreditClient;
+            label.innerText = c ? `${c.codigo ? c.codigo + ' · ' : ''}${c.nombre}` : 'Elegir cliente...';
         }
 
         // ── MODAL DE COBRAR (estilo Eleventa) ──
@@ -4818,6 +4973,7 @@ window.submitCreditPayment = function() {
             document.getElementById('cobrar-modal-total').innerText = document.getElementById('billing-total').innerText;
             document.getElementById('cobrar-modal-article-count').innerText = window.facturaItems.reduce((acc, i) => acc + i.qty, 0);
             document.getElementById('billing-cash-received').value = '';
+            window.resetMixedSplit();
             window.setBillingPaymentMethod('Efectivo');
             window.calcChange();
             modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -4924,6 +5080,7 @@ window.submitCreditPayment = function() {
             if (window.clearCrmSelection) window.clearCrmSelection();
             ['billing-customer-name','billing-customer-email','billing-customer-phone','billing-payment-entity','billing-cash-received'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
             if (window.updateClientPickerLabel) window.updateClientPickerLabel();
+            if (window.resetMixedSplit) window.resetMixedSplit();
             ['billing-discount','billing-discount-pct'].forEach(id => { const el = document.getElementById(id); if (el) el.value = '0'; });
             document.getElementById('billing-payment-entity')?.classList.add('hidden');
             document.getElementById('billing-orders-drawer')?.classList.add('hidden');
@@ -5485,6 +5642,23 @@ window.submitCreditPayment = function() {
             const total = t.total;
             const discountAmt = t.globalDiscount + t.lineDiscounts;
 
+            // ── PAGO MIXTO: validar que las 4 formas sumen exacto el total ──
+            let mixedSplit = null;
+            let mixedCreditClient = null;
+            if (paymentMethod === 'Mixto') {
+                mixedSplit = window.getMixedSplitAmounts();
+                if (Math.abs(mixedSplit.asignado - total) > 0.5) {
+                    return window.showToast(`⚠️ Los montos no cuadran: asignaste RD$ ${mixedSplit.asignado.toLocaleString('en-US')} de RD$ ${total.toLocaleString('en-US')}.`);
+                }
+                if (mixedSplit.transferencia > 0 && !mixedSplit.entidadTransferencia) {
+                    return window.showToast("⚠️ Escribe la entidad bancaria de la transferencia.");
+                }
+                if (mixedSplit.credito > 0) {
+                    mixedCreditClient = window.facturaMixedCreditClient;
+                    if (!mixedCreditClient) return window.showToast("⚠️ Elige a qué cliente le darás la parte a crédito.");
+                }
+            }
+
             const adminName = (auth.currentUser && auth.currentUser.displayName) || "Empleado";
             const customerTaxId = selectedClient?.taxId || '';
             const customerPhoneCrm = document.getElementById('billing-customer-phone')?.value.trim() || selectedClient?.telefono || '';
@@ -5515,12 +5689,37 @@ window.submitCreditPayment = function() {
                     subtotal: t.bruto,
                     discount: discountAmt,
                     customerName,
+                    customerId: selectedClient?.id || null,
                     customerTaxId,
                     status: 'Completado',
                     stockDeducted: true,
                     paymentMethod,
                     paymentEntity: paymentMethod === 'Transferencia' ? paymentEntity : null,
                     attendedBy: adminName
+                };
+                // Pago Mixto: se guarda el desglose para reimprimir, reportar y,
+                // si hace falta, revertir la parte a crédito al cancelar la factura.
+                if (paymentMethod === 'Mixto' && mixedSplit) {
+                    orderData.paymentSplit = {
+                        efectivo: mixedSplit.efectivo,
+                        transferencia: mixedSplit.transferencia,
+                        tarjeta: mixedSplit.tarjeta,
+                        credito: mixedSplit.credito,
+                        entidadTransferencia: mixedSplit.transferencia > 0 ? mixedSplit.entidadTransferencia : null,
+                        creditClientId: mixedSplit.credito > 0 ? mixedCreditClient.id : null,
+                        creditClientName: mixedSplit.credito > 0 ? mixedCreditClient.nombre : null
+                    };
+                }
+
+                // Otorga la parte a crédito, ya sea de una venta 100% a crédito o de
+                // la porción "Crédito" de un Pago Mixto — un solo lugar, sin duplicar
+                // la llamada en las dos ramas (pedido existente / factura nueva) de abajo.
+                const otorgarCreditoSiAplica = async (orderIdLabel) => {
+                    if (paymentMethod === 'Crédito' && selectedClient) {
+                        await window.grantCreditInvoice(selectedClient.id, total, { orderId: orderIdLabel });
+                    } else if (paymentMethod === 'Mixto' && mixedSplit && mixedSplit.credito > 0 && mixedCreditClient) {
+                        await window.grantCreditInvoice(mixedCreditClient.id, mixedSplit.credito, { orderId: orderIdLabel, nota: 'Parte a crédito de una venta mixta' });
+                    }
                 };
                 // Solo lo agregamos si de verdad hay un teléfono (manual o del cliente guardado),
                 // para no borrar accidentalmente uno ya existente en un pedido que se está editando.
@@ -5539,7 +5738,7 @@ window.submitCreditPayment = function() {
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', selectedOrderId), orderData);
                     finalDocId = selectedOrderId;
                     finalOrderForReceipt = { orderId: (pedidoPrevio && pedidoPrevio.orderId) || selectedOrderId, ...orderData, date: new Date().toISOString() };
-                    if (paymentMethod === 'Crédito' && selectedClient) await window.grantCreditInvoice(selectedClient.id, total, { orderId: finalOrderForReceipt.orderId });
+                    await otorgarCreditoSiAplica(finalOrderForReceipt.orderId);
                 } else {
                     const folioNum = await window.getNextMostradorFolio();
                     const orderId = `Folio ${folioNum}`;
@@ -5547,7 +5746,7 @@ window.submitCreditPayment = function() {
                     const ref = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), { orderId, folio: folioNum, userId: 'mostrador', customerName, customerPhone: customerPhoneCrm, customerEmail, customerAddress: customerAddressCrm, date: new Date().toISOString(), source: 'mostrador', ...orderData });
                     finalDocId = ref.id;
                     finalOrderForReceipt = { orderId, ...orderData, date: new Date().toISOString() };
-                    if (paymentMethod === 'Crédito' && selectedClient) await window.grantCreditInvoice(selectedClient.id, total, { orderId });
+                    await otorgarCreditoSiAplica(orderId);
                 }
 
                 // ── A PARTIR DE AQUÍ LA VENTA YA ESTÁ GUARDADA ────────────────
@@ -5556,6 +5755,7 @@ window.submitCreditPayment = function() {
                 // creer al cajero que la venta no se registró.
                 window.lastInvoiceOrderId = finalDocId;
                 window.showToast(paymentMethod === 'Crédito' ? "✅ Venta a crédito registrada." : (printReceipt ? "✅ Venta registrada." : "✅ Venta registrada (sin imprimir)."));
+                if (paymentMethod === 'Mixto' && mixedSplit && mixedSplit.credito > 0) window.showToast(`📋 RD$ ${mixedSplit.credito.toLocaleString('en-US')} quedaron a crédito de ${mixedCreditClient.nombre}.`);
                 window.closeCobrarModal();
                 window.clearBillingSelection();
 
@@ -5988,11 +6188,37 @@ window.submitCreditPayment = function() {
             }).join('');
         }
 
+        // Formatea cómo se pagó una factura para mostrarlo en Historial, Reportes
+        // y el desglose de un Pago Mixto. Antes, TODA venta que no fuera
+        // transferencia se mostraba como "💵 Efectivo", aunque se hubiera cobrado
+        // con tarjeta, crédito, o una combinación de varias formas.
+        window.formatPaymentLabel = function(order) {
+            const payIcons = { 'Efectivo': '💵 Efectivo', 'Tarjeta': '💳 Tarjeta', 'Crédito': '📋 Crédito' };
+            if (order.paymentMethod === 'Transferencia') {
+                return `🏦 Transferencia${order.paymentEntity ? ' (' + order.paymentEntity + ')' : ''}`;
+            }
+            if (order.paymentMethod === 'Mixto') {
+                const s = order.paymentSplit;
+                if (!s) return '🔀 Mixto';
+                const partes = [];
+                if (s.efectivo > 0) partes.push(`Efectivo RD$ ${s.efectivo.toLocaleString('en-US')}`);
+                if (s.transferencia > 0) partes.push(`Transf. RD$ ${s.transferencia.toLocaleString('en-US')}${s.entidadTransferencia ? ' (' + s.entidadTransferencia + ')' : ''}`);
+                if (s.tarjeta > 0) partes.push(`Tarjeta RD$ ${s.tarjeta.toLocaleString('en-US')}`);
+                if (s.credito > 0) partes.push(`Crédito RD$ ${s.credito.toLocaleString('en-US')}${s.creditClientName ? ' (' + s.creditClientName + ')' : ''}`);
+                return `🔀 Mixto: ${partes.join(' + ')}`;
+            }
+            return payIcons[order.paymentMethod] || order.paymentMethod || '—';
+        }
+
+        // Historial de Facturas, estilo acordeón: el resumen siempre visible y,
+        // al expandir, los artículos vendidos, la forma de pago completa y las
+        // acciones (reimprimir / cancelar). Las facturas canceladas se conservan
+        // en la lista (atenuadas, con su aviso) en vez de desaparecer.
         window.renderInvoiceHistory = function(term = "") {
             const listDiv = document.getElementById('invoice-history-list');
             if (!listDiv) return;
 
-            let invoices = (window.adminOrders || []).filter(o => o.status === 'Completado');
+            let invoices = (window.adminOrders || []).filter(o => o.status === 'Completado' || o.status === 'Cancelado');
             const t = term.toLowerCase().trim();
             if (t) {
                 invoices = invoices.filter(o => (o.customerName || '').toLowerCase().includes(t) || (o.orderId || '').toLowerCase().includes(t));
@@ -6006,29 +6232,79 @@ window.submitCreditPayment = function() {
 
             listDiv.innerHTML = invoices.map(order => {
                 const dateStr = new Date(order.date).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                // Antes, TODA venta que no fuera transferencia se mostraba como
-                // "💵 Efectivo", aunque se hubiera cobrado con tarjeta o a crédito.
-                const payIcons = { 'Efectivo': '💵 Efectivo', 'Tarjeta': '💳 Tarjeta', 'Mixto': '🔀 Mixto', 'Crédito': '📋 Crédito' };
-                const payLabel = order.paymentMethod === 'Transferencia'
-                    ? `🏦 Transferencia${order.paymentEntity ? ' (' + order.paymentEntity + ')' : ''}`
-                    : (payIcons[order.paymentMethod] || order.paymentMethod || '—');
+                const payLabel = window.formatPaymentLabel(order);
                 const itemCount = (order.items || []).reduce((s, i) => s + i.qty, 0);
+                const cancelada = order.status === 'Cancelado';
+
+                const itemsRows = (order.items || []).map(item => {
+                    const lineDisc = parseFloat(item.lineDiscount) || 0;
+                    const lineTotal = (item.price * item.qty) - lineDisc;
+                    return `
+                    <tr class="border-b border-gray-50">
+                        <td class="py-1.5 pr-2 text-xs text-gray-700">${item.qty}x ${item.name}</td>
+                        <td class="py-1.5 pr-2 text-xs text-gray-400 text-right whitespace-nowrap">RD$ ${item.price.toLocaleString('en-US')}${lineDisc > 0 ? ` (−${lineDisc.toLocaleString('en-US')})` : ''}</td>
+                        <td class="py-1.5 pl-2 text-xs font-bold text-gray-800 text-right whitespace-nowrap">RD$ ${lineTotal.toLocaleString('en-US')}</td>
+                    </tr>`;
+                }).join('');
+
                 return `
-                <div class="bg-white border border-gray-200 p-3 rounded-xl shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-2">
-                    <div class="min-w-0">
-                        <div class="flex items-center gap-2 flex-wrap">
-                            <span class="text-xs font-extrabold text-perfume-dark bg-gray-100 px-2 py-0.5 rounded">${order.orderId || '#PED-XXX'}</span>
-                            <span class="text-[10px] text-gray-400">${dateStr}</span>
+                <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden ${cancelada ? 'opacity-60' : ''}">
+                    <button type="button" onclick="window.toggleInvoiceAccordion('${order.id}')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition text-left">
+                        <svg id="invoice-chevron-${order.id}" class="w-4 h-4 text-gray-400 shrink-0 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"/></svg>
+                        <div class="flex-1 min-w-0">
+                            <div class="flex items-center gap-2 flex-wrap">
+                                <span class="text-xs font-extrabold text-perfume-dark bg-gray-100 px-2 py-0.5 rounded">${order.orderId || '#PED-XXX'}</span>
+                                ${cancelada ? '<span class="text-[9px] font-extrabold text-red-600 bg-red-50 border border-red-200 px-1.5 py-0.5 rounded">❌ CANCELADA</span>' : ''}
+                                <span class="text-[10px] text-gray-400">${dateStr}</span>
+                            </div>
+                            <p class="text-sm font-bold text-gray-700 mt-1 truncate">${order.customerName || 'Cliente'}</p>
+                            <p class="text-[11px] text-gray-400 truncate">${itemCount} artículo(s) • ${payLabel}</p>
                         </div>
-                        <p class="text-sm font-bold text-gray-700 mt-1 truncate">${order.customerName || 'Cliente'}</p>
-                        <p class="text-[11px] text-gray-400">${itemCount} artículo(s) • ${payLabel}${order.attendedBy ? ' • Atendió: ' + order.attendedBy : ''}</p>
-                    </div>
-                    <div class="flex items-center gap-3 shrink-0">
-                        <span class="text-sm font-extrabold text-perfume-dark">RD$ ${(order.total || 0).toLocaleString('en-US')}</span>
-                        <button onclick="window.reprintOrderThermal('${order.id}')" class="bg-gray-800 text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-black transition">🖨️ Reimprimir</button>
+                        <span class="text-sm font-extrabold text-perfume-dark shrink-0">RD$ ${(order.total || 0).toLocaleString('en-US')}</span>
+                    </button>
+                    <div id="invoice-body-${order.id}" class="hidden border-t border-gray-100 p-4 space-y-3">
+                        <table class="w-full">
+                            <tbody>${itemsRows}</tbody>
+                        </table>
+                        <div class="text-[11px] text-gray-400 border-t border-gray-100 pt-2">
+                            ${payLabel}${order.attendedBy ? ' • Atendió: ' + order.attendedBy : ''}
+                        </div>
+                        ${cancelada
+                            ? `<p class="text-xs font-bold text-red-500 bg-red-50 border border-red-100 rounded-lg px-3 py-2">❌ Esta factura fue cancelada${order.cancelledAt ? ' el ' + new Date(order.cancelledAt).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : ''}${order.cancelledBy ? ' por ' + order.cancelledBy : ''}. El inventario ya fue repuesto${(order.paymentMethod === 'Crédito' || (order.paymentSplit && order.paymentSplit.credito > 0)) ? ' y el crédito revertido' : ''}.</p>`
+                            : `<div class="flex gap-2">
+                                <button onclick="window.reprintOrderThermal('${order.id}')" class="flex-1 bg-gray-800 hover:bg-black text-white text-xs font-bold px-3 py-2 rounded-lg transition">🖨️ Reimprimir</button>
+                                <button onclick="window.cancelInvoice('${order.id}')" class="flex-1 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 text-xs font-bold px-3 py-2 rounded-lg transition">❌ Cancelar Factura</button>
+                            </div>`
+                        }
                     </div>
                 </div>`;
             }).join('');
+        }
+
+        // Abre/cierra el detalle de una factura en el Historial
+        window.toggleInvoiceAccordion = function(id) {
+            const body = document.getElementById('invoice-body-' + id);
+            const chevron = document.getElementById('invoice-chevron-' + id);
+            if (!body || !chevron) return;
+            const isOpen = !body.classList.contains('hidden');
+            body.classList.toggle('hidden', isOpen);
+            chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+        }
+
+        // Cancela una factura desde el Historial: repone inventario y, si llevaba
+        // crédito (total o parcial en un Pago Mixto), revierte ese saldo — todo
+        // reutilizando window.updateOrderStatus, que ya sabe hacer ambas cosas.
+        window.cancelInvoice = async function(orderId) {
+            const order = (window.adminOrders || []).find(o => o.id === orderId);
+            if (!order) return window.showToast("❌ Factura no encontrada.");
+            if (order.status === 'Cancelado') return window.showToast("Esta factura ya está cancelada.");
+            const llevaCredito = order.paymentMethod === 'Crédito' || (order.paymentSplit && order.paymentSplit.credito > 0);
+            const ok = confirm(`¿Cancelar la factura ${order.orderId}?\n\nEsto repone el inventario vendido${llevaCredito ? ' y revierte el crédito otorgado' : ''}. Esta acción no se puede deshacer.`);
+            if (!ok) return;
+            window.showToast("Cancelando factura... ⏳");
+            await window.updateOrderStatus(orderId, 'Cancelado');
+            window.renderInvoiceHistory(document.getElementById('invoice-history-search')?.value || '');
+            if (window.renderReports) window.renderReports();
         }
 
         // =================================================================
@@ -6535,11 +6811,27 @@ window.submitCreditPayment = function() {
                     window.loadDynamicProducts(true); 
                 }
 
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: newStatus, stockDeducted });
+                // Si se cancela una venta que tenía todo (o una parte, en un Pago
+                // Mixto) a crédito, se revierte ese saldo — una sola vez: se marca
+                // "creditReversed" en el propio pedido para que si alguien cambia el
+                // estado varias veces no se reverse el mismo cargo dos veces.
+                let extraUpdate = {};
+                if (newStatus === 'Cancelado' && !order.creditReversed) {
+                    if (order.paymentMethod === 'Crédito' && order.customerId) {
+                        await window.reverseCreditForCancelledInvoice(order.customerId, order.total, order.orderId);
+                        extraUpdate.creditReversed = true;
+                    } else if (order.paymentMethod === 'Mixto' && order.paymentSplit && order.paymentSplit.credito > 0 && order.paymentSplit.creditClientId) {
+                        await window.reverseCreditForCancelledInvoice(order.paymentSplit.creditClientId, order.paymentSplit.credito, order.orderId);
+                        extraUpdate.creditReversed = true;
+                    }
+                }
+
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: newStatus, stockDeducted, ...extraUpdate });
                 
                 // Actualizar en memoria sin re-renderizar toda la lista (no colapsa el acordeón)
                 order.status = newStatus;
                 order.stockDeducted = stockDeducted;
+                Object.assign(order, extraUpdate);
 
                 // Solo actualizar el badge de estado en la cabecera del acordeón
                 const statusColors = { Recibido:'bg-yellow-100 text-yellow-800 border-yellow-200', Procesando:'bg-blue-100 text-blue-700 border-blue-200', Enviado:'bg-indigo-100 text-indigo-700 border-indigo-200', Completado:'bg-green-100 text-green-700 border-green-200', Cancelado:'bg-red-100 text-red-600 border-red-200', Eliminado:'bg-gray-100 text-gray-400 border-gray-200' };
