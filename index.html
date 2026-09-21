@@ -159,6 +159,43 @@
             animation: fadeInSlideUp 0.4s ease-out forwards;
         }
 
+        /* DESTELLO "RECIÉN AGREGADO" — confirma con la vista que el artículo
+           sí entró al ticket, en vez de simplemente aparecer sin aviso. */
+        @keyframes itemAddedFlash {
+            0% { background-color: rgba(34, 197, 94, 0.18); }
+            100% { background-color: transparent; }
+        }
+        .animate-item-added { animation: itemAddedFlash 1s ease-out; }
+
+        /* MODO OSCURO DE FACTURACIÓN — se activa con data-theme="dark" en
+           #billing-modal (ver window.toggleBillingDarkMode en billing.js).
+           En vez de reescribir cada plantilla de billing.js/admin-orders*.js
+           con variantes dark:, se sobreescriben aquí las clases de Tailwind
+           más usadas dentro de Facturación (fondos y textos grises/blancos). */
+        #billing-modal[data-theme="dark"] { background-color: #111827; color: #e5e7eb; }
+        #billing-modal[data-theme="dark"] .bg-white { background-color: #1f2937 !important; }
+        #billing-modal[data-theme="dark"] .bg-gray-50 { background-color: #17202f !important; }
+        #billing-modal[data-theme="dark"] .bg-gray-100 { background-color: #111827 !important; }
+        #billing-modal[data-theme="dark"] .bg-gray-200 { background-color: #374151 !important; }
+        #billing-modal[data-theme="dark"] .text-gray-800,
+        #billing-modal[data-theme="dark"] .text-gray-700,
+        #billing-modal[data-theme="dark"] .text-gray-900,
+        #billing-modal[data-theme="dark"] .text-perfume-dark { color: #e5e7eb !important; }
+        #billing-modal[data-theme="dark"] .text-gray-600,
+        #billing-modal[data-theme="dark"] .text-gray-500,
+        #billing-modal[data-theme="dark"] .text-gray-400 { color: #9ca3af !important; }
+        #billing-modal[data-theme="dark"] .border-gray-100,
+        #billing-modal[data-theme="dark"] .border-gray-200,
+        #billing-modal[data-theme="dark"] .border-gray-300 { border-color: #374151 !important; }
+        #billing-modal[data-theme="dark"] input,
+        #billing-modal[data-theme="dark"] select,
+        #billing-modal[data-theme="dark"] textarea {
+            background-color: #1f2937 !important; color: #e5e7eb !important; border-color: #374151 !important;
+        }
+        #billing-modal[data-theme="dark"] .hover\\:bg-gray-50:hover,
+        #billing-modal[data-theme="dark"] .hover\\:bg-gray-100:hover { background-color: #253046 !important; }
+        #billing-modal[data-theme="dark"] .divide-gray-100 > :not([hidden]) ~ :not([hidden]) { border-color: #374151 !important; }
+
         /* ANIMACIÓN VOLAR AL CARRITO */
         @keyframes flyToCart {
             0%   { opacity: 1; transform: scale(1) translate(0, 0); }
@@ -1268,7 +1305,13 @@
                     </span>
                     Facturación e Inventario
                 </h2>
-                <button onclick="closeBillingModal()" class="text-gray-400 hover:text-red-500 text-3xl leading-none" title="Cerrar">&times;</button>
+                <div class="flex items-center gap-3">
+                    <button onclick="window.toggleBillingDarkMode()" id="billing-theme-toggle" class="text-gray-400 hover:text-gray-700 transition p-1.5 rounded-lg hover:bg-gray-100" title="Cambiar tema">
+                        <svg id="billing-theme-icon-moon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        <svg id="billing-theme-icon-sun" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </button>
+                    <button onclick="closeBillingModal()" class="text-gray-400 hover:text-red-500 text-3xl leading-none" title="Cerrar">&times;</button>
+                </div>
             </div>
 
             <div class="flex gap-6 overflow-x-auto no-scrollbar items-center">
@@ -1406,9 +1449,14 @@
                         <tbody id="billing-items-list">
                             <tr id="billing-empty-row">
                                 <td colspan="8" class="text-center text-gray-400 text-sm py-16">
-                                    <div class="flex flex-col items-center gap-2">
-                                        <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                                        <span class="font-medium">Escanea un código o busca un producto para comenzar</span>
+                                    <div class="flex flex-col items-center gap-3">
+                                        <div class="w-14 h-14 rounded-full bg-perfume-magenta/10 flex items-center justify-center">
+                                            <svg class="w-7 h-7 text-perfume-magenta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                        </div>
+                                        <div>
+                                            <p class="font-bold text-gray-600">El ticket está vacío</p>
+                                            <p class="text-xs text-gray-400 mt-0.5">Escanea un código o busca un producto para comenzar</p>
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -1417,9 +1465,14 @@
 
                     <!-- MÓVIL: tarjetas apiladas (ocultas en desktop) -->
                     <div id="billing-items-mobile" class="md:hidden divide-y divide-gray-100">
-                        <div class="flex flex-col items-center justify-center text-gray-400 py-14 gap-2">
-                            <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                            <span class="text-sm font-medium text-center px-4">Escribe o escanea un producto para comenzar</span>
+                        <div class="flex flex-col items-center justify-center text-gray-400 py-14 gap-3">
+                            <div class="w-14 h-14 rounded-full bg-perfume-magenta/10 flex items-center justify-center">
+                                <svg class="w-7 h-7 text-perfume-magenta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                            </div>
+                            <div class="text-center px-6">
+                                <p class="font-bold text-gray-600">El ticket está vacío</p>
+                                <p class="text-xs text-gray-400 mt-0.5">Escribe o escanea un producto para comenzar</p>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1433,9 +1486,9 @@
                         <div class="flex items-center gap-1 ml-auto shrink-0">
                             <span class="text-[10px] text-gray-400 font-bold">Desc.:</span>
                             <span class="text-[10px] text-gray-400">RD$</span>
-                            <input type="number" id="billing-discount" value="0" min="0" oninput="window.renderBillingItems()" class="w-16 border border-gray-300 rounded-lg text-right text-xs font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
+                            <input type="number" inputmode="decimal" id="billing-discount" value="0" min="0" oninput="window.renderBillingItems()" class="w-16 border border-gray-300 rounded-lg text-right text-xs font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
                             <span class="text-[10px] text-gray-400">%</span>
-                            <input type="number" id="billing-discount-pct" value="0" min="0" max="100" oninput="window.applyBillingDiscountPct()" class="w-12 border border-gray-300 rounded-lg text-right text-xs font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
+                            <input type="number" inputmode="numeric" id="billing-discount-pct" value="0" min="0" max="100" oninput="window.applyBillingDiscountPct()" class="w-12 border border-gray-300 rounded-lg text-right text-xs font-bold px-1.5 py-1.5 focus:outline-none focus:border-blue-400">
                         </div>
                     </div>
 
@@ -1473,11 +1526,15 @@
             </div>
 
             <!-- MODAL: COBRAR (estilo Eleventa) -->
-            <div id="billing-cobrar-modal" class="hidden fixed inset-0 bg-gray-900/60 z-[290] justify-center items-center p-4 backdrop-blur-sm" onclick="if(event.target.id === 'billing-cobrar-modal') window.closeCobrarModal()">
-                <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl overflow-hidden grid grid-cols-1 md:grid-cols-[1fr_260px]">
+            <div id="billing-cobrar-modal" class="hidden fixed inset-0 bg-gray-900/60 z-[290] justify-center items-center sm:p-4 backdrop-blur-sm" onclick="if(event.target.id === 'billing-cobrar-modal') window.closeCobrarModal()">
+                <div class="bg-white sm:rounded-2xl shadow-2xl w-full h-full sm:h-auto sm:max-h-[90vh] sm:max-w-3xl overflow-hidden flex flex-col md:grid md:grid-cols-[1fr_260px]">
 
-                    <!-- COLUMNA IZQUIERDA: total + método de pago + pagó con/cambio -->
-                    <div class="p-6 md:p-8">
+                    <!-- COLUMNA IZQUIERDA: total + método de pago + pagó con/cambio.
+                         En móvil esta columna es la que hace scroll (flex-1 min-h-0);
+                         los botones de Cobrar de la derecha quedan siempre visibles
+                         abajo, sin scroll — igual que la barra de Total+Cobrar del
+                         ticket principal. -->
+                    <div class="p-6 md:p-8 overflow-y-auto flex-1 min-h-0">
                         <div class="flex justify-between items-center mb-4">
                             <h2 class="text-lg font-extrabold text-gray-800 uppercase tracking-wide">Cobrar</h2>
                             <button onclick="window.closeCobrarModal()" class="text-gray-400 hover:text-red-500 text-2xl leading-none">&times;</button>
@@ -1489,19 +1546,24 @@
 
                         <div class="grid grid-cols-5 gap-2 mb-6">
                             <button type="button" onclick="window.setBillingPaymentMethod('Efectivo')" id="billing-pay-btn-efectivo" class="flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition">
-                                <span class="text-2xl">💵</span><span class="text-[11px] font-bold">Efectivo</span>
+                                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="6" width="20" height="12" rx="2" stroke-width="2"/><circle cx="12" cy="12" r="2.5" stroke-width="2"/></svg>
+                                <span class="text-[11px] font-bold">Efectivo</span>
                             </button>
                             <button type="button" onclick="window.setBillingPaymentMethod('Tarjeta')" id="billing-pay-btn-tarjeta" class="flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition">
-                                <span class="text-2xl">💳</span><span class="text-[11px] font-bold">Tarjeta</span>
+                                <svg class="w-6 h-6 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M2 10h20"/></svg>
+                                <span class="text-[11px] font-bold">Tarjeta</span>
                             </button>
                             <button type="button" onclick="window.setBillingPaymentMethod('Transferencia')" id="billing-pay-btn-transferencia" class="flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition">
-                                <span class="text-2xl">🏦</span><span class="text-[11px] font-bold">Transfer.</span>
+                                <svg class="w-6 h-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21h18M4 21V10m16 11V10M3 10l9-6 9 6M6 10v4m4-4v4m4-4v4m4-4v4"/></svg>
+                                <span class="text-[11px] font-bold">Transfer.</span>
                             </button>
                             <button type="button" onclick="window.setBillingPaymentMethod('Mixto')" id="billing-pay-btn-mixto" class="flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition">
-                                <span class="text-2xl">🔀</span><span class="text-[11px] font-bold">Mixto</span>
+                                <svg class="w-6 h-6 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4h4l6 16h6M4 20h4l2.5-6.8M14 4h6l-3 4 3 4h-6"/></svg>
+                                <span class="text-[11px] font-bold">Mixto</span>
                             </button>
                             <button type="button" onclick="window.setBillingPaymentMethod('Crédito')" id="billing-pay-btn-credito" class="flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition">
-                                <span class="text-2xl">🧾</span><span class="text-[11px] font-bold">Crédito</span>
+                                <svg class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" stroke-width="2"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 7v5l3.5 2"/></svg>
+                                <span class="text-[11px] font-bold">Crédito</span>
                             </button>
                         </div>
 
@@ -1517,19 +1579,19 @@
                             <div class="grid grid-cols-2 gap-2">
                                 <div>
                                     <label class="text-[10px] font-bold text-gray-500">💵 Efectivo</label>
-                                    <input type="number" min="0" id="mixed-amount-efectivo" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                    <input type="number" inputmode="decimal" min="0" id="mixed-amount-efectivo" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-bold text-gray-500">🏦 Transferencia</label>
-                                    <input type="number" min="0" id="mixed-amount-transferencia" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                    <input type="number" inputmode="decimal" min="0" id="mixed-amount-transferencia" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-bold text-gray-500">💳 Tarjeta</label>
-                                    <input type="number" min="0" id="mixed-amount-tarjeta" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                    <input type="number" inputmode="decimal" min="0" id="mixed-amount-tarjeta" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
                                 </div>
                                 <div>
                                     <label class="text-[10px] font-bold text-gray-500">📋 Crédito</label>
-                                    <input type="number" min="0" id="mixed-amount-credito" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
+                                    <input type="number" inputmode="decimal" min="0" id="mixed-amount-credito" oninput="window.updateMixedSplitTotals()" placeholder="0" class="w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
                                 </div>
                             </div>
                             <input type="text" id="mixed-transfer-entity" placeholder="Entidad bancaria (transferencia)..." class="hidden w-full border border-gray-300 rounded-lg text-sm px-2 py-1.5 focus:outline-none focus:border-blue-400">
@@ -1546,7 +1608,7 @@
                         <div id="billing-cash-calculator" class="space-y-3">
                             <div class="flex items-center justify-between">
                                 <label class="text-sm font-bold text-gray-600">Pagó Con:</label>
-                                <input type="number" id="billing-cash-received" placeholder="0.00" min="0" oninput="window.calcChange()"
+                                <input type="number" inputmode="decimal" id="billing-cash-received" placeholder="0.00" min="0" oninput="window.calcChange()"
                                     class="w-36 border-2 border-gray-300 rounded-lg text-right text-lg font-bold px-3 py-2 focus:outline-none focus:border-blue-500">
                             </div>
                             <div class="flex items-center justify-between">
@@ -1556,8 +1618,8 @@
                         </div>
                     </div>
 
-                    <!-- COLUMNA DERECHA: acciones -->
-                    <div class="bg-gray-50 border-t md:border-t-0 md:border-l border-gray-200 p-5 flex flex-col gap-2.5">
+                    <!-- COLUMNA DERECHA: acciones (siempre visible, no hace scroll) -->
+                    <div class="bg-gray-50 border-t md:border-t-0 md:border-l border-gray-200 p-5 flex flex-col gap-2.5 shrink-0">
                         <button id="btn-cobrar-print" onclick="window.generateManualInvoice(true)" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 rounded-xl transition flex items-center justify-center gap-2 text-sm">
                             🖨️ <span>F1 - Cobrar e Imprimir</span>
                         </button>
@@ -1613,7 +1675,8 @@
                             <thead>
                                 <tr class="text-left text-[10px] text-gray-400 uppercase border-b border-gray-100">
                                     <th class="py-2 pr-2">Producto</th>
-                                    <th class="py-2 pr-2 text-center">Stock</th>
+                                    <th class="py-2 pr-2 text-center">Stock físico</th>
+                                    <th class="py-2 pr-2 text-center">Disponible</th>
                                     <th class="py-2 pr-2 text-right">Precio</th>
                                     <th class="py-2 pr-2 text-right">Valor en Stock</th>
                                 </tr>
@@ -2087,14 +2150,14 @@
                 <div class="border border-gray-200 rounded-lg p-2.5">
                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Agregar cargo (RD$)</label>
                     <div class="flex gap-1">
-                        <input type="number" id="credit-charge-amount" placeholder="0.00" min="0" class="w-full border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-red-400">
+                        <input type="number" inputmode="decimal" id="credit-charge-amount" placeholder="0.00" min="0" class="w-full border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-red-400">
                         <button onclick="window.submitManualCreditCharge()" class="shrink-0 bg-red-600 hover:bg-red-700 text-white text-xs font-bold px-2.5 rounded-lg transition">➕</button>
                     </div>
                 </div>
                 <div class="border border-gray-200 rounded-lg p-2.5">
                     <label class="block text-[10px] font-bold text-gray-500 uppercase mb-1">Registrar abono (RD$)</label>
                     <div class="flex gap-1">
-                        <input type="number" id="credit-payment-amount" placeholder="0.00" min="0" class="w-full border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-green-400">
+                        <input type="number" inputmode="decimal" id="credit-payment-amount" placeholder="0.00" min="0" class="w-full border border-gray-300 rounded-lg text-xs px-2 py-1.5 focus:outline-none focus:border-green-400">
                         <button onclick="window.submitCreditPayment()" class="shrink-0 bg-green-600 hover:bg-green-700 text-white text-xs font-bold px-2.5 rounded-lg transition">✔️</button>
                     </div>
                 </div>
@@ -2881,6 +2944,17 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
 
 
         window.currentCategoryFilter = 'Todos'; window.currentBrandFilter = 'Todas'; 
+
+        // Cuánto queda REALMENTE para vender: el stock físico menos lo que ya está
+        // comprometido en pedidos pendientes (creados pero aún no facturados/entregados).
+        // Antes solo se miraba "stock", así que dos clientes podían ver "5 disponibles"
+        // al mismo tiempo aunque uno ya hubiera apartado parte con su pedido.
+        // Devuelve null para productos sin inventario controlado (sin límite).
+        window.getAvailableStock = function(prod) {
+            if (!prod || typeof prod.stock !== 'number') return null;
+            return Math.max(0, prod.stock - Math.max(0, prod.comprometido || 0));
+        }
+
         window.setCategoryFilter = function(cat) { window.currentCategoryFilter = cat; window.renderCategoriesUI(); window.filterCatalog(); }
         window.setBrandFilter = function(brand) { window.currentBrandFilter = brand; window.renderBrandsUI(); window.filterCatalog(); }
 
@@ -2940,10 +3014,11 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
 
                 const brandLabel = prod.brand ? `${prod.brand} • ` : '';
                 const skuLabel = prod.barcode ? `<span class="bg-gray-100 text-gray-600 text-[9px] font-mono px-1.5 py-0.5 rounded shadow-sm border border-gray-200">SKU: ${prod.barcode}</span>` : '';
-                const isOutOfStock = !!prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0);
+                const disponible = window.getAvailableStock(prod);
+                const isOutOfStock = !!prod.isAgotado || (disponible !== null && disponible <= 0);
                 const agotadoOverlay = isOutOfStock ? `<div class="absolute inset-0 bg-white/70 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-xl"><span class="bg-red-600 text-white font-black text-xl px-4 py-2 rounded-xl transform -rotate-12 shadow-lg tracking-widest">AGOTADO</span></div>` : '';
                 const offerBadge = (prod.onSale && !isOutOfStock) ? `<div class="absolute top-2 left-2 bg-red-500 text-white text-[10px] font-black px-2 py-1 rounded-full z-10 shadow-md animate-pulse tracking-wide">OFERTA</div>` : '';
-                const showStockBadge = !isOutOfStock && (typeof prod.stock === 'number' && prod.stock > 0);
+                const showStockBadge = !isOutOfStock && disponible !== null && disponible > 0;
 
                 const btnHtml = isOutOfStock 
                     ? `<button disabled class="w-full bg-gray-200 text-gray-400 py-2 md:py-2.5 rounded-lg text-xs md:text-sm font-bold cursor-not-allowed uppercase tracking-wider">Agotado</button>`
@@ -2971,7 +3046,7 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
                         <h4 class="text-sm md:text-lg font-bold text-perfume-dark mt-1 group-hover:text-perfume-magenta transition leading-tight">${prod.name}</h4>
                         <div class="flex justify-between items-center mt-2">
                             <div class="text-perfume-magenta font-bold ${priceSize} flex-shrink-0">${priceFormatted}</div>
-                            ${showStockBadge ? `<span class="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full border border-green-100 whitespace-nowrap">${prod.stock} disp.</span>` : ''}
+                            ${showStockBadge ? `<span class="text-[10px] text-green-600 font-bold bg-green-50 px-2 py-0.5 rounded-full border border-green-100 whitespace-nowrap">${disponible} disp.</span>` : ''}
                         </div>
                     </div>
                     <div class="mt-4 md:mt-5 border-t border-gray-100 pt-3 md:pt-4">
@@ -3146,52 +3221,72 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
             } catch (e) { return null; }
         };
 
+        // ANTES: una sola lectura (getDocs) al abrir la página — el stock quedaba
+        // "congelado" hasta que alguien refrescara. AHORA: un listener en vivo
+        // (onSnapshot); en cuanto el stock (o lo comprometido en pedidos pendientes)
+        // cambia para cualquiera, se actualiza solo en la pantalla de todo el mundo.
+        window._productsUnsub = window._productsUnsub || null;
         window.loadDynamicProducts = async function(forceRefresh = false) {
             const grid = document.getElementById('products-grid');
-            try {
-                let usedCache = false;
 
-                if (!forceRefresh) {
-                    try {
-                        const raw = localStorage.getItem(CATALOG_CACHE_KEY);
-                        if (raw) {
-                            const cached = JSON.parse(raw);
-                            if (cached && Array.isArray(cached.products) && (Date.now() - cached.timestamp) < CATALOG_CACHE_TTL_MS) {
-                                window.catalogProducts = cached.products;
-                                usedCache = true;
-                            }
+            // Primer pintado instantáneo desde caché local mientras se conecta el
+            // listener de abajo — así la página no se siente en blanco esperando red.
+            if (!forceRefresh && !window._productsUnsub) {
+                try {
+                    const raw = localStorage.getItem(CATALOG_CACHE_KEY);
+                    if (raw) {
+                        const cached = JSON.parse(raw);
+                        if (cached && Array.isArray(cached.products) && (Date.now() - cached.timestamp) < CATALOG_CACHE_TTL_MS) {
+                            window.catalogProducts = cached.products;
+                            window.renderBrandsUI();
+                            window.filterCatalog();
                         }
-                    } catch (e) { /* caché corrupta o bloqueada, ignoramos y recargamos de Firestore */ }
-                }
+                    }
+                } catch (e) { /* caché corrupta o bloqueada, seguimos sin ella */ }
+            }
 
-                if (!usedCache) {
-                    const prodRef = collection(db, 'artifacts', appId, 'public', 'data', 'productos');
-                    const snapshot = await getDocs(prodRef);
-                    window.catalogProducts = [];
-                    snapshot.forEach(doc => { window.catalogProducts.push({ id: doc.id, ...doc.data() }); });
+            // El listener ya está activo: los datos ya están en vivo, no hace
+            // falta re-suscribirse (forceRefresh ya no tiene nada que hacer aquí).
+            if (window._productsUnsub) { if (window.hideSplash) window.hideSplash(); return; }
 
-                    try {
-                        localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ products: window.catalogProducts, timestamp: Date.now() }));
-                    } catch (e) { /* localStorage lleno o bloqueado (modo incógnito), seguimos sin caché */ }
-                }
+            try {
+                const prodRef = collection(db, 'artifacts', appId, 'public', 'data', 'productos');
+                await new Promise((resolve, reject) => {
+                    let primeraVez = true;
+                    window._productsUnsub = onSnapshot(prodRef, (snapshot) => {
+                        window.catalogProducts = [];
+                        snapshot.forEach(doc => { window.catalogProducts.push({ id: doc.id, ...doc.data() }); });
 
-                if(window.siteBrands.length === 0 && window.catalogProducts.length > 0) {
-                    window.siteBrands = [...new Set(window.catalogProducts.map(p => p.brand).filter(b => b && b.trim() !== ''))].sort();
-                    window.saveBrandsToDB(); window.renderBrandsAdminUI();
-                }
+                        try { localStorage.setItem(CATALOG_CACHE_KEY, JSON.stringify({ products: window.catalogProducts, timestamp: Date.now() })); }
+                        catch (e) { /* localStorage lleno o bloqueado (modo incógnito), seguimos sin caché */ }
 
-                window.renderBrandsUI(); 
-                window.filterCatalog();
-                window.renderAdminProductsList();
-                if (window.hideSplash) window.hideSplash();
+                        if (window.siteBrands.length === 0 && window.catalogProducts.length > 0) {
+                            window.siteBrands = [...new Set(window.catalogProducts.map(p => p.brand).filter(b => b && b.trim() !== ''))].sort();
+                            window.saveBrandsToDB(); window.renderBrandsAdminUI();
+                        }
 
-                const urlParams = new URLSearchParams(window.location.search);
-                const sharedId = urlParams.get('p');
-                if(sharedId && !window.hasOpenedShared) {
-                    window.hasOpenedShared = true;
-                    setTimeout(() => window.openProductModal(sharedId), 500); 
-                }
+                        window.renderBrandsUI();
+                        window.filterCatalog();
+                        window.renderAdminProductsList();
+                        if (window.hideSplash) window.hideSplash();
 
+                        if (primeraVez) {
+                            primeraVez = false;
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const sharedId = urlParams.get('p');
+                            if (sharedId && !window.hasOpenedShared) {
+                                window.hasOpenedShared = true;
+                                setTimeout(() => window.openProductModal(sharedId), 500);
+                            }
+                            resolve();
+                        }
+                    }, (error) => {
+                        console.error('Error escuchando el catálogo:', error);
+                        if (grid && (!window.catalogProducts || window.catalogProducts.length === 0)) grid.innerHTML = '<p class="text-red-500 col-span-full text-center py-10">No se pudo cargar el catálogo. Revisa tu conexión y recarga la página.</p>';
+                        if (window.hideSplash) window.hideSplash();
+                        reject(error);
+                    });
+                });
             } catch (error) {
                 console.error('Error cargando catálogo:', error);
                 if (grid) grid.innerHTML = '<p class="text-red-500 col-span-full text-center py-10">No se pudo cargar el catálogo. Revisa tu conexión y recarga la página.</p>';
@@ -3301,7 +3396,8 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
             selectVariant.innerHTML = variantHtml; selectVariant.value = 'full'; window.updateDetailPrice(); 
 
             const actionsContainer = document.getElementById('detail-actions-container');
-            const isOutOfStock = !!prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0);
+            const disponibleDetalle = window.getAvailableStock(prod);
+            const isOutOfStock = !!prod.isAgotado || (disponibleDetalle !== null && disponibleDetalle <= 0);
             
             if(isOutOfStock) { actionsContainer.innerHTML = `<button disabled class="w-full bg-gray-300 text-gray-500 py-3 rounded-lg font-bold cursor-not-allowed uppercase tracking-widest shadow-inner">Agotado temporalmente</button>`; } 
             else {
@@ -3443,7 +3539,8 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
 
             const cartId = `${id}_${variantId}`; 
             const currentQtyInCart = window.cart.find(i=> i.cartId === cartId)?.qty || 0;
-            if (typeof prod.stock === 'number' && (currentQtyInCart + qty) > prod.stock) { return window.showToast(`Solo quedan ${prod.stock} unidades en el inventario.`); }
+            const disponibleParaCarrito = window.getAvailableStock(prod);
+            if (disponibleParaCarrito !== null && (currentQtyInCart + qty) > disponibleParaCarrito) { return window.showToast(`Solo quedan ${disponibleParaCarrito} unidades disponibles (parte del inventario ya está apartado en otros pedidos).`); }
 
             const ex = window.cart.find(i=> i.cartId === cartId); 
             if(ex) ex.qty += qty; else window.cart.push({ cartId: cartId, id: prod.id, name: name, price: price, qty: qty, img: prod.img, variant: variantId, barcode: barcode }); 
@@ -3638,6 +3735,26 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
 
         window.currentOrderTab = 'Pendientes';
 
+        // Cuánto cambió la cantidad de cada producto entre el juego de artículos
+        // viejo y el nuevo — se usa para ajustar el "comprometido" cuando se edita
+        // un pedido que todavía está pendiente (agregar/quitar/cambiar cantidad).
+        function calcularDeltasComprometido(oldItems, newItems) {
+            const deltas = {};
+            (oldItems || []).forEach(i => { if (i.id && !String(i.id).startsWith('custom_')) deltas[i.id] = (deltas[i.id] || 0) - i.qty; });
+            (newItems || []).forEach(i => { if (i.id && !String(i.id).startsWith('custom_')) deltas[i.id] = (deltas[i.id] || 0) + i.qty; });
+            return deltas;
+        }
+
+        // ¿El cliente de este pedido tiene precios al por mayor? Se revisa por su
+        // correo contra la lista de mayoristas — NO por si el ADMIN que está
+        // editando el pedido es mayorista (eso es algo completamente distinto).
+        function esOrdenMayorista(order) {
+            const email = (order?.customerEmail || '').toLowerCase().trim();
+            if (!email) return false;
+            const lista = (window.siteConfig?.wholesaleEmails || '').split(',').map(e => e.trim().toLowerCase()).filter(Boolean);
+            return lista.includes(email);
+        }
+
         window.setOrderTab = function(tab) {
             window.currentOrderTab = tab;
             const tabs = ['Pendientes', 'Atendiendo', 'Cerrados', 'Todos', 'Eliminados'];
@@ -3661,6 +3778,14 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
         window.deleteAdminOrder = function(docId) {
             window.openCustomConfirm("Eliminar Pedido", "¿Estás seguro de que deseas eliminar este pedido permanentemente? Esta acción no se puede deshacer.", async () => {
                 try {
+                    // Antes de borrar el documento: si el pedido tenía stock apartado
+                    // (pendiente) o descontado (completado), hay que liberarlo/reponerlo
+                    // — si no, esas unidades quedarían "perdidas" para siempre, ni
+                    // disponibles ni vendidas.
+                    const orderAEliminar = (window.adminOrders || []).find(o => o.id === docId);
+                    if (orderAEliminar?.stockCommitted) await window.releaseCommittedStockForItems(orderAEliminar.items);
+                    if (orderAEliminar?.stockDeducted) await window.restoreStockForItems(orderAEliminar.items);
+
                     // 1. Borrar de Firestore (fuente de verdad)
                     await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId));
 
@@ -3694,8 +3819,22 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
             const order = window.adminOrders.find(o => o.id === orderId);
             if(!order) return;
 
+            const oldItems = order.items;
             let newItems = modifications.items || [...order.items];
             let subtotal = newItems.reduce((acc, curr) => acc + (curr.price * curr.qty), 0);
+
+            // Si el pedido sigue pendiente (con stock apartado), agregar/quitar/
+            // cambiar cantidades aquí debe reflejarse YA en lo "disponible" que ve
+            // todo el mundo — si no, el catálogo quedaría desincronizado con lo que
+            // el pedido realmente tiene reservado.
+            if (order.stockCommitted && modifications.items) {
+                const deltas = calcularDeltasComprometido(oldItems, newItems);
+                for (const [prodId, delta] of Object.entries(deltas)) {
+                    if (delta === 0) continue;
+                    try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', prodId), { comprometido: increment(delta) }); }
+                    catch (e) { console.error('Error ajustando comprometido:', e); }
+                }
+            }
 
             let currentShipping = order.shippingFee !== undefined ? order.shippingFee : (order.total > subtotal ? order.total - subtotal : 0);
             let currentDiscount = order.discount !== undefined ? order.discount : (order.total < subtotal ? subtotal - order.total : 0);
@@ -3887,6 +4026,9 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
             const t = term.toLowerCase().trim();
             if(t.length < 2) { box.classList.add('hidden'); return; }
 
+            const order = window.adminOrders.find(o => o.id === orderId);
+            const esMayorista = esOrdenMayorista(order);
+
             const matches = window.catalogProducts.filter(p =>
                 p.name.toLowerCase().includes(t) ||
                 (p.barcode && p.barcode.toLowerCase().includes(t)) ||
@@ -3896,14 +4038,18 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
             if(matches.length > 0) {
                 let html = '';
                 matches.forEach(m => {
+                    // Antes esto SIEMPRE ofrecía el precio normal, sin importar si el
+                    // cliente de este pedido tiene precios de mayoreo.
+                    const usaMayor = esMayorista && m.wholesalePrice && m.wholesalePrice < m.price;
+                    const precioMostrado = usaMayor ? m.wholesalePrice : m.price;
                     html += `
-                    <div onclick="selectNewItem('${orderId}', '${m.id}', '${window.safeStr(m.name)}', ${m.price})" class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
+                    <div onclick="selectNewItem('${orderId}', '${m.id}', '${window.safeStr(m.name)}', ${precioMostrado})" class="flex items-center gap-2 p-2 hover:bg-gray-50 cursor-pointer border-b border-gray-100">
                         <img src="${m.img}" class="w-6 h-6 object-contain rounded border border-gray-100 mix-blend-multiply">
                         <div class="flex-1 min-w-0">
                             <p class="text-[10px] font-bold text-gray-800 truncate leading-tight">${m.name}</p>
                             ${m.barcode ? `<p class="text-[8px] font-mono text-gray-400">${m.barcode}</p>` : ''}
                         </div>
-                        <span class="text-[10px] font-bold text-perfume-magenta whitespace-nowrap">RD$ ${m.price.toLocaleString()}</span>
+                        <span class="text-[10px] font-bold ${usaMayor ? 'text-yellow-700' : 'text-perfume-magenta'} whitespace-nowrap">RD$ ${precioMostrado.toLocaleString()}${usaMayor ? ' <span class="text-[8px] bg-yellow-100 px-1 rounded">MAYOR</span>' : ''}</span>
                     </div>`;
                     
                     if(m.decants && m.decants.length > 0) {
@@ -3927,12 +4073,29 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
             }
         }
 
+        // Antes, elegir un producto de la lista solo llenaba los campos y había
+        // que presionar "OK" aparte para que de verdad se reflejara en el pedido.
+        // Ahora se agrega de inmediato (cantidad 1) — igual que en Facturación —
+        // y luego se ajusta la cantidad con los botones +/- que ya tiene cada
+        // artículo. El botón "OK" queda solo para artículos personalizados/fuera
+        // de catálogo (cuando no se elige nada de esta lista).
         window.selectNewItem = function(orderId, prodId, name, price) {
+            const order = window.adminOrders.find(o => o.id === orderId); if (!order) return;
+
+            const baseId = prodId.split('_decant_')[0];
+            const catalogItem = window.catalogProducts.find(p => p.id === baseId);
+            const barcode = catalogItem ? (catalogItem.barcode || '') : '';
+            const img = catalogItem ? (catalogItem.img || '') : '';
+
+            const newItems = [...order.items, { id: prodId, name, price, qty: 1, img, barcode }];
+            window.recalculateOrderFinancials(orderId, { items: newItems });
+            window.showToast(`✅ ${name} añadido.`);
+
             const input = document.getElementById(`new-item-search-${orderId}`);
-            input.value = name;
-            input.dataset.prodId = prodId;
-            document.getElementById(`new-item-price-${orderId}`).value = price;
-            document.getElementById(`new-item-suggestions-${orderId}`).classList.add('hidden');
+            if (input) { input.value = ''; delete input.dataset.prodId; input.focus(); }
+            const priceInput = document.getElementById(`new-item-price-${orderId}`);
+            if (priceInput) priceInput.value = '';
+            document.getElementById(`new-item-suggestions-${orderId}`)?.classList.add('hidden');
         }
 
         window.saveNewAdminItem = async function(orderId) {
@@ -4480,7 +4643,7 @@ window.openCreditHistoryModal = async function(clientId) {
     if (chargeInput) chargeInput.value = '';
 
     const listEl = document.getElementById('credit-history-list');
-    listEl.innerHTML = '<p class="text-xs text-gray-400 text-center py-3">Cargando movimientos...</p>';
+    listEl.innerHTML = window.skeletonRows ? window.skeletonRows(4, 'h-9') : '<p class="text-xs text-gray-400 text-center py-3">Cargando movimientos...</p>';
 
     const modal = document.getElementById('credit-history-modal');
     modal.classList.remove('hidden'); modal.classList.add('flex');
@@ -4594,6 +4757,7 @@ window.submitCreditPayment = function() {
 
 
         window.facturaItems = [];
+        window.facturaLastAddedId = null; // para el destello "recién agregado" (ver renderBillingItems)
         window.facturaSelectedOrderId = null;
         window.facturaPaymentMethod = 'Efectivo';
 
@@ -4609,10 +4773,14 @@ window.submitCreditPayment = function() {
             ).slice(0, 12);
             if (!matches.length) { drop.innerHTML = '<p class="text-xs text-gray-400 p-3 text-center">Sin resultados.</p>'; drop.classList.remove('hidden'); return; }
             drop.innerHTML = matches.map(p => {
-                const isOut = !!p.isAgotado || (typeof p.stock === 'number' && p.stock <= 0);
+                // "Disponible" resta lo que ya está comprometido en pedidos web
+                // pendientes — así el mostrador no le vende a un cliente físico
+                // lo mismo que ya se le prometió a otro por WhatsApp.
+                const dispSug = window.getAvailableStock(p);
+                const isOut = !!p.isAgotado || (dispSug !== null && dispSug <= 0);
                 const isWholesale = window.isWholesaler && p.wholesalePrice && p.wholesalePrice < p.price;
                 const activePrice = isWholesale ? p.wholesalePrice : p.price;
-                const stockTag = typeof p.stock === 'number' ? `<span class="text-[9px] font-bold ${isOut ? 'text-red-500' : 'text-green-600'}">${isOut ? 'Agotado' : p.stock + ' disp.'}</span>` : '';
+                const stockTag = dispSug !== null ? `<span class="text-[9px] font-bold ${isOut ? 'text-red-500' : 'text-green-600'}">${isOut ? 'Agotado' : dispSug + ' disp.'}</span>` : '';
                 const priceHtml = isWholesale
                     ? `<span class="text-yellow-700 font-extrabold whitespace-nowrap text-xs">RD$ ${p.wholesalePrice.toLocaleString('en-US')} <span class="text-[9px] bg-yellow-100 px-1 rounded">MAYOR</span></span>`
                     : `<span class="text-green-700 font-extrabold whitespace-nowrap text-xs">RD$ ${p.price.toLocaleString('en-US')}</span>`;
@@ -4673,12 +4841,16 @@ window.submitCreditPayment = function() {
 
         window.addBillingItem = function(prodId, name, price) {
             const prod = window.catalogProducts.find(p => p.id === prodId);
-            if (prod && (!!prod.isAgotado || (typeof prod.stock === 'number' && prod.stock <= 0))) return window.showToast("⚠️ Ese producto está agotado.");
+            const dispAdd = prod ? window.getAvailableStock(prod) : null;
+            if (prod && (!!prod.isAgotado || (dispAdd !== null && dispAdd <= 0))) return window.showToast("⚠️ Ese producto está agotado.");
             const existing = window.facturaItems.find(i => i.id === prodId);
             const currentQty = existing ? existing.qty : 0;
-            if (prod && typeof prod.stock === 'number' && (currentQty + 1) > prod.stock) return window.showToast(`Solo quedan ${prod.stock} unidades.`);
+            if (dispAdd !== null && (currentQty + 1) > dispAdd) return window.showToast(`Solo quedan ${dispAdd} unidades disponibles (parte ya está apartada en pedidos pendientes).`);
             if (existing) { existing.qty += 1; }
             else { window.facturaItems.push({ id: prodId, name, price, qty: 1, img: prod?.img || '', barcode: prod?.barcode || '', cost: prod?.cost || null }); }
+            // Se recuerda cuál producto se acaba de tocar para que renderBillingItems()
+            // le ponga un destello breve SOLO a esa fila (ver window.animate-item-added).
+            window.facturaLastAddedId = prodId;
             window.renderBillingItems();
         }
 
@@ -4687,7 +4859,8 @@ window.submitCreditPayment = function() {
             const prod = window.catalogProducts.find(p => p.id === item.id);
             const newQty = item.qty + delta;
             if (newQty < 1) return window.removeBillingItem(idx);
-            if (prod && typeof prod.stock === 'number' && newQty > prod.stock) return window.showToast(`Solo quedan ${prod.stock} unidades.`);
+            const dispQty = prod ? window.getAvailableStock(prod) : null;
+            if (dispQty !== null && newQty > dispQty) return window.showToast(`Solo quedan ${dispQty} unidades disponibles.`);
             item.qty = newQty;
             window.renderBillingItems();
         }
@@ -4774,14 +4947,24 @@ window.submitCreditPayment = function() {
             // ----- Estado vacío -----
             if (window.facturaItems.length === 0) {
                 const emptyHTML = `<tr><td colspan="8" class="text-center text-gray-400 text-sm py-16">
-                    <div class="flex flex-col items-center gap-2">
-                        <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                        <span class="font-medium">Escanea un código o busca un producto para comenzar</span>
+                    <div class="flex flex-col items-center gap-3">
+                        <div class="w-14 h-14 rounded-full bg-perfume-magenta/10 flex items-center justify-center">
+                            <svg class="w-7 h-7 text-perfume-magenta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                        </div>
+                        <div>
+                            <p class="font-bold text-gray-600">El ticket está vacío</p>
+                            <p class="text-xs text-gray-400 mt-0.5">Escanea un código o busca un producto para comenzar</p>
+                        </div>
                     </div></td></tr>`;
                 if (tbody) tbody.innerHTML = emptyHTML;
-                if (mobileDiv) mobileDiv.innerHTML = `<div class="flex flex-col items-center justify-center text-gray-400 py-14 gap-2">
-                    <svg class="w-10 h-10 opacity-20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
-                    <span class="text-sm font-medium text-center px-4">Escribe o escanea un producto para comenzar</span>
+                if (mobileDiv) mobileDiv.innerHTML = `<div class="flex flex-col items-center justify-center text-gray-400 py-14 gap-3">
+                    <div class="w-14 h-14 rounded-full bg-perfume-magenta/10 flex items-center justify-center">
+                        <svg class="w-7 h-7 text-perfume-magenta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                    </div>
+                    <div class="text-center px-6">
+                        <p class="font-bold text-gray-600">El ticket está vacío</p>
+                        <p class="text-xs text-gray-400 mt-0.5">Escribe o escanea un producto para comenzar</p>
+                    </div>
                 </div>`;
                 totalEl.innerText = 'RD$ 0.00';
                 if (subtotalEl) { subtotalEl.innerText = ''; subtotalEl.classList.add('hidden'); }
@@ -4800,12 +4983,17 @@ window.submitCreditPayment = function() {
                 const lineTotal = (item.price * item.qty) - lineDisc;
                 subtotal += lineTotal;
                 const prod = window.catalogProducts.find(p => p.id === item.id);
-                const stockVal = prod && typeof prod.stock === 'number' ? prod.stock : '—';
+                const dispLinea = prod ? window.getAvailableStock(prod) : null;
+                const stockVal = dispLinea !== null ? dispLinea : '—';
                 const stockColor = stockVal === '—' ? 'text-gray-400' : stockVal <= 0 ? 'text-red-500 font-bold' : stockVal <= 3 ? 'text-amber-600 font-bold' : 'text-gray-600';
                 const rowBg = idx % 2 === 0 ? 'bg-white' : 'bg-gray-50';
+                // Destello breve SOLO en la fila que se acaba de agregar/tocar —
+                // confirma con la vista que sí entró, sin animar TODO el ticket
+                // cada vez que cambia una cantidad o un precio.
+                const esRecienAgregado = item.id === window.facturaLastAddedId;
 
                 // ----- Fila de tabla (desktop) -----
-                tableHTML += `<tr class="${rowBg} border-b border-gray-200 hover:bg-blue-50 transition-colors">
+                tableHTML += `<tr class="${rowBg} border-b border-gray-200 hover:bg-blue-50 transition-colors ${esRecienAgregado ? 'animate-item-added' : ''}">
                     <td class="px-3 py-2 text-xs text-gray-400 font-bold text-center">${idx + 1}</td>
                     <td class="px-3 py-2">
                         <p class="text-xs font-bold text-gray-800 leading-tight">${item.name}</p>
@@ -4834,7 +5022,7 @@ window.submitCreditPayment = function() {
                 </tr>`;
 
                 // ----- Tarjeta móvil -----
-                mobileHTML += `<div class="bg-white px-4 py-3 ${idx % 2 !== 0 ? 'bg-gray-50' : ''}">
+                mobileHTML += `<div class="bg-white px-4 py-3 ${idx % 2 !== 0 ? 'bg-gray-50' : ''} ${esRecienAgregado ? 'animate-item-added' : ''}">
                     <div class="flex items-start justify-between gap-2 mb-2">
                         <div class="flex-1 min-w-0">
                             <p class="text-sm font-bold text-gray-800 leading-tight">${item.name}</p>
@@ -4844,28 +5032,38 @@ window.submitCreditPayment = function() {
                         <button onclick="window.removeBillingItem(${idx})" class="text-gray-300 hover:text-red-500 text-xl font-bold leading-none p-1 shrink-0">×</button>
                     </div>
                     <div class="flex items-center justify-between gap-3">
-                        <!-- Cantidad -->
+                        <!-- Cantidad: 44px de alto — el mínimo recomendado para no fallar el toque -->
                         <div class="flex items-center gap-2">
-                            <button onclick="window.updateBillingItemQty(${idx},-1)" class="w-9 h-9 rounded-lg bg-gray-200 hover:bg-red-100 hover:text-red-600 font-extrabold text-lg flex items-center justify-center transition select-none">−</button>
+                            <button onclick="window.updateBillingItemQty(${idx},-1)" class="w-11 h-11 rounded-lg bg-gray-200 hover:bg-red-100 hover:text-red-600 active:scale-95 font-extrabold text-lg flex items-center justify-center transition select-none">−</button>
                             <span class="w-8 text-center text-base font-extrabold text-gray-900">${item.qty}</span>
-                            <button onclick="window.updateBillingItemQty(${idx},1)" class="w-9 h-9 rounded-lg bg-gray-200 hover:bg-green-100 hover:text-green-600 font-extrabold text-lg flex items-center justify-center transition select-none">+</button>
+                            <button onclick="window.updateBillingItemQty(${idx},1)" class="w-11 h-11 rounded-lg bg-gray-200 hover:bg-green-100 hover:text-green-600 active:scale-95 font-extrabold text-lg flex items-center justify-center transition select-none">+</button>
                         </div>
                         <!-- Precio editable -->
                         <div class="flex flex-col items-end">
                             <div class="flex items-center gap-1">
                                 <span class="text-[10px] text-gray-400">RD$</span>
-                                <input type="number" value="${item.price}" onchange="window.updateBillingItemPrice(${idx}, this.value)"
+                                <input type="number" inputmode="decimal" value="${item.price}" onchange="window.updateBillingItemPrice(${idx}, this.value)"
                                     class="w-20 text-right text-sm font-bold border-b-2 border-gray-300 focus:border-blue-500 outline-none bg-transparent py-0.5">
                             </div>
                             <p class="text-[10px] text-gray-400 mt-0.5">Subtotal: <span class="font-extrabold text-gray-700">RD$ ${lineTotal.toLocaleString('en-US')}</span></p>
                         </div>
                     </div>
-                    ${lineDisc > 0 ? `<p class="text-[10px] text-green-600 font-bold mt-1">Desc. línea: −RD$ ${lineDisc.toLocaleString('en-US')}</p>` : ''}
+                    <!-- Descuento por línea: antes solo se PODÍA VER aquí (si ya venía puesto
+                         desde la tabla de escritorio), no editar — en el teléfono no había
+                         forma de aplicar un descuento a un artículo suelto. -->
+                    <div class="flex items-center justify-end gap-1.5 mt-1.5">
+                        <span class="text-[10px] text-gray-400">Desc. línea RD$</span>
+                        <input type="number" inputmode="decimal" value="${lineDisc}" min="0" onchange="window.updateBillingItemDiscount(${idx}, this.value)"
+                            class="w-16 text-right text-xs font-bold border-b border-gray-300 focus:border-blue-500 outline-none bg-transparent py-0.5">
+                    </div>
                 </div>`;
             });
 
             if (tbody) tbody.innerHTML = tableHTML;
             if (mobileDiv) mobileDiv.innerHTML = mobileHTML;
+            // Ya se usó para esta pasada — se limpia para que el próximo render
+            // (por ejemplo, al tocar +/- en cantidad) no repita el destello.
+            window.facturaLastAddedId = null;
 
             const total = Math.max(0, subtotal - globalDiscount);
             window._billingCurrentTotal = total;
@@ -4883,17 +5081,16 @@ window.submitCreditPayment = function() {
 
         window.setBillingPaymentMethod = function(method) {
             window.facturaPaymentMethod = method;
-            const styles = {
-                Efectivo: 'border-green-600 bg-green-50 text-green-700',
-                Tarjeta: 'border-purple-500 bg-purple-50 text-purple-700',
-                Transferencia: 'border-blue-500 bg-blue-50 text-blue-700',
-                Mixto: 'border-amber-500 bg-amber-50 text-amber-700',
-                'Crédito': 'border-red-500 bg-red-50 text-red-700'
-            };
+            // Estado seleccionado unificado en el color de marca — antes cada
+            // método tenía su propio color (verde/morado/azul/ámbar/rojo), así
+            // que la fila de botones se veía como un arcoíris sin relación con
+            // la marca de la tienda. El icono de cada botón sigue con su color
+            // fijo (para distinguir de un vistazo cuál es cuál); lo que cambia
+            // es solo el estado "elegido".
             ['Efectivo','Tarjeta','Transferencia','Mixto','Crédito'].forEach(m => {
                 const el = document.getElementById(`billing-pay-btn-${m.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')}`); if (!el) return;
                 const active = m === method;
-                el.className = `flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition ${active ? styles[m] : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`;
+                el.className = `flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition ${active ? 'border-perfume-magenta bg-perfume-magenta/10 text-perfume-dark' : 'border-gray-200 bg-white text-gray-500 hover:border-gray-300'}`;
             });
             const entity = document.getElementById('billing-payment-entity');
             const cashCalc = document.getElementById('billing-cash-calculator');
@@ -5093,6 +5290,44 @@ window.submitCreditPayment = function() {
         }
 
 
+        // ── MODO OSCURO DE FACTURACIÓN ──────────────────────────────────────
+        // Se guarda en este navegador (no es por tienda ni por usuario) para
+        // que cada quien deje su preferencia, útil en una tienda con poca luz
+        // o para usarlo de noche sin cansar la vista.
+        window.applyBillingThemeUI = function(theme) {
+            document.getElementById('billing-theme-icon-moon')?.classList.toggle('hidden', theme === 'dark');
+            document.getElementById('billing-theme-icon-sun')?.classList.toggle('hidden', theme !== 'dark');
+        }
+        window.initBillingTheme = function() {
+            let saved = 'light';
+            try { saved = localStorage.getItem('ffr_billing_theme') || 'light'; } catch (e) { /* localStorage bloqueado, se queda en claro */ }
+            document.getElementById('billing-modal')?.setAttribute('data-theme', saved);
+            window.applyBillingThemeUI(saved);
+        }
+        window.toggleBillingDarkMode = function() {
+            const modal = document.getElementById('billing-modal');
+            if (!modal) return;
+            const next = modal.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            modal.setAttribute('data-theme', next);
+            try { localStorage.setItem('ffr_billing_theme', next); } catch (e) { /* no se pudo guardar la preferencia, no es grave */ }
+            window.applyBillingThemeUI(next);
+        }
+
+        // ── PLACEHOLDERS "SKELETON" PARA PANTALLAS DE CARGA ─────────────────
+        // Reemplazan el círculo girando + texto "Cargando..." por la forma
+        // aproximada de lo que va a aparecer — se siente más pulido y menos
+        // como que la app se congeló.
+        window.skeletonRows = function(n = 4, heightClass = 'h-12') {
+            let html = '';
+            for (let i = 0; i < n; i++) html += `<div class="animate-pulse bg-gray-100 rounded-xl ${heightClass} mb-2"></div>`;
+            return html;
+        }
+        window.skeletonCards = function(n = 6, heightClass = 'h-28') {
+            let html = '';
+            for (let i = 0; i < n; i++) html += `<div class="animate-pulse bg-gray-100 rounded-xl ${heightClass}"></div>`;
+            return html;
+        }
+
         window.openBillingModal = async function() {
             window.closeProfileModal();
             // Cerrar otros modales sin disparar su routing
@@ -5108,6 +5343,7 @@ window.submitCreditPayment = function() {
             modal.style.height = '100dvh';
             modal.classList.remove('opacity-0');
             setTimeout(() => modal.classList.remove('opacity-0'), 10);
+            window.initBillingTheme();
             history.replaceState({}, '', '/facturacion');
             window.switchBillingSubTab('invoice');
             if (window.updateClientPickerLabel) window.updateClientPickerLabel();
@@ -5727,13 +5963,21 @@ window.submitCreditPayment = function() {
 
                 let finalOrderForReceipt;
                 let finalDocId;
+                let faltantesStock = [];
 
                 if (selectedOrderId) {
                     // Si el pedido YA tenía el stock descontado (por ejemplo, si ya se
                     // había marcado como Completado), no se descuenta una segunda vez.
                     const pedidoPrevio = (window.adminOrders || []).find(o => o.id === selectedOrderId);
                     if (!pedidoPrevio || !pedidoPrevio.stockDeducted) {
-                        await window.deductStockForItems(itemsSnapshot);
+                        faltantesStock = await window.deductStockForItems(itemsSnapshot);
+                    }
+                    // El pedido venía "comprometido" (apartado) porque estaba pendiente;
+                    // al facturarlo de verdad se libera esa reserva — el stock físico
+                    // ya se descontó de verdad arriba.
+                    if (pedidoPrevio && pedidoPrevio.stockCommitted) {
+                        await window.releaseCommittedStockForItems(pedidoPrevio.items);
+                        orderData.stockCommitted = false;
                     }
                     await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', selectedOrderId), orderData);
                     finalDocId = selectedOrderId;
@@ -5742,7 +5986,7 @@ window.submitCreditPayment = function() {
                 } else {
                     const folioNum = await window.getNextMostradorFolio();
                     const orderId = `Folio ${folioNum}`;
-                    await window.deductStockForItems(itemsSnapshot);
+                    faltantesStock = await window.deductStockForItems(itemsSnapshot);
                     const ref = await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), { orderId, folio: folioNum, userId: 'mostrador', customerName, customerPhone: customerPhoneCrm, customerEmail, customerAddress: customerAddressCrm, date: new Date().toISOString(), source: 'mostrador', ...orderData });
                     finalDocId = ref.id;
                     finalOrderForReceipt = { orderId, ...orderData, date: new Date().toISOString() };
@@ -5756,6 +6000,10 @@ window.submitCreditPayment = function() {
                 window.lastInvoiceOrderId = finalDocId;
                 window.showToast(paymentMethod === 'Crédito' ? "✅ Venta a crédito registrada." : (printReceipt ? "✅ Venta registrada." : "✅ Venta registrada (sin imprimir)."));
                 if (paymentMethod === 'Mixto' && mixedSplit && mixedSplit.credito > 0) window.showToast(`📋 RD$ ${mixedSplit.credito.toLocaleString('en-US')} quedaron a crédito de ${mixedCreditClient.nombre}.`);
+                // Aviso de conflicto de inventario: la venta se completa igual (el
+                // producto ya está en manos del cliente), pero si el stock no
+                // alcanzaba, se avisa para que se revise el inventario físico.
+                faltantesStock.forEach(f => window.showToast(`⚠️ ${f.name}: solo había ${f.habia}, esta venta necesitaba ${f.pedia}. Revisa el inventario.`));
                 window.closeCobrarModal();
                 window.clearBillingSelection();
 
@@ -5830,15 +6078,20 @@ window.submitCreditPayment = function() {
                 const threshold = parseInt(thresholdInput.value) || 0;
                 localStorage.setItem('lowStockThreshold', threshold);
 
-                const lowStock = products.filter(p => typeof p.stock === 'number' && p.stock > 0 && p.stock <= threshold);
+                // El umbral compara contra lo DISPONIBLE (stock físico menos lo ya
+                // comprometido en pedidos pendientes) — es lo que de verdad indica si
+                // ya casi no queda nada para vender, no el número físico crudo.
+                const lowStock = products
+                    .map(p => ({ p, disp: window.getAvailableStock(p) }))
+                    .filter(({ disp }) => disp !== null && disp > 0 && disp <= threshold);
                 if (lowStock.length === 0) {
-                    lowStockList.innerHTML = `<p class="text-xs text-gray-400 text-center py-3">✅ Ningún producto está por debajo del umbral de stock.</p>`;
+                    lowStockList.innerHTML = `<p class="text-xs text-gray-400 text-center py-3">✅ Ningún producto está por debajo del umbral de stock disponible.</p>`;
                 } else {
-                    lowStockList.innerHTML = lowStock.map(p => `
+                    lowStockList.innerHTML = lowStock.map(({ p, disp }) => `
                         <div class="flex items-center justify-between bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
                             <span class="text-xs font-bold text-amber-800 truncate">${p.name}</span>
                             <div class="flex items-center gap-2 shrink-0">
-                                <span class="text-xs font-extrabold text-amber-700">${p.stock} disp.</span>
+                                <span class="text-xs font-extrabold text-amber-700">${disp} disp.${(p.comprometido || 0) > 0 ? ` (${p.comprometido} apartado)` : ''}</span>
                                 <button onclick="window.switchBillingSubTab('movements'); window.preselectMovementProduct('${p.id}')" class="text-[10px] bg-amber-600 text-white px-2 py-1 rounded-md font-bold hover:bg-amber-700 transition">Reabastecer</button>
                             </div>
                         </div>`).join('');
@@ -5857,14 +6110,16 @@ window.submitCreditPayment = function() {
             list = [...list].sort((a, b) => (b.stock * b.price) - (a.stock * a.price));
 
             if (list.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="4" class="text-center text-sm text-gray-400 py-6">No hay productos con inventario controlado.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center text-sm text-gray-400 py-6">No hay productos con inventario controlado.</td></tr>`;
                 return;
             }
 
             let html = '';
             list.forEach(p => {
-                const isOut = !!p.isAgotado || p.stock <= 0;
+                const disponible = window.getAvailableStock(p);
+                const isOut = !!p.isAgotado || (disponible !== null && disponible <= 0);
                 const valueRow = p.stock * p.price;
+                const comprometido = p.comprometido || 0;
                 html += `
                 <tr class="border-b border-gray-50 hover:bg-gray-50">
                     <td class="py-2 pr-2">
@@ -5874,7 +6129,11 @@ window.submitCreditPayment = function() {
                         </div>
                     </td>
                     <td class="py-2 pr-2 text-center">
-                        <span class="text-xs font-bold ${isOut ? 'text-red-600' : 'text-green-700'}">${isOut ? 'Agotado' : p.stock}</span>
+                        <span class="text-xs font-bold text-gray-600">${p.stock}</span>
+                    </td>
+                    <td class="py-2 pr-2 text-center">
+                        <span class="text-xs font-bold ${isOut ? 'text-red-600' : 'text-green-700'}">${isOut ? 'Agotado' : disponible}</span>
+                        ${comprometido > 0 ? `<div class="text-[9px] text-amber-600 font-bold">${comprometido} apartado${comprometido > 1 ? 's' : ''}</div>` : ''}
                     </td>
                     <td class="py-2 pr-2 text-right text-xs text-gray-600">RD$ ${p.price.toLocaleString('en-US')}</td>
                     <td class="py-2 pr-2 text-right text-xs font-bold text-perfume-dark">RD$ ${valueRow.toLocaleString('en-US')}</td>
@@ -5980,7 +6239,7 @@ window.submitCreditPayment = function() {
         window.loadInventoryMovements = async function() {
             const listDiv = document.getElementById('movements-history-list');
             if (!listDiv) return;
-            listDiv.innerHTML = `<p class="text-xs text-gray-400 text-center py-6">Cargando movimientos...</p>`;
+            listDiv.innerHTML = window.skeletonRows ? window.skeletonRows(5, 'h-11') : `<p class="text-xs text-gray-400 text-center py-6">Cargando movimientos...</p>`;
             try {
                 const snap = await getDocs(collection(db, 'artifacts', appId, 'public', 'data', 'movimientosInventario'));
                 let movements = []; snap.forEach(d => movements.push({ id: d.id, ...d.data() }));
@@ -6226,7 +6485,12 @@ window.submitCreditPayment = function() {
             invoices.sort((a, b) => new Date(b.date) - new Date(a.date));
 
             if (invoices.length === 0) {
-                listDiv.innerHTML = `<p class="text-sm text-gray-400 text-center py-10">No hay facturas completadas todavía.</p>`;
+                listDiv.innerHTML = `<div class="flex flex-col items-center justify-center text-gray-400 py-14 gap-3">
+                    <div class="w-14 h-14 rounded-full bg-perfume-magenta/10 flex items-center justify-center">
+                        <svg class="w-7 h-7 text-perfume-magenta" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/></svg>
+                    </div>
+                    <p class="font-bold text-gray-600">Aún no hay facturas completadas</p>
+                </div>`;
                 return;
             }
 
@@ -6413,13 +6677,17 @@ window.submitCreditPayment = function() {
 
         window.loadAdminOrders = async function() {
             const listDiv = document.getElementById('admin-orders-list'); 
-            if (listDiv) listDiv.innerHTML = '<div class="col-span-full text-center py-10"><div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-perfume-magenta mb-4"></div><p class="text-gray-500 font-bold">Sincronizando el panel de pedidos...</p></div>';
+            if (listDiv) listDiv.innerHTML = window.skeletonCards ? window.skeletonCards(6) : '<div class="col-span-full text-center py-10"><div class="inline-block animate-spin rounded-full h-10 w-10 border-b-2 border-perfume-magenta mb-4"></div><p class="text-gray-500 font-bold">Sincronizando el panel de pedidos...</p></div>';
             try {
                 const ordersRef = collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'); 
                 const querySnapshot = await getDocs(ordersRef); 
                 window.adminOrders = []; 
                 querySnapshot.forEach(doc => window.adminOrders.push({ id: doc.id, ...doc.data() })); 
-                window.adminOrders.sort((a, b) => new Date(b.date) - new Date(a.date));
+                // FIFO: el pedido más antiguo va primero, para facturar en el mismo
+                // orden en que fueron llegando (antes era al revés: el más nuevo
+                // arriba, lo que podía hacer que un pedido posterior se despachara
+                // antes que uno anterior por las mismas unidades).
+                window.adminOrders.sort((a, b) => new Date(a.date) - new Date(b.date));
                 const searchInput = document.getElementById('admin-search-orders'); 
                 if(searchInput) searchInput.value = ''; 
                 window.renderAdminOrdersList();
@@ -6759,39 +7027,76 @@ window.submitCreditPayment = function() {
 
         // Descuenta el stock de una lista de artículos (pedido o factura) en la base de datos.
         // Si el stock de un producto llega a 0, lo marca automáticamente como "Agotado".
+        // Descuenta el stock FÍSICO al completar una venta. Va en una sola
+        // transacción para que dos ventas que se completan casi al mismo tiempo
+        // (dos cajeros, o un cajero y un pedido web) nunca se pisen. Antes esto
+        // era leer-y-luego-escribir sin transacción, y si no alcanzaba dejaba el
+        // stock en 0 en silencio, sin avisarle a nadie del faltante. Ahora, si de
+        // verdad no alcanza (dos cosas comprometieron las mismas últimas
+        // unidades), la venta se completa igual — ya se le prometió al cliente,
+        // o el producto está físicamente en sus manos — pero se devuelve el
+        // faltante para que quien llamó a esta función pueda avisar.
         window.deductStockForItems = async function(items) {
-            for (let item of items) {
-                if (item.id && !String(item.id).startsWith('custom_')) {
-                    try {
-                        const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
-                        const pSnap = await getDoc(pRef);
-                        if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
-                            const newStock = Math.max(0, pSnap.data().stock - item.qty);
-                            const updateData = { stock: newStock };
-                            if (newStock <= 0) updateData.isAgotado = true;
-                            await updateDoc(pRef, updateData);
-                        }
-                    } catch(e) { console.error('Error al descontar stock:', e); }
-                }
-            }
+            const relevantes = (items || []).filter(item => item.id && !String(item.id).startsWith('custom_'));
+            const faltantes = [];
+            if (relevantes.length === 0) return faltantes;
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const refs = relevantes.map(item => doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id));
+                    const snaps = await Promise.all(refs.map(ref => transaction.get(ref)));
+                    snaps.forEach((pSnap, i) => {
+                        const item = relevantes[i];
+                        if (!pSnap.exists() || typeof pSnap.data().stock !== 'number') return;
+                        const currentStock = pSnap.data().stock;
+                        const newStock = currentStock - item.qty;
+                        if (newStock < 0) faltantes.push({ name: item.name, habia: currentStock, pedia: item.qty });
+                        const updateData = { stock: Math.max(0, newStock) };
+                        if (newStock <= 0) updateData.isAgotado = true;
+                        transaction.update(refs[i], updateData);
+                    });
+                });
+            } catch (e) { console.error('Error al descontar stock:', e); }
+            return faltantes;
         }
 
         // Repone el stock de una lista de artículos (usado al revertir un pedido de "Completado" a otro estado).
         // Si el producto vuelve a tener stock, le quita la marca de "Agotado" automática.
         window.restoreStockForItems = async function(items) {
-            for (let item of items) {
-                if (item.id && !String(item.id).startsWith('custom_')) {
-                    try {
-                        const pRef = doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id);
-                        const pSnap = await getDoc(pRef);
-                        if (pSnap.exists() && typeof pSnap.data().stock === 'number') {
-                            const restoredStock = pSnap.data().stock + item.qty;
-                            const updateData = { stock: restoredStock };
-                            if (restoredStock > 0 && pSnap.data().isAgotado) updateData.isAgotado = false;
-                            await updateDoc(pRef, updateData);
-                        }
-                    } catch(e) { console.error('Error al reponer stock:', e); }
-                }
+            const relevantes = (items || []).filter(item => item.id && !String(item.id).startsWith('custom_'));
+            if (relevantes.length === 0) return;
+            try {
+                await runTransaction(db, async (transaction) => {
+                    const refs = relevantes.map(item => doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id));
+                    const snaps = await Promise.all(refs.map(ref => transaction.get(ref)));
+                    snaps.forEach((pSnap, i) => {
+                        const item = relevantes[i];
+                        if (!pSnap.exists() || typeof pSnap.data().stock !== 'number') return;
+                        const restoredStock = pSnap.data().stock + item.qty;
+                        const updateData = { stock: restoredStock };
+                        if (restoredStock > 0 && pSnap.data().isAgotado) updateData.isAgotado = false;
+                        transaction.update(refs[i], updateData);
+                    });
+                });
+            } catch(e) { console.error('Error al reponer stock:', e); }
+        }
+
+        // Aparta ("comprometido") o libera stock para pedidos que están en un
+        // estado PENDIENTE (Recibido, Procesando, Enviado) — todavía no
+        // facturados de verdad. Esto es lo que hace que el catálogo muestre
+        // "disponible" (stock físico menos lo comprometido) en vez del stock
+        // físico crudo, para que otro cliente no pueda pedir lo mismo por error.
+        window.commitStockForItems = async function(items) {
+            for (const item of (items || [])) {
+                if (!item.id || String(item.id).startsWith('custom_')) continue;
+                try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id), { comprometido: increment(item.qty) }); }
+                catch (e) { console.error('Error apartando stock comprometido:', e); }
+            }
+        }
+        window.releaseCommittedStockForItems = async function(items) {
+            for (const item of (items || [])) {
+                if (!item.id || String(item.id).startsWith('custom_')) continue;
+                try { await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id), { comprometido: increment(-item.qty) }); }
+                catch (e) { console.error('Error liberando stock comprometido:', e); }
             }
         }
 
@@ -6801,14 +7106,27 @@ window.submitCreditPayment = function() {
                 if (!order) return;
 
                 let stockDeducted = order.stockDeducted || false;
+                let faltantesStock = [];
                 if (newStatus === 'Completado' && !stockDeducted) {
                     stockDeducted = true;
-                    await window.deductStockForItems(order.items);
+                    faltantesStock = await window.deductStockForItems(order.items);
                     window.loadDynamicProducts(true); 
                 } else if (newStatus !== 'Completado' && stockDeducted) {
                     stockDeducted = false;
                     await window.restoreStockForItems(order.items);
                     window.loadDynamicProducts(true); 
+                }
+
+                // Aparta/libera el "comprometido" según si el pedido sigue pendiente o no.
+                const ESTADOS_PENDIENTES = ['Recibido', 'Procesando', 'Enviado'];
+                let stockCommitted = order.stockCommitted || false;
+                const quedaPendiente = ESTADOS_PENDIENTES.includes(newStatus);
+                if (quedaPendiente && !stockCommitted) {
+                    stockCommitted = true;
+                    await window.commitStockForItems(order.items);
+                } else if (!quedaPendiente && stockCommitted) {
+                    stockCommitted = false;
+                    await window.releaseCommittedStockForItems(order.items);
                 }
 
                 // Si se cancela una venta que tenía todo (o una parte, en un Pago
@@ -6826,11 +7144,12 @@ window.submitCreditPayment = function() {
                     }
                 }
 
-                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: newStatus, stockDeducted, ...extraUpdate });
+                await updateDoc(doc(db, 'artifacts', appId, 'public', 'data', 'pedidos', docId), { status: newStatus, stockDeducted, stockCommitted, ...extraUpdate });
                 
                 // Actualizar en memoria sin re-renderizar toda la lista (no colapsa el acordeón)
                 order.status = newStatus;
                 order.stockDeducted = stockDeducted;
+                order.stockCommitted = stockCommitted;
                 Object.assign(order, extraUpdate);
 
                 // Solo actualizar el badge de estado en la cabecera del acordeón
@@ -6844,6 +7163,10 @@ window.submitCreditPayment = function() {
                     }
                 }
                 if(newStatus !== 'Eliminado') window.showToast("✅ Estado: " + (window.statusDisplayNames[newStatus] || newStatus));
+                // Aviso de conflicto de inventario: la venta se completó igual (el
+                // cliente ya se llevó o ya le prometimos el producto), pero el
+                // stock no alcanzaba — hay que revisarlo.
+                faltantesStock.forEach(f => window.showToast(`⚠️ ${f.name}: solo había ${f.habia}, este pedido pedía ${f.pedia}. Revisa el inventario.`));
             } catch(e) { 
                 window.showToast("❌ Error al actualizar estado."); console.error(e);
             } 
@@ -8536,7 +8859,11 @@ window.printThermalReceiptDirect = async function(order) {
         window.addToCart = (id, name, price, img, variantId, barcode = '') => { 
             const prodData = window.catalogProducts.find(p => p.id === id); if (!prodData) return; const q = parseInt(document.getElementById('qty-'+id).innerText); const cartId = `${id}_${variantId}`; 
             const currentQtyInCart = window.cart.find(i=>i.cartId === cartId)?.qty || 0;
-            if (prodData.stock !== null && prodData.stock !== undefined && (currentQtyInCart + q) > prodData.stock) { return window.showToast(`Solo quedan ${prodData.stock} unidades en stock.`); }
+            // "Disponible" = stock físico menos lo ya comprometido en pedidos pendientes
+            // de OTROS clientes — antes solo se miraba el stock físico, así que dos
+            // personas podían llenar su carrito con las mismas últimas unidades.
+            const disponibleCarrito = window.getAvailableStock(prodData);
+            if (disponibleCarrito !== null && (currentQtyInCart + q) > disponibleCarrito) { return window.showToast(`Solo quedan ${disponibleCarrito} unidades disponibles (parte ya está apartada en otros pedidos).`); }
 
             const ex = window.cart.find(i=>i.cartId === cartId); 
             if(ex) ex.qty+=q; else window.cart.push({cartId, id, name, price, qty:q, img, variant: variantId, barcode: barcode}); 
@@ -8563,12 +8890,15 @@ window.printThermalReceiptDirect = async function(order) {
                 return;
             }
 
-            // Validar inventario antes de sumar
+            // Validar inventario antes de sumar (contra lo disponible, no el stock físico)
             const prodData = window.catalogProducts.find(p => p.id === item.id);
-            if (delta > 0 && prodData && typeof prodData.stock === 'number') {
-                const totalInCart = window.cart.filter(i => i.id === item.id).reduce((s, i) => s + i.qty, 0);
-                if ((totalInCart + delta) > prodData.stock) {
-                    return window.showToast(`Solo quedan ${prodData.stock} unidades en stock.`);
+            if (delta > 0 && prodData) {
+                const disponibleQty = window.getAvailableStock(prodData);
+                if (disponibleQty !== null) {
+                    const totalInCart = window.cart.filter(i => i.id === item.id).reduce((s, i) => s + i.qty, 0);
+                    if ((totalInCart + delta) > disponibleQty) {
+                        return window.showToast(`Solo quedan ${disponibleQty} unidades disponibles.`);
+                    }
                 }
             }
 
@@ -8625,7 +8955,42 @@ window.printThermalReceiptDirect = async function(order) {
             const orderIdHex = Math.random().toString(36).substring(2, 7).toUpperCase(); const orderId = `#PED-${orderIdHex}`;
 
             try {
-                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), { orderId: orderId, userId: window.userId, customerName: auth.currentUser.displayName || "Cliente", customerPhone: customerPhone, customerEmail: auth.currentUser.email || "", items: window.cart, total: total, date: new Date().toISOString(), status: "Recibido", stockDeducted: false });
+                // Antes de crear el pedido: en una sola transacción se revisa que TODO
+                // lo del carrito siga disponible de verdad (nadie más se lo llevó
+                // mientras se escribía el WhatsApp) y se aparta (comprometido) al mismo
+                // tiempo. Si dos personas hacen checkout casi al mismo segundo por las
+                // mismas últimas unidades, Firestore reintenta la transacción y solo
+                // una de las dos gana esa reserva — la otra recibe el aviso de abajo
+                // en vez de terminar con un pedido que nadie puede cumplir.
+                const itemsConStock = window.cart.filter(item => item.id && !String(item.id).startsWith('custom_'));
+                try {
+                    await runTransaction(db, async (transaction) => {
+                        const refs = itemsConStock.map(item => doc(db, 'artifacts', appId, 'public', 'data', 'productos', item.id));
+                        const snaps = await Promise.all(refs.map(ref => transaction.get(ref)));
+                        for (let i = 0; i < itemsConStock.length; i++) {
+                            const snap = snaps[i]; const item = itemsConStock[i];
+                            if (!snap.exists() || typeof snap.data().stock !== 'number') continue;
+                            const disponibleTx = Math.max(0, (snap.data().stock || 0) - (snap.data().comprometido || 0));
+                            if (disponibleTx < item.qty) throw new Error(`STOCK_INSUFICIENTE::${item.name}::${disponibleTx}`);
+                        }
+                        refs.forEach((ref, i) => {
+                            const snap = snaps[i];
+                            if (!snap.exists() || typeof snap.data().stock !== 'number') return;
+                            transaction.update(ref, { comprometido: increment(itemsConStock[i].qty) });
+                        });
+                    });
+                } catch (eTx) {
+                    btn.innerHTML = `Realizar Pedido por WhatsApp`; btn.disabled = false;
+                    const msg = String(eTx && eTx.message || '');
+                    if (msg.startsWith('STOCK_INSUFICIENTE::')) {
+                        const [, nombreProd, dispRestante] = msg.split('::');
+                        return window.showToast(`⚠️ "${nombreProd}" ya no tiene suficiente stock (quedan ${dispRestante}). Ajusta la cantidad en tu carrito.`);
+                    }
+                    console.error(eTx);
+                    return window.showToast("❌ No se pudo verificar el inventario, intenta de nuevo.");
+                }
+
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'pedidos'), { orderId: orderId, userId: window.userId, customerName: auth.currentUser.displayName || "Cliente", customerPhone: customerPhone, customerEmail: auth.currentUser.email || "", items: window.cart, total: total, date: new Date().toISOString(), status: "Recibido", stockDeducted: false, stockCommitted: itemsConStock.length > 0 });
 
                 const firstName = auth.currentUser.displayName ? auth.currentUser.displayName.split(' ')[0] : "Cliente";
                 let text = `*¡Hola FamlyFragrancerd!*\n\nSoy *${firstName}* y acabo de confirmar el pedido web: *${orderId}*\n\n*DETALLE DEL PEDIDO:*\n`;
