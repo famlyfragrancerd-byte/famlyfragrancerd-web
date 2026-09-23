@@ -158,6 +158,10 @@
         .animate-fade-in {
             animation: fadeInSlideUp 0.4s ease-out forwards;
         }
+        /* Entrada escalonada del Hero: título, luego subtítulo, luego botón —
+           en vez de que todo aparezca de golpe al cargar la página. */
+        .animate-fade-in-d1 { animation: fadeInSlideUp 0.5s ease-out 0.15s both; }
+        .animate-fade-in-d2 { animation: fadeInSlideUp 0.5s ease-out 0.3s both; }
 
         /* DESTELLO "RECIÉN AGREGADO" — confirma con la vista que el artículo
            sí entró al ticket, en vez de simplemente aparecer sin aviso. */
@@ -338,19 +342,19 @@
     <section id="inicio" class="mt-28 pt-12 pb-20 min-h-[70vh] flex items-center transition-all duration-500">
         <div class="container mx-auto px-4 flex flex-col md:flex-row items-center">
             <div id="hero-text-container" class="md:w-1/2 mb-10 md:mb-0 md:pr-10 text-center md:text-left transition-all duration-500">
-                <h1 class="text-5xl md:text-6xl font-extrabold text-perfume-dark leading-tight mb-6 tracking-tight">
+                <h1 class="text-5xl md:text-6xl font-extrabold text-perfume-dark leading-tight mb-6 tracking-tight animate-fade-in">
                     <span id="display-hero-title1">Tu esencia,</span><br>
                     <span id="display-hero-title2" class="text-perfume-magenta">tu identidad.</span>
                 </h1>
-                <p id="display-hero-subtitle" class="text-lg text-gray-500 mb-8 max-w-lg mx-auto md:mx-0 opacity-80">
+                <p id="display-hero-subtitle" class="text-lg text-gray-500 mb-8 max-w-lg mx-auto md:mx-0 opacity-80 animate-fade-in-d1">
                     Fragancias originales seleccionadas para destacar tu personalidad en cada momento especial.
                 </p>
-                <a href="#catalogo" id="display-hero-btn" class="inline-block bg-perfume-dark text-white px-8 py-3.5 rounded-full text-lg font-medium hover:bg-perfume-magenta transition duration-300 shadow-lg transform hover:-translate-y-1">
+                <a href="#catalogo" id="display-hero-btn" class="inline-block bg-perfume-dark text-white px-8 py-3.5 rounded-full text-lg font-medium hover:bg-perfume-magenta transition duration-300 shadow-lg transform hover:-translate-y-1 animate-fade-in-d2">
                     Explorar Colección
                 </a>
             </div>
             <div class="md:w-1/2 flex justify-center" id="hero-media-container">
-                <img id="display-hero-img" src="https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Perfume" class="rounded-3xl shadow-xl max-w-full h-auto object-cover max-h-[300px] md:max-h-[500px] hover:scale-105 transition duration-500">
+                <img id="display-hero-img" src="https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80" alt="Perfume" class="rounded-3xl shadow-xl max-w-full h-auto object-cover aspect-[4/5] max-h-[300px] md:max-h-[500px] hover:scale-105 transition duration-500">
             </div>
         </div>
     </section>
@@ -2761,6 +2765,18 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
             }
         }
 
+        // Antes el video del Hero quedaba silenciado para siempre, sin forma de
+        // que la persona lo escuchara si quería. Este botón alterna sonido/mute.
+        window.toggleHeroVideoSound = function(btn) {
+            const video = btn.closest('.relative')?.querySelector('video');
+            if (!video) return;
+            video.muted = !video.muted;
+            btn.querySelector('.hero-video-icon-muted')?.classList.toggle('hidden', !video.muted);
+            btn.querySelector('.hero-video-icon-sound')?.classList.toggle('hidden', video.muted);
+            btn.setAttribute('title', video.muted ? 'Activar sonido' : 'Silenciar');
+            btn.setAttribute('aria-label', video.muted ? 'Activar sonido del video' : 'Silenciar el video');
+        }
+
         window.loadSiteConfig = async function() {
             try {
                 const configRef = doc(db, 'artifacts', appId, 'public', 'config');
@@ -2858,11 +2874,35 @@ import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/fireb
 
                 const mediaUrl = data.heroImg || "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
                 const mediaContainer = document.getElementById('hero-media-container');
-                const mediaClasses = "rounded-3xl shadow-xl max-w-full h-auto object-cover max-h-[300px] md:max-h-[500px] hover:scale-105 transition duration-500";
+                const mediaClasses = "rounded-3xl shadow-xl max-w-full h-auto object-cover aspect-[4/5] max-h-[300px] md:max-h-[500px] hover:scale-105 transition duration-500";
                 const fallbackImg = "https://images.unsplash.com/photo-1594035910387-fea47794261f?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80";
 
-                if (data.mediaType === "video") {
-                    mediaContainer.innerHTML = `<video src="${mediaUrl}" poster="${fallbackImg}" autoplay loop muted playsinline webkit-playsinline preload="auto" class="${mediaClasses} w-full"></video>`;
+                // Con Modo de Ahorro de Datos activado, o en una conexión 2G/lenta,
+                // no forzamos la descarga del video — se muestra la foto de respaldo
+                // directamente, para no gastarle el plan de datos a quien visita.
+                const prefiereAhorrarDatos = (() => {
+                    try {
+                        const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+                        if (!conn) return false;
+                        if (conn.saveData) return true;
+                        if (conn.effectiveType && ['slow-2g', '2g'].includes(conn.effectiveType)) return true;
+                    } catch (e) { /* API no disponible en este navegador, seguimos sin restringir */ }
+                    return false;
+                })();
+
+                if (data.mediaType === "video" && prefiereAhorrarDatos) {
+                    mediaContainer.innerHTML = `<img src="${fallbackImg}" alt="Perfume" class="${mediaClasses}">`;
+                } else if (data.mediaType === "video") {
+                    // "preload=metadata" en vez de "auto": no se descarga el video completo
+                    // de una vez, solo lo necesario para empezar — más liviano en móvil.
+                    mediaContainer.innerHTML = `
+                        <div class="relative w-full">
+                            <video src="${mediaUrl}" poster="${fallbackImg}" autoplay loop muted playsinline webkit-playsinline preload="metadata" class="${mediaClasses} w-full"></video>
+                            <button type="button" onclick="window.toggleHeroVideoSound(this)" id="hero-video-sound-btn" class="absolute bottom-4 right-4 w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-sm text-white flex items-center justify-center transition" title="Activar sonido" aria-label="Activar o silenciar el sonido del video">
+                                <svg class="w-5 h-5 hero-video-icon-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2 2m0-2l-2 2M9 9H5a1 1 0 00-1 1v4a1 1 0 001 1h4l5 4V5L9 9z"/></svg>
+                                <svg class="w-5 h-5 hero-video-icon-sound hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M9 9H5a1 1 0 00-1 1v4a1 1 0 001 1h4l5 4V5L9 9z"/></svg>
+                            </button>
+                        </div>`;
                     const videoEl = mediaContainer.querySelector('video');
                     if (videoEl) {
                         // Forzamos el estado "muted" por JS (no solo el atributo) para que el autoplay
